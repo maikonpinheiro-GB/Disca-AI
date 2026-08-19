@@ -1,634 +1,298 @@
 <!DOCTYPE html>
-<html lang="pt-BR" class="h-full bg-slate-950 text-slate-100">
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Disca AI - Central de Operação USB</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disca AI - Operação Premium</title>
+    <script src="https://cdn.jsdelivr.net/npm/webadb@0.1.0/webadb.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; color: #334155; margin: 0; padding: 20px; }
+        .dashboard { max-width: 1400px; margin: 0 auto; }
+        
+        /* Topbar */
+        .topbar { display: flex; justify-content: space-between; align-items: center; background: #1e293b; color: white; padding: 20px 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); margin-bottom: 30px; }
+        .topbar h1 { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
+        .badge { padding: 8px 18px; border-radius: 9999px; font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
+        .badge-red { background: #ef4444; color: white; box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); }
+        .badge-green { background: #10b981; color: white; box-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
 
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- FontAwesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <!-- Fonte Inter -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <!-- SheetJS para ler Excel/CSV -->
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  
-  <!-- WebADB (Múltiplas rotas para evitar bloqueio da TI) -->
-  <script src="https://unpkg.com/webadb/dist/webadb.js"></script>
-  <script src="https://cdn.jsdelivr.net/gh/webadb/webadb.js@master/webadb.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/webadb/0.0.1/webadb.min.js"></script>
+        /* Grid */
+        .grid-layout { display: grid; grid-template-columns: 380px 1fr; gap: 30px; }
+        
+        /* Cards */
+        .card { background: #ffffff; padding: 25px 30px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; margin-bottom: 25px; }
+        .card h2 { margin: 0 0 20px 0; font-size: 18px; color: #0f172a; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; font-weight: 700; }
+        
+        /* Formulários */
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-size: 14px; font-weight: 600; color: #64748b; margin-bottom: 8px; }
+        .form-control { width: 100%; padding: 12px 15px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 15px; transition: all 0.2s; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        .form-control:focus { border-color: #3b82f6; outline: none; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
+        
+        /* Botões */
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.5px; }
+        .btn-primary { background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(37, 99, 235, 0.3); }
+        .btn-success { background: linear-gradient(135deg, #10b981, #059669); color: white; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); }
+        .btn-success:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(16, 185, 129, 0.3); }
+        .btn-danger { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2); }
+        .btn-danger:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(239, 68, 68, 0.3); }
+        .btn:disabled { background: #cbd5e1; box-shadow: none; cursor: not-allowed; transform: none; color: #94a3b8; }
+        
+        /* Painel Principal de Chamada */
+        .call-display { text-align: center; background: #f8fafc; padding: 40px 20px; border-radius: 16px; border: 2px dashed #cbd5e1; margin-bottom: 25px; transition: all 0.3s; }
+        .call-display.active { border-color: #3b82f6; background: #eff6ff; }
+        .call-number { font-size: 48px; font-weight: 800; color: #0f172a; margin: 15px 0; letter-spacing: 2px; }
+        .call-timer { font-size: 64px; font-weight: 800; color: #ef4444; font-variant-numeric: tabular-nums; line-height: 1; text-shadow: 0 2px 10px rgba(239, 68, 68, 0.2); }
+        .call-status { font-size: 18px; font-weight: 600; color: #64748b; margin-top: 15px; }
+        .action-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        
+        /* Tabela */
+        .table-container { max-height: 300px; overflow-y: auto; border-radius: 10px; border: 1px solid #e2e8f0; }
+        table { width: 100%; border-collapse: collapse; background: white; }
+        th { background: #f8fafc; padding: 15px; text-align: left; font-size: 13px; font-weight: 700; color: #475569; position: sticky; top: 0; text-transform: uppercase; }
+        td { padding: 15px; border-top: 1px solid #e2e8f0; font-size: 14px; font-weight: 500; }
+        .status-tag { padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; }
+        .tag-success { background: #dcfce7; color: #166534; }
+        .tag-error { background: #fee2e2; color: #991b1b; }
+        .tag-manual { background: #fef3c7; color: #92400e; }
 
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] } } }
-    }
-  </script>
-
-  <style>
-    ::-webkit-scrollbar { width: 8px; height: 8px; }
-    ::-webkit-scrollbar-track { background: #0f172a; }
-    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: #475569; }
-    
-    .glass-panel {
-      background: rgba(15, 23, 42, 0.7);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-    }
-    
-    @keyframes pulseGlow {
-      0%, 100% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.2); }
-      50% { box-shadow: 0 0 50px rgba(16, 185, 129, 0.4); border-color: rgba(16, 185, 129, 0.6); }
-    }
-    .active-call-pulse { animation: pulseGlow 2s infinite; }
-    .btn-action { transition: all 0.2s ease; }
-    .btn-action:active { transform: scale(0.95); }
-    
-    /* Timer Animado */
-    @keyframes shrinkWidth { from { width: 100%; } to { width: 0%; } }
-    .timer-bar { transition: width 1s linear; }
-  </style>
+        .aviso-seguranca { display: none; background: #ef4444; color: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; font-weight: bold; text-align: center; }
+    </style>
 </head>
+<body>
 
-<body class="h-full flex flex-col font-sans antialiased overflow-x-hidden selection:bg-emerald-600 selection:text-white">
-  
-  <header class="bg-slate-900/95 border-b border-slate-800 sticky top-0 z-40 backdrop-blur-md px-6 py-4">
-    <div class="max-w-7xl mx-auto flex items-center justify-between">
-      <div class="flex items-center gap-4">
-        <div class="bg-gradient-to-tr from-emerald-500 to-teal-400 w-12 h-12 rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.3)] flex items-center justify-center">
-          <i class="fa-solid fa-headset text-2xl text-white"></i>
+    <div class="dashboard">
+        <div class="aviso-seguranca" id="aviso-seguranca">
+            ⚠️ O navegador bloqueou o acesso ao USB. Acesse via HTTPS (Link do GitHub).
         </div>
-        <div>
-          <h1 class="font-black text-2xl tracking-tight text-white flex items-center gap-2">
-            Disca <span class="text-emerald-500">AI</span>
-          </h1>
-          <p class="text-xs text-slate-400 font-medium mt-0.5">Piloto Automático USB</p>
-        </div>
-      </div>
 
-      <div class="flex items-center gap-4">
-        <button id="btnConnectUSB" onclick="connectUSB()" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-lg shadow-blue-600/20 btn-action">
-          <i class="fa-brands fa-usb text-lg"></i> Conectar Samsung (ADB)
-        </button>
-        <div id="usbStatusBadge" class="hidden items-center gap-3 bg-emerald-900/40 border border-emerald-500/50 px-5 py-2.5 rounded-xl">
-          <div class="relative flex h-3 w-3">
-            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
-          </div>
-          <div class="flex flex-col">
-            <span class="text-xs font-bold text-emerald-400">Sistema Conectado</span>
-            <span class="text-[10px] text-emerald-600/80 uppercase tracking-wider">Controle USB Ativo</span>
-          </div>
+        <div class="topbar">
+            <h1>🎧 Disca AI Pro</h1>
+            <div class="badge badge-red" id="status-usb">Cabo Desconectado</div>
         </div>
-      </div>
-    </div>
-  </header>
 
-  <main class="flex-1 max-w-7xl w-full mx-auto p-6 flex flex-col gap-6">
-    <div class="flex items-center gap-3 border-b border-slate-800 pb-4">
-      <button onclick="switchTab('dashboard')" id="tabBtn-dashboard" class="tab-btn active bg-emerald-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-lg shadow-emerald-600/20">
-        <i class="fa-solid fa-desktop"></i> Mesa de Operação
-      </button>
-      <button onclick="switchTab('contacts')" id="tabBtn-contacts" class="tab-btn bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-800 px-5 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all">
-        <i class="fa-solid fa-users"></i> Base de Contatos <span id="badgeContacts" class="bg-slate-800 text-slate-300 text-[10px] px-2 py-0.5 rounded-full font-bold ml-1">0</span>
-      </button>
-      <button onclick="switchTab('history')" id="tabBtn-history" class="tab-btn bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-800 px-5 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all">
-        <i class="fa-solid fa-chart-pie"></i> Histórico Excel
-      </button>
-    </div>
+        <div class="grid-layout">
+            <!-- COLUNA ESQUERDA: CONTROLES -->
+            <div>
+                <!-- Módulo de Conexão -->
+                <div class="card">
+                    <h2>🔌 Sistema e Equipamento</h2>
+                    <button class="btn btn-primary" onclick="conectarUSB()" id="btn-conectar">Conectar Cabo USB (ADB)</button>
+                </div>
 
-    <!-- ABA DASHBOARD (MESA DE OPERAÇÃO) -->
-    <div id="tab-dashboard" class="tab-content flex flex-col gap-6">
-      
-      <div class="grid grid-cols-5 gap-4">
-        <div class="col-span-1 glass-panel p-4 rounded-2xl border-t-4 border-t-blue-500 flex flex-col justify-center">
-          <span class="text-[10px] font-bold text-blue-400 uppercase tracking-wider mb-1">Pular se não atender em:</span>
-          <div class="flex items-center gap-2">
-            <input type="number" id="autoHangupTime" value="25" class="bg-slate-900 border border-slate-700 rounded-lg w-16 px-2 py-1 text-center font-bold text-white outline-none">
-            <span class="text-xs text-slate-400 font-medium">Segundos</span>
-          </div>
-        </div>
-        <div class="glass-panel p-4 rounded-2xl border-t-4 border-t-slate-500 flex flex-col justify-between">
-          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total na Fila</span>
-          <div class="text-2xl font-black text-white mt-1" id="statTotal">0</div>
-        </div>
-        <div class="glass-panel p-4 rounded-2xl border-t-4 border-t-amber-500 flex flex-col justify-between">
-          <span class="text-[10px] font-bold text-amber-400 uppercase tracking-wider">Aguardando</span>
-          <div class="text-2xl font-black text-amber-400 mt-1" id="statPending">0</div>
-        </div>
-        <div class="glass-panel p-4 rounded-2xl border-t-4 border-t-emerald-500 flex flex-col justify-between">
-          <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Atendidos</span>
-          <div class="text-2xl font-black text-emerald-400 mt-1" id="statAnswered">0</div>
-        </div>
-        <div class="glass-panel p-4 rounded-2xl border-t-4 border-t-rose-500 flex flex-col justify-between">
-          <span class="text-[10px] font-bold text-rose-400 uppercase tracking-wider">Falhas (Max 3x)</span>
-          <div class="text-2xl font-black text-rose-400 mt-1" id="statFailed">0</div>
-        </div>
-      </div>
+                <!-- Módulo Ligação Manual (NOVO) -->
+                <div class="card">
+                    <h2>📞 Ligação Manual</h2>
+                    <div class="form-group">
+                        <label>Discar para número avulso:</label>
+                        <input type="text" id="num-manual" class="form-control" placeholder="Ex: 11999999999">
+                    </div>
+                    <button class="btn btn-primary" onclick="discarManual()">Fazer Ligação Manual</button>
+                </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        <div id="activeCallContainer" class="lg:col-span-2 glass-panel p-8 rounded-3xl border border-slate-800 flex flex-col relative transition-all duration-300">
-          
-          <div class="flex-1 flex flex-col items-center justify-center text-center py-6 mb-4 bg-slate-900/50 rounded-2xl border border-slate-800/80 shadow-inner relative overflow-hidden">
-            <div id="bgPulseEffect" class="absolute inset-0 bg-emerald-500/5 opacity-0 transition-opacity duration-500"></div>
-
-            <span class="relative z-10 text-[11px] font-extrabold text-emerald-500 uppercase tracking-widest block mb-2">Contato Atual</span>
-            <h2 id="currentName" class="relative z-10 text-4xl font-black text-white mb-2 tracking-tight">Aguardando Início...</h2>
-            <p id="currentPhone" class="relative z-10 text-3xl font-mono text-slate-300 tracking-wider font-semibold">--</p>
-            
-            <div class="relative z-10 mt-4 flex gap-2 mb-6">
-              <span id="currentRetryBadge" class="text-xs font-bold bg-slate-800/80 text-slate-400 px-4 py-1.5 rounded-lg border border-slate-700 shadow-sm backdrop-blur-sm">
-                Tentativa: 0/3
-              </span>
+                <!-- Módulo Piloto Automático -->
+                <div class="card">
+                    <h2>🚀 Piloto Automático</h2>
+                    <div class="form-group">
+                        <label>Importar Planilha (CSV ou TXT):</label>
+                        <input type="file" id="arquivo-lista" class="form-control" accept=".csv, .txt">
+                    </div>
+                    <div class="form-group">
+                        <label>Pular se não atender em (Segundos):</label>
+                        <input type="number" id="tempo-espera" class="form-control" value="25">
+                    </div>
+                    <button class="btn btn-success" onclick="iniciarDisparo()" id="btn-iniciar" disabled>Iniciar Disparos em Massa</button>
+                </div>
             </div>
 
-            <!-- CRONÔMETRO DE AUTO-DESLIGAMENTO -->
-            <div id="timerContainer" class="relative z-10 w-full max-w-sm mx-auto hidden flex-col items-center">
-              <p class="text-xs font-bold text-slate-400 mb-2 uppercase tracking-wide">Desligando e pulando em:</p>
-              <div class="text-5xl font-black text-amber-500 mb-3 tabular-nums" id="timerText">25s</div>
-              <div class="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
-                <div id="timerBar" class="bg-amber-500 h-full w-full timer-bar"></div>
-              </div>
+            <!-- COLUNA DIREITA: MESA DE OPERAÇÃO -->
+            <div>
+                <div class="card">
+                    <h2>Mesa de Operação</h2>
+                    <div class="call-display" id="painel-chamada">
+                        <h3 id="cliente-nome" style="margin:0; color:#64748b; font-size:16px; text-transform:uppercase;">Aguardando Início</h3>
+                        <div class="call-number" id="cliente-numero">---</div>
+                        <div class="call-timer" id="display-timer">00</div>
+                        <div class="call-status" id="status-ligacao">Pronto para operar.</div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn btn-success" onclick="clienteAtendeu()" id="btn-atendeu" disabled>✅ Cliente Atendeu</button>
+                        <button class="btn btn-danger" onclick="encerrarEAvancar(true)" id="btn-desligar" disabled>❌ Desligar / Próximo</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Histórico da Sessão</h2>
+                    <div class="table-container">
+                        <table id="tabela-historico">
+                            <tr>
+                                <th>Número Discado</th>
+                                <th>Status da Chamada</th>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
             </div>
-            
-            <!-- BOTÃO GIGANTE PARA PAUSAR E FALAR -->
-            <button id="btnAnswered" onclick="registerAnswered()" class="hidden relative z-10 mt-8 btn-action bg-emerald-600 hover:bg-emerald-500 text-white font-black text-lg uppercase tracking-wider px-10 py-5 rounded-2xl shadow-[0_0_30px_rgba(16,185,129,0.5)] flex items-center gap-3 w-full max-w-sm justify-center border-2 border-emerald-400">
-              <i class="fa-solid fa-headset text-2xl"></i> Cliente Atendeu (Pausar)
-            </button>
-            
-            <div id="talkingStatus" class="hidden relative z-10 mt-6 bg-emerald-900/40 border border-emerald-500/50 px-6 py-3 rounded-xl flex items-center gap-3">
-              <i class="fa-solid fa-microphone-lines text-emerald-400 animate-pulse text-xl"></i>
-              <span class="text-sm font-bold text-emerald-400 uppercase tracking-widest">Em Atendimento (Tempo Livre)</span>
-            </div>
-
-          </div>
-
-          <!-- BOTÕES DE ENCERRAMENTO MANUAL (Aparecem após o cliente atender) -->
-          <div id="outcomeSection" class="hidden transition-all duration-300 transform">
-            <h3 class="text-xs font-extrabold text-slate-400 uppercase tracking-widest text-center mb-4">Finalizar ligação e Classificar:</h3>
-            
-            <div class="grid grid-cols-3 gap-3 mb-2">
-              <button onclick="classifyCall('Sucesso')" class="btn-action bg-emerald-900/40 hover:bg-emerald-600/50 text-emerald-400 border border-emerald-500/50 p-4 rounded-xl flex flex-col items-center gap-2 shadow-lg">
-                <i class="fa-solid fa-check-double text-2xl"></i>
-                <span class="text-[11px] font-bold uppercase tracking-wide">Sucesso / Venda</span>
-              </button>
-              <button onclick="classifyCall('Retornar')" class="btn-action bg-amber-900/40 hover:bg-amber-600/50 text-amber-400 border border-amber-500/50 p-4 rounded-xl flex flex-col items-center gap-2 shadow-lg">
-                <i class="fa-solid fa-clock-rotate-left text-2xl"></i>
-                <span class="text-[11px] font-bold uppercase tracking-wide">Pediu Retorno</span>
-              </button>
-              <button onclick="classifyCall('Número Inválido')" class="btn-action bg-rose-900/40 hover:bg-rose-600/50 text-rose-400 border border-rose-500/50 p-4 rounded-xl flex flex-col items-center gap-2 shadow-lg">
-                <i class="fa-solid fa-ban text-2xl"></i>
-                <span class="text-[11px] font-bold uppercase tracking-wide">Número Inválido</span>
-              </button>
-            </div>
-            <!-- Botão de desligar forçado no meio de uma ligação -->
-             <button onclick="classifyCall('Recusado')" class="mt-3 w-full btn-action bg-slate-800 hover:bg-rose-900/50 text-slate-400 hover:text-rose-400 border border-slate-700 hover:border-rose-500/50 p-3 rounded-xl flex items-center justify-center gap-2 shadow-sm text-xs font-bold uppercase">
-                <i class="fa-solid fa-phone-slash"></i> Desligar e Marcar como Recusado
-              </button>
-          </div>
-
-          <div class="flex items-center gap-4 mt-8 pt-6 border-t border-slate-800/50">
-            <button id="btnStartAuto" onclick="startCampaign()" class="btn-action w-full bg-blue-600 hover:bg-blue-500 text-white font-black text-sm uppercase tracking-wider py-4 rounded-xl shadow-[0_0_20px_rgba(37,99,235,0.3)] flex items-center justify-center gap-2">
-              <i class="fa-solid fa-play"></i> Iniciar Disparo Automático (Piloto Automático)
-            </button>
-            <button id="btnPauseAuto" onclick="pauseCampaign()" class="hidden btn-action w-full bg-slate-800 hover:bg-rose-900/80 text-white border border-slate-600 hover:border-rose-500 font-black text-sm uppercase tracking-wider py-4 rounded-xl shadow-lg flex items-center justify-center gap-2 transition-colors">
-              <i class="fa-solid fa-pause"></i> Parar Piloto Automático
-            </button>
-          </div>
         </div>
-
-        <div class="glass-panel p-6 rounded-3xl border border-slate-800 flex flex-col h-[650px]">
-          <h3 class="font-extrabold text-sm text-white border-b border-slate-800 pb-4 mb-4 flex justify-between items-center">
-            <span><i class="fa-solid fa-list-ol text-emerald-500 mr-2"></i> Próximos na Fila</span>
-          </h3>
-          <div id="queueList" class="flex-1 overflow-y-auto space-y-3 pr-2">
-            <div class="text-center text-slate-500 py-10 text-xs">A fila está vazia.</div>
-          </div>
-        </div>
-      </div>
     </div>
 
-    <!-- ABA CONTATOS -->
-    <div id="tab-contacts" class="tab-content hidden flex-col gap-6">
-      <div class="glass-panel p-10 rounded-3xl border border-slate-800 text-center shadow-xl">
-        <h3 class="text-2xl font-black text-white mb-2"><i class="fa-solid fa-file-excel text-emerald-500 mr-3"></i> Importar Planilha de Contatos</h3>
-        <p class="text-sm text-slate-400 mb-8 max-w-2xl mx-auto">Carregue arquivos em formato <b>Excel (.xlsx), CSV ou TXT</b>. O sistema remove números duplicados e limpa a formatação sozinho.</p>
-        
-        <div onclick="document.getElementById('fileInput').click()" class="border-2 border-dashed border-slate-600 hover:border-emerald-500 bg-slate-900/50 hover:bg-slate-900/80 transition-all duration-300 rounded-2xl p-12 cursor-pointer group max-w-xl mx-auto">
-          <i class="fa-solid fa-cloud-arrow-up text-5xl text-slate-500 group-hover:text-emerald-500 transition-colors mb-4 block"></i>
-          <p class="font-bold text-slate-200 text-lg">Clique para buscar seu arquivo Excel</p>
-        </div>
-        <input type="file" id="fileInput" accept=".xlsx, .xls, .csv, .txt" class="hidden" onchange="handleFileImport(event)" />
-      </div>
+    <script>
+        let adb = null;
+        let shell = null;
+        let contatos = [];
+        let indexAtual = 0;
+        let cronometro = null;
+        let tempoRestante = 0;
+        let modoAutomatico = false;
 
-      <div class="glass-panel rounded-3xl border border-slate-800 flex flex-col overflow-hidden">
-        <div class="p-5 border-b border-slate-800 flex justify-between items-center bg-slate-900/80">
-          <h4 class="font-bold text-slate-200 text-sm">Contatos na Base</h4>
-          <button onclick="clearDatabase()" class="btn-action bg-rose-900/30 hover:bg-rose-900/50 text-rose-400 text-xs font-bold px-4 py-2 rounded-xl border border-rose-800/50 shadow-md">
-            <i class="fa-solid fa-trash-can mr-1"></i> Limpar Fila
-          </button>
-        </div>
-        <div class="overflow-x-auto max-h-[500px]">
-          <table class="w-full text-left text-sm border-collapse">
-            <thead class="sticky top-0 bg-slate-950 text-slate-400 font-bold uppercase text-[10px] tracking-wider border-b border-slate-800 shadow-sm z-10">
-              <tr>
-                <th class="py-4 px-6">Nome / Identificação</th>
-                <th class="py-4 px-6">Telefone</th>
-                <th class="py-4 px-6">Status da Chamada</th>
-                <th class="py-4 px-6 text-center">Tentativas</th>
-              </tr>
-            </thead>
-            <tbody id="contactsTableBody" class="divide-y divide-slate-800/50 bg-slate-900/30"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- ABA HISTÓRICO -->
-    <div id="tab-history" class="tab-content hidden flex-col gap-6">
-      <div class="glass-panel p-8 rounded-3xl border border-slate-800 flex flex-col h-[700px]">
-        <div class="flex justify-between items-center border-b border-slate-800 pb-5 mb-5">
-          <h3 class="text-lg font-black text-white"><i class="fa-solid fa-clock-rotate-left text-slate-400 mr-2"></i> Relatório de Ligações</h3>
-          <button onclick="exportHistoryExcel()" class="btn-action bg-emerald-600 text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-md flex items-center gap-2">
-            <i class="fa-solid fa-download"></i> Baixar Relatório (Excel)
-          </button>
-        </div>
-        <div class="flex-1 overflow-y-auto pr-2">
-          <table class="w-full text-left text-sm">
-            <thead class="sticky top-0 bg-slate-950 text-slate-400 font-bold uppercase text-[10px] tracking-wider border-b border-slate-800 z-10">
-              <tr>
-                <th class="py-3 px-5">Data e Hora</th>
-                <th class="py-3 px-5">Cliente</th>
-                <th class="py-3 px-5">Telefone</th>
-                <th class="py-3 px-5">Resultado Final</th>
-              </tr>
-            </thead>
-            <tbody id="historyTableBody" class="divide-y divide-slate-800/50 bg-slate-900/10"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </main>
-
-  <footer class="bg-slate-950 border-t border-slate-900 py-6 mt-auto">
-    <div class="max-w-7xl mx-auto px-6 flex justify-between items-center text-xs text-slate-500 font-medium">
-      <p><i class="fa-solid fa-microchip mr-1"></i> Controle ADB Direct (Nativo)</p>
-      <p class="font-bold text-slate-400">App criado por Maikon Nattan</p>
-    </div>
-  </footer>
-
-  <div id="toastContainer" class="fixed bottom-6 right-6 z-50 flex flex-col gap-3 pointer-events-none"></div>
-
-  <script>
-    let contacts = [];
-    let historyLogs = [];
-    let activeIndex = -1;
-    let isCampaignActive = false;
-    let adbDevice = null;
-    
-    // Variáveis do Cronômetro
-    let autoHangupTimer = null;
-    let timeLeft = 0;
-    let isTalking = false;
-
-    window.onload = function() {
-      loadData();
-      renderAll();
-    };
-
-    function switchTab(tabId) {
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-      document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('active', 'bg-emerald-600', 'text-white', 'shadow-lg', 'shadow-emerald-600/20');
-        btn.classList.add('bg-slate-900', 'text-slate-300');
-      });
-      document.getElementById(`tab-${tabId}`).classList.remove('hidden');
-      const activeBtn = document.getElementById(`tabBtn-${tabId}`);
-      activeBtn.classList.remove('bg-slate-900', 'text-slate-300');
-      activeBtn.classList.add('active', 'bg-emerald-600', 'text-white', 'shadow-lg', 'shadow-emerald-600/20');
-    }
-
-    async function connectUSB() {
-      try {
-        if (typeof Adb === 'undefined') {
-          showToast("Biblioteca bloqueada. Tente rotear o 4G do celular no PC rapidinho só para carregar a página.", "error");
-          return;
-        }
-        const webusb = await Adb.open("WebUSB");
-        adbDevice = await webusb.connectAdb("host::", () => {
-          showToast("Olhe para a tela do seu celular e autorize o computador!", "info");
-        });
-        
-        document.getElementById('btnConnectUSB').classList.add('hidden');
-        document.getElementById('usbStatusBadge').classList.remove('hidden');
-        document.getElementById('usbStatusBadge').classList.add('flex');
-        showToast("Samsung conectado via USB com sucesso!");
-      } catch (error) {
-        if(error.message.includes("No device selected")) return;
-        showToast("Erro USB. Certifique-se de estar usando http://localhost:8000/", "error");
-      }
-    }
-
-    // COMANDOS ADB
-    async function sendCallCommand(number) {
-      if (!adbDevice) { showToast("Conecte via USB primeiro.", "error"); return false; }
-      try {
-        const cleanNumber = String(number).replace(/\D/g, '');
-        const shell = await adbDevice.shell(`am start -a android.intent.action.CALL -d tel:${cleanNumber}`);
-        await shell.receive(); 
-        return true;
-      } catch (error) {
-        console.error("Falha ao discar", error);
-        return false;
-      }
-    }
-
-    async function endCallCommand() {
-      if (!adbDevice) return false;
-      try {
-        // KEYCODE_ENDCALL = 6. Opcionalmente, pode-se enviar 2 vezes para garantir.
-        const shell = await adbDevice.shell(`input keyevent 6`);
-        await shell.receive();
-        return true;
-      } catch (error) {
-        console.error("Erro ao desligar: ", error);
-        return false;
-      }
-    }
-
-    function getNextPendingIndex() {
-      return contacts.findIndex(c => (c.status === 'Pendente' || c.status === 'Não Atendeu (Retentativa)') && c.retries < 3);
-    }
-
-    async function startCampaign() {
-      if (!adbDevice) { showToast("Conecte o USB no botão azul acima primeiro.", "error"); return; }
-      const nextIdx = getNextPendingIndex();
-      if (nextIdx === -1) { showToast("A fila está vazia ou todos já foram processados.", "info"); return; }
-
-      isCampaignActive = true;
-      document.getElementById('btnStartAuto').classList.add('hidden');
-      document.getElementById('btnPauseAuto').classList.remove('hidden');
-      document.getElementById('activeCallContainer').classList.add('active-call-pulse');
-      document.getElementById('bgPulseEffect').classList.remove('opacity-0');
-      
-      processContact(nextIdx);
-    }
-
-    function pauseCampaign() {
-      isCampaignActive = false;
-      clearInterval(autoHangupTimer);
-      document.getElementById('btnStartAuto').classList.remove('hidden');
-      document.getElementById('btnPauseAuto').classList.add('hidden');
-      document.getElementById('activeCallContainer').classList.remove('active-call-pulse');
-      document.getElementById('bgPulseEffect').classList.add('opacity-0');
-      resetUIState();
-      showToast("Piloto Automático Pausado.", "info");
-    }
-
-    function resetUIState() {
-      document.getElementById('timerContainer').classList.add('hidden');
-      document.getElementById('btnAnswered').classList.add('hidden');
-      document.getElementById('talkingStatus').classList.add('hidden');
-      document.getElementById('outcomeSection').classList.add('hidden');
-    }
-
-    async function processContact(index) {
-      if (!isCampaignActive) return;
-      activeIndex = index;
-      const contact = contacts[index];
-      isTalking = false;
-
-      // Reset UI
-      resetUIState();
-      
-      document.getElementById('currentName').innerText = contact.name;
-      document.getElementById('currentPhone').innerText = contact.phone;
-      document.getElementById('currentRetryBadge').innerText = `Tentativa: ${contact.retries + 1}/3`;
-      
-      renderQueue();
-
-      // ENVIA COMANDO PARA O CELULAR LIGAR
-      const success = await sendCallCommand(contact.phone);
-      if (!success) { pauseCampaign(); return; }
-      
-      // INICIA O CRONÔMETRO DE ABANDONO AUTOMÁTICO
-      startAutoHangupTimer();
-    }
-
-    function startAutoHangupTimer() {
-      const waitSeconds = parseInt(document.getElementById('autoHangupTime').value) || 25;
-      timeLeft = waitSeconds;
-      
-      document.getElementById('timerContainer').classList.remove('hidden');
-      document.getElementById('timerContainer').classList.add('flex');
-      document.getElementById('btnAnswered').classList.remove('hidden');
-      
-      const timerText = document.getElementById('timerText');
-      const timerBar = document.getElementById('timerBar');
-      
-      timerText.innerText = `${timeLeft}s`;
-      timerBar.style.width = '100%';
-
-      clearInterval(autoHangupTimer);
-      
-      autoHangupTimer = setInterval(async () => {
-        timeLeft--;
-        timerText.innerText = `${timeLeft}s`;
-        timerBar.style.width = `${(timeLeft / waitSeconds) * 100}%`;
-
-        // SE O TEMPO ACABOU E NINGUÉM CLICOU EM "ATENDEU"
-        if (timeLeft <= 0) {
-          clearInterval(autoHangupTimer);
-          showToast("Tempo esgotado. Desligando automático...", "info");
-          await classifyCall('Não Atendeu', true); // Classificação automática
-        }
-      }, 1000);
-    }
-
-    // FUNÇÃO QUANDO O AGENTE CLICA QUE A PESSOA DISSE ALÔ
-    function registerAnswered() {
-      clearInterval(autoHangupTimer); // Para o relógio
-      isTalking = true;
-      
-      // Esconde cronômetro e botão de atender, mostra opções de finalização
-      document.getElementById('timerContainer').classList.add('hidden');
-      document.getElementById('btnAnswered').classList.add('hidden');
-      document.getElementById('talkingStatus').classList.remove('hidden');
-      document.getElementById('outcomeSection').classList.remove('hidden');
-    }
-
-    async function classifyCall(outcome, isAuto = false) {
-      if (activeIndex === -1) return;
-      
-      // Manda o celular desligar a chamada física
-      await endCallCommand();
-      clearInterval(autoHangupTimer);
-
-      const contact = contacts[activeIndex];
-      contact.retries += 1;
-      
-      let finalStatus = outcome;
-      // Lógica de falha e limite de tentativas
-      if (outcome === 'Não Atendeu' || outcome === 'Caixa Postal') {
-        finalStatus = (contact.retries >= 3) ? `Falha 3x (${outcome})` : 'Não Atendeu (Retentativa)';
-      }
-
-      contact.status = finalStatus;
-
-      // Salva no histórico Excel
-      historyLogs.unshift({
-        date: new Date().toLocaleString('pt-BR'),
-        name: contact.name,
-        phone: contact.phone,
-        status: finalStatus,
-        mode: isAuto ? 'Piloto Automático' : 'Manual'
-      });
-
-      saveData();
-      renderAll();
-      resetUIState();
-
-      // Pula para o próximo depois de 2 segundos (Tempo pro Android respirar)
-      if (isCampaignActive) {
-        document.getElementById('currentName').innerText = "Buscando próximo...";
-        document.getElementById('currentPhone').innerText = "Aguarde...";
-        
-        setTimeout(() => {
-          const nextIdx = getNextPendingIndex();
-          if (nextIdx !== -1) {
-            processContact(nextIdx);
-          } else {
-            pauseCampaign();
-            showToast("Sua fila de contatos acabou!", "info");
-            document.getElementById('currentName').innerText = "Fila Finalizada";
-            document.getElementById('currentPhone').innerText = "--";
-          }
-        }, 2000);
-      }
-    }
-
-    function handleFileImport(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      showToast(`Processando: ${file.name}...`);
-      
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          const data = new Uint8Array(e.target.result);
-          const workbook = XLSX.read(data, {type: 'array'});
-          const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], {header: 1});
-          
-          let importCount = 0;
-          json.forEach(row => {
-            if(!row || row.length === 0) return;
-            const rowStr = row.join(' ');
-            // Expressão regular avançada para capturar números do Brasil
-            const phoneMatches = rowStr.match(/(?:\+?55\s?)?(?:\(?\d{2}\)?\s?)?(?:9\d{4}[-\s]?\d{4}|\d{4}[-\s]?\d{4})/g);
-            
-            if(phoneMatches) {
-              phoneMatches.forEach(match => {
-                const cleanPhone = match.replace(/\D/g, '');
-                if (cleanPhone.length >= 10 && cleanPhone.length <= 13) {
-                  let contactName = row.find(v => typeof v === 'string' && v.length > 2 && !/\d{4}/.test(v));
-                  contactName = contactName ? contactName.trim() : "Contato Não Identificado";
-                  
-                  if(!contacts.some(c => c.phone === cleanPhone)) {
-                    contacts.push({ name: contactName, phone: cleanPhone, status: 'Pendente', retries: 0 });
-                    importCount++;
-                  }
-                }
-              });
+        window.onload = function() {
+            if (!window.isSecureContext && location.hostname !== "localhost") {
+                document.getElementById('aviso-seguranca').style.display = 'block';
             }
-          });
-          saveData(); renderAll();
-          showToast(`Pronto! ${importCount} clientes adicionados à fila de disparo.`);
-        } catch (err) { showToast("Falha ao ler Excel. Tente salvar como CSV.", "error"); }
-      };
-      reader.readAsArrayBuffer(file);
-      document.getElementById('fileInput').value = ''; 
-    }
+        };
 
-    function clearDatabase() {
-      if(confirm("Zerar a fila de contatos? O Histórico de ligações NÃO será apagado.")) { 
-        contacts = []; pauseCampaign(); saveData(); renderAll(); 
-      }
-    }
+        async function conectarUSB() {
+            try {
+                adb = await Adb.open("WebUSB");
+                await adb.connectAdb("host::");
+                shell = await adb.shell();
+                
+                let badge = document.getElementById('status-usb');
+                badge.innerText = "SISTEMA ONLINE E CONECTADO";
+                badge.classList.remove('badge-red');
+                badge.classList.add('badge-green');
+                document.getElementById('btn-iniciar').disabled = false;
+            } catch (error) {
+                alert("Erro ao conectar. Verifique se o celular está plugado, tela desbloqueada e Depuração USB ativa.");
+            }
+        }
 
-    function renderAll() { renderTable(); renderQueue(); renderHistory(); updateMetrics(); }
+        // LIGAÇÃO MANUAL (NOVO)
+        async function discarManual() {
+            let num = document.getElementById('num-manual').value.trim();
+            if (!num) return alert("Digite um número no campo de Ligação Manual.");
+            if (!shell) return alert("Conecte o Cabo USB primeiro.");
 
-    function renderTable() {
-      document.getElementById('contactsTableBody').innerHTML = contacts.slice(0, 500).map(c => `
-        <tr class="hover:bg-slate-800/60 transition-colors">
-          <td class="py-3 px-6 font-medium text-slate-200">${c.name}</td>
-          <td class="py-3 px-6 font-mono text-emerald-400 font-semibold">${c.phone}</td>
-          <td class="py-3 px-6">
-            <span class="text-[10px] font-bold px-3 py-1 bg-slate-800/80 rounded border ${c.status === 'Sucesso' ? 'border-emerald-500 text-emerald-400' : c.status.includes('Falha') || c.status.includes('Inválido') ? 'border-rose-500 text-rose-400' : 'border-slate-600 text-slate-300'}">${c.status}</span>
-          </td>
-          <td class="py-3 px-6 text-center font-mono text-slate-400">${c.retries}/3</td>
-        </tr>`).join('');
-    }
+            clearInterval(cronometro); // Pausa o automático se estiver rodando
+            modoAutomatico = false;
+            
+            document.getElementById('painel-chamada').classList.add('active');
+            document.getElementById('cliente-numero').innerText = num;
+            document.getElementById('cliente-nome').innerText = "LIGAÇÃO MANUAL (AVULSA)";
+            document.getElementById('display-timer').innerText = "☎️";
+            document.getElementById('display-timer').style.color = "#3b82f6";
+            document.getElementById('status-ligacao').innerText = "Chamando...";
+            
+            await shell.write(`am start -a android.intent.action.CALL -d tel:${num}\n`);
+            
+            document.getElementById('btn-atendeu').disabled = false;
+            document.getElementById('btn-desligar').disabled = false;
+        }
 
-    function renderQueue() {
-      const pendings = contacts.filter(c => (c.status === 'Pendente' || c.status === 'Não Atendeu (Retentativa)') && c.retries < 3);
-      const list = document.getElementById('queueList');
-      if(pendings.length === 0) { list.innerHTML = `<div class="text-center text-slate-500 py-10 text-xs font-medium">A fila está vazia ou concluída.</div>`; return; }
-      
-      list.innerHTML = pendings.slice(0, 40).map(c => `
-        <div class="bg-slate-900/80 p-3.5 rounded-xl border border-slate-700/50 flex justify-between items-center shadow-sm">
-          <div><p class="text-xs font-bold text-slate-200 mb-0.5">${c.name}</p><p class="text-[11px] font-mono text-emerald-400/90">${c.phone}</p></div>
-          <span class="text-[10px] font-bold bg-slate-800 text-slate-400 px-2 py-1 rounded-md border border-slate-700">Tentativa ${c.retries+1}</span>
-        </div>`).join('');
-    }
+        // LEITURA DA PLANILHA
+        document.getElementById('arquivo-lista').addEventListener('change', function(e) {
+            let file = e.target.files[0];
+            if (!file) return;
+            let reader = new FileReader();
+            reader.onload = function(e) {
+                let linhas = e.target.result.split('\n');
+                contatos = linhas.map(l => l.trim().replace(/\D/g, '')).filter(l => l.length >= 8);
+                alert(contatos.length + " números válidos importados com sucesso!");
+            };
+            reader.readAsText(file);
+        });
 
-    function renderHistory() {
-      document.getElementById('historyTableBody').innerHTML = historyLogs.slice(0, 300).map(h => `
-        <tr class="hover:bg-slate-800/60 transition-colors">
-          <td class="py-3 px-5 text-[11px] text-slate-400 font-medium">${h.date}</td>
-          <td class="py-3 px-5 text-xs font-bold text-slate-200">${h.name}</td>
-          <td class="py-3 px-5 text-xs font-mono text-emerald-400">${h.phone}</td>
-          <td class="py-3 px-5 text-[11px] font-bold text-slate-300">${h.status}</td>
-        </tr>`).join('');
-    }
+        // MOTOR AUTOMÁTICO
+        async function iniciarDisparo() {
+            if (contatos.length === 0) return alert("Carregue uma planilha primeiro.");
+            if (!shell) return alert("Conecte o USB primeiro.");
+            
+            modoAutomatico = true;
+            document.getElementById('btn-iniciar').disabled = true;
+            document.getElementById('btn-conectar').disabled = true;
+            
+            discarProximo();
+        }
 
-    function updateMetrics() {
-      document.getElementById('statTotal').innerText = contacts.length;
-      document.getElementById('badgeContacts').innerText = contacts.length;
-      document.getElementById('statPending').innerText = contacts.filter(c => (c.status === 'Pendente' || c.status === 'Não Atendeu (Retentativa)') && c.retries < 3).length;
-      document.getElementById('statAnswered').innerText = contacts.filter(c => c.status === 'Sucesso' || c.status === 'Retornar').length;
-      document.getElementById('statFailed').innerText = contacts.filter(c => c.status.includes('Falha') || c.status === 'Número Inválido').length;
-    }
+        async function discarProximo() {
+            if (indexAtual >= contatos.length) {
+                alert("Lista finalizada com sucesso!");
+                document.getElementById('btn-iniciar').disabled = false;
+                return;
+            }
 
-    function saveData() { localStorage.setItem('discaAI_usb_data_v3', JSON.stringify({contacts, historyLogs})); }
-    function loadData() {
-      try {
-        const data = JSON.parse(localStorage.getItem('discaAI_usb_data_v3'));
-        if(data) { contacts = data.contacts || []; historyLogs = data.historyLogs || []; }
-      } catch(e) {}
-    }
+            let numero = contatos[indexAtual];
+            document.getElementById('painel-chamada').classList.add('active');
+            document.getElementById('cliente-numero').innerText = numero;
+            document.getElementById('cliente-nome').innerText = "LIGANDO PARA CONTATO " + (indexAtual + 1);
+            document.getElementById('status-ligacao').innerText = "Aguardando atendimento...";
+            document.getElementById('btn-atendeu').disabled = false;
+            document.getElementById('btn-desligar').disabled = false;
+            
+            await shell.write(`am start -a android.intent.action.CALL -d tel:${numero}\n`);
+            
+            tempoRestante = parseInt(document.getElementById('tempo-espera').value);
+            document.getElementById('display-timer').innerText = tempoRestante;
+            document.getElementById('display-timer').style.color = "#ef4444";
+            
+            clearInterval(cronometro);
+            cronometro = setInterval(async () => {
+                tempoRestante--;
+                document.getElementById('display-timer').innerText = tempoRestante;
+                
+                if (tempoRestante <= 0) {
+                    clearInterval(cronometro);
+                    registrarHistorico(numero, "Caixa Postal / Timeout", "tag-error");
+                    await encerrarEAvancar(false); 
+                }
+            }, 1000);
+        }
 
-    function exportHistoryExcel() {
-      if(historyLogs.length === 0) return showToast("Sem ligações para exportar.", "info");
-      const ws = XLSX.utils.json_to_sheet(historyLogs);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Relatório Disca AI");
-      XLSX.writeFile(wb, "Relatorio_Chamadas_DiscaAI.xlsx");
-    }
+        function clienteAtendeu() {
+            clearInterval(cronometro);
+            document.getElementById('display-timer').innerText = "EM CURSO";
+            document.getElementById('display-timer').style.color = "#10b981";
+            document.getElementById('status-ligacao').innerText = "Você está conversando com o cliente.";
+            document.getElementById('btn-atendeu').disabled = true;
+        }
 
-    function showToast(msg, type = "info") {
-      const box = document.createElement('div');
-      const bg = type === 'error' ? 'bg-rose-950 border-rose-500 text-rose-200' : 'bg-emerald-950 border-emerald-500 text-emerald-200';
-      box.className = `${bg} text-xs font-bold px-5 py-3.5 rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.5)] border flex items-center gap-3 transition-all opacity-0 translate-y-4 max-w-sm ml-auto mt-2`;
-      const icon = type === 'error' ? '<i class="fa-solid fa-circle-exclamation text-rose-500 text-lg"></i>' : '<i class="fa-solid fa-circle-check text-emerald-500 text-lg"></i>';
-      box.innerHTML = `${icon} <span>${msg}</span>`;
-      document.getElementById('toastContainer').appendChild(box);
-      requestAnimationFrame(() => box.classList.remove('opacity-0', 'translate-y-4'));
-      setTimeout(() => { box.classList.add('opacity-0', 'translate-y-4'); setTimeout(() => box.remove(), 300); }, 4000);
-    }
-  </script>
+        async function encerrarEAvancar(foiManual = true) {
+            clearInterval(cronometro);
+            let numero = modoAutomatico ? contatos[indexAtual] : document.getElementById('num-manual').value;
+            
+            if (foiManual) {
+                let status = document.getElementById('btn-atendeu').disabled ? "Atendido com Sucesso" : "Desligado / Rejeitado";
+                let tagClass = document.getElementById('btn-atendeu').disabled ? "tag-success" : "tag-error";
+                if(!modoAutomatico) { status = "Manual: " + status; tagClass = "tag-manual"; }
+                registrarHistorico(numero, status, tagClass);
+            }
+            
+            if (shell) await shell.write("input keyevent 6\n"); // Desliga no Android
+
+            document.getElementById('painel-chamada').classList.remove('active');
+            document.getElementById('btn-atendeu').disabled = true;
+            document.getElementById('btn-desligar').disabled = true;
+            document.getElementById('num-manual').value = "";
+            
+            if (modoAutomatico) {
+                indexAtual++;
+                document.getElementById('status-ligacao').innerText = "Avançando para o próximo em 2 segundos...";
+                setTimeout(() => { discarProximo(); }, 2000);
+            } else {
+                document.getElementById('status-ligacao').innerText = "Ligação manual encerrada. Sistema pronto.";
+                document.getElementById('display-timer').innerText = "00";
+            }
+        }
+
+        function registrarHistorico(numero, status, cssClass) {
+            let tabela = document.getElementById('tabela-historico');
+            let novaLinha = tabela.insertRow(1);
+            novaLinha.insertCell(0).innerText = numero;
+            novaLinha.insertCell(1).innerHTML = `<span class="status-tag ${cssClass}">${status}</span>`;
+        }
+    </script>
 </body>
 </html>
