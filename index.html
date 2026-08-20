@@ -3,31 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Disca AI - Central de Operação</title>
-    
+    <title>Disca AI - Central de Operação USB</title>
+
+    <!-- Motor USB Local Nativo (Zero chamadas externas) -->
     <script src="webadb.js"></script>
 
     <style>
         :root {
-            --bg-base: #0f172a;
-            --bg-panel: #1e293b;
-            --bg-card: #334155;
-            --text-main: #f8fafc;
+            --bg-base: #0b1320;
+            --bg-panel: #131f31;
+            --bg-card: #1c2b42;
+            --border: #2a3e5c;
+            --text-main: #f1f5f9;
             --text-muted: #94a3b8;
-            --accent: #3b82f6;
-            --accent-hover: #2563eb;
+            --accent: #2563eb;
+            --accent-hover: #1d4ed8;
             --success: #10b981;
             --success-hover: #059669;
             --danger: #ef4444;
             --danger-hover: #dc2626;
             --warning: #f59e0b;
-            --border: #475569;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         
         body {
-            font-family: system-ui, -apple-system, sans-serif;
             background-color: var(--bg-base);
             color: var(--text-main);
             height: 100vh;
@@ -44,86 +44,74 @@
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid var(--border);
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
             z-index: 10;
         }
 
         .brand { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.5px; }
         .brand span { color: var(--accent); }
 
-        .usb-status {
+        .status-badge {
             padding: 0.5rem 1rem;
             border-radius: 99px;
-            font-size: 0.875rem;
+            font-size: 0.85rem;
             font-weight: 700;
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            background: rgba(239, 68, 68, 0.1);
+            background: rgba(239, 68, 68, 0.15);
             color: var(--danger);
             border: 1px solid var(--danger);
-            transition: all 0.3s;
         }
-        .usb-status.connected {
-            background: rgba(16, 185, 129, 0.1);
+        .status-badge.connected {
+            background: rgba(16, 185, 129, 0.15);
             color: var(--success);
             border-color: var(--success);
         }
-        .status-dot { width: 8px; height: 8px; border-radius: 50%; background-color: currentColor; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; background-color: currentColor; }
 
-        /* Layout Principal */
-        .main-container {
+        /* Container Principal */
+        .main-layout {
             display: flex;
             flex: 1;
-            overflow: hidden;
-            padding: 1.5rem;
             gap: 1.5rem;
+            padding: 1.5rem;
             max-width: 1600px;
             margin: 0 auto;
             width: 100%;
+            overflow: hidden;
         }
 
-        /* Colunas */
+        /* Sidebar Controles */
         .sidebar {
-            width: 350px;
+            width: 360px;
             display: flex;
             flex-direction: column;
-            gap: 1rem;
+            gap: 1.25rem;
             overflow-y: auto;
-            padding-right: 0.5rem;
-        }
-        
-        .content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
         }
 
-        /* Cards */
         .card {
             background-color: var(--bg-panel);
             border: 1px solid var(--border);
             border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            padding: 1.25rem;
         }
-        
-        .card-title {
-            font-size: 0.875rem;
+
+        .card-header {
+            font-size: 0.8rem;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            font-weight: 800;
             color: var(--text-muted);
+            letter-spacing: 1px;
             margin-bottom: 1rem;
-            font-weight: 700;
             border-bottom: 1px solid var(--border);
             padding-bottom: 0.5rem;
         }
 
-        /* Formulários */
-        .input-group { margin-bottom: 1rem; }
-        .input-group label { display: block; font-size: 0.875rem; margin-bottom: 0.5rem; color: var(--text-muted); }
-        .input-control {
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; font-size: 0.85rem; margin-bottom: 0.4rem; color: var(--text-muted); font-weight: 600; }
+        .form-control {
             width: 100%;
             background-color: var(--bg-base);
             border: 1px solid var(--border);
@@ -131,260 +119,243 @@
             padding: 0.75rem;
             border-radius: 8px;
             font-size: 0.9rem;
-            transition: border-color 0.2s;
+            outline: none;
         }
-        .input-control:focus { outline: none; border-color: var(--accent); }
-        input[type="file"] { padding: 0.5rem; }
+        .form-control:focus { border-color: var(--accent); }
 
-        /* Botões */
         .btn {
             width: 100%;
-            padding: 0.875rem;
+            padding: 0.85rem;
             border: none;
             border-radius: 8px;
-            font-size: 0.875rem;
+            font-size: 0.85rem;
             font-weight: 700;
             cursor: pointer;
-            transition: all 0.2s;
             text-transform: uppercase;
             color: white;
+            transition: all 0.2s;
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 0.5rem;
         }
-        .btn:active { transform: translateY(2px); }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-        
-        .btn-primary { background-color: var(--accent); }
-        .btn-primary:hover:not(:disabled) { background-color: var(--accent-hover); }
-        
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-accent { background-color: var(--accent); }
+        .btn-accent:hover:not(:disabled) { background-color: var(--accent-hover); }
         .btn-success { background-color: var(--success); }
         .btn-success:hover:not(:disabled) { background-color: var(--success-hover); }
-        
         .btn-danger { background-color: var(--danger); }
         .btn-danger:hover:not(:disabled) { background-color: var(--danger-hover); }
-        
         .btn-warning { background-color: var(--warning); color: #000; }
 
-        /* Painel Central (Mesa de Operação) */
-        .dial-panel {
+        /* Área de Conteúdo Central */
+        .content-area {
             flex: 1;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(145deg, var(--bg-panel), var(--bg-base));
+            gap: 1.25rem;
+            overflow: hidden;
+        }
+
+        /* KPIs */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+        }
+        .kpi-card {
+            background-color: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1rem;
+            text-align: center;
+        }
+        .kpi-val { font-size: 1.75rem; font-weight: 800; margin-top: 0.25rem; }
+
+        /* Mesa de Operação Central */
+        .dial-stage {
+            background: linear-gradient(145deg, var(--bg-panel), var(--bg-card));
             border: 2px dashed var(--border);
             border-radius: 16px;
             padding: 2rem;
             text-align: center;
-            transition: all 0.3s;
-        }
-        .dial-panel.active { border-color: var(--accent); box-shadow: inset 0 0 50px rgba(59, 130, 246, 0.1); }
-        .dial-panel.talking { border-color: var(--success); box-shadow: inset 0 0 50px rgba(16, 185, 129, 0.1); }
-        
-        .contact-name { font-size: 1.25rem; color: var(--text-muted); margin-bottom: 0.5rem; font-weight: 600; text-transform: uppercase; }
-        .contact-phone { font-size: 3.5rem; font-weight: 800; letter-spacing: 2px; margin-bottom: 1rem; font-family: monospace; }
-        
-        .metrics-row {
             display: flex;
-            gap: 2rem;
-            margin-bottom: 2rem;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: border-color 0.3s;
         }
-        .metric-box {
-            background: var(--bg-card);
-            padding: 0.5rem 1.5rem;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-        }
-        .metric-value { font-size: 1.5rem; font-weight: 800; color: var(--accent); }
-        .metric-label { font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); }
+        .dial-stage.active { border-color: var(--accent); }
+        .dial-stage.talking { border-color: var(--success); }
 
-        .action-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-            width: 100%;
-            max-width: 600px;
-        }
+        .client-name { font-size: 1.25rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; }
+        .client-phone { font-size: 3.5rem; font-weight: 900; font-family: monospace; letter-spacing: 2px; margin: 0.5rem 0 1rem; }
 
-        /* Tabela e KPIs */
-        .kpi-board {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-        .kpi-card {
-            background: var(--bg-panel);
+        .metrics-row { display: flex; gap: 2rem; margin-bottom: 1.5rem; }
+        .metric-box { background: var(--bg-base); padding: 0.5rem 1.5rem; border-radius: 8px; border: 1px solid var(--border); }
+        .metric-num { font-size: 1.25rem; font-weight: 800; color: var(--accent); }
+        .metric-lbl { font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted); }
+
+        .action-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; width: 100%; max-width: 500px; }
+
+        /* Tabela de Fila */
+        .table-box {
+            background-color: var(--bg-panel);
             border: 1px solid var(--border);
-            padding: 1rem;
-            border-radius: 8px;
-            text-align: center;
-        }
-        
-        .table-container {
-            background: var(--bg-panel);
-            border: 1px solid var(--border);
-            border-radius: 8px;
+            border-radius: 12px;
             flex: 1;
             overflow: auto;
         }
         table { width: 100%; border-collapse: collapse; text-align: left; }
-        th { background: var(--bg-card); padding: 1rem; font-size: 0.8rem; text-transform: uppercase; position: sticky; top: 0; }
-        td { padding: 1rem; border-top: 1px solid var(--border); font-size: 0.9rem; }
-        
-        .tag { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; }
-        .tag-pendente { background: var(--bg-card); color: var(--text-muted); }
-        .tag-sucesso { background: rgba(16, 185, 129, 0.2); color: var(--success); }
-        .tag-falha { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+        th { background: var(--bg-card); padding: 0.85rem 1rem; font-size: 0.75rem; text-transform: uppercase; position: sticky; top: 0; color: var(--text-muted); }
+        td { padding: 0.85rem 1rem; border-top: 1px solid var(--border); font-size: 0.85rem; }
 
-        /* Rodapé */
+        .tag { padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; }
+        .tag-pending { background: var(--bg-card); color: var(--text-muted); }
+        .tag-success { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+        .tag-danger { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+
+        /* Footer Obrigatório */
         footer {
-            text-align: center;
-            padding: 1rem;
             background-color: var(--bg-panel);
             border-top: 1px solid var(--border);
+            padding: 0.85rem;
+            text-align: center;
             font-size: 0.8rem;
             color: var(--text-muted);
+            font-weight: 600;
         }
 
-        /* Toast de Notificação */
+        /* Toast */
         #toast {
             position: fixed;
             bottom: 20px;
             right: 20px;
             background: var(--bg-card);
-            color: white;
+            border-left: 4px solid var(--accent);
             padding: 1rem 1.5rem;
             border-radius: 8px;
-            border-left: 4px solid var(--accent);
+            font-weight: 600;
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
             transform: translateX(150%);
             transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
             z-index: 100;
         }
         #toast.show { transform: translateX(0); }
-
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: var(--bg-base); }
-        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
     </style>
 </head>
 <body>
 
+    <!-- Header -->
     <header>
         <div class="brand">Disca <span>AI</span></div>
-        <div class="usb-status" id="usb-badge">
-            <div class="status-dot"></div>
-            <span id="usb-text">Aguardando Conexão</span>
+        <div class="status-badge" id="usb-badge">
+            <div class="dot"></div>
+            <span id="usb-text">Samsung Desconectado</span>
         </div>
     </header>
 
-    <div class="main-container">
+    <div class="main-layout">
         
-        <!-- PAINEL LATERAL DE CONTROLE -->
+        <!-- Sidebar de Controles -->
         <aside class="sidebar">
+            
             <div class="card">
-                <div class="card-title">1. Equipamento (Cabo USB)</div>
-                <button class="btn btn-primary" id="btn-connect" onclick="connectUSB()">
-                    Conectar Samsung via ADB
+                <div class="card-header">1. Conexão Física (Cabo USB)</div>
+                <button class="btn btn-accent" id="btn-connect" onclick="connectUSB()">
+                    Conectar Samsung (ADB)
                 </button>
             </div>
 
             <div class="card">
-                <div class="card-title">2. Ligação Manual</div>
-                <div class="input-group">
-                    <label>Nome do Contato (Opcional)</label>
-                    <input type="text" id="manual-name" class="input-control" placeholder="Ex: Cliente VIP">
+                <div class="card-header">2. Ligação Manual Avulsa</div>
+                <div class="form-group">
+                    <label>Nome do Contato</label>
+                    <input type="text" id="manual-name" class="form-control" placeholder="Ex: Cliente VIP">
                 </div>
-                <div class="input-group">
-                    <label>Telefone (Somente Números)</label>
-                    <input type="text" id="manual-phone" class="input-control" placeholder="Ex: 11999999999">
+                <div class="form-group">
+                    <label>Telefone (DDD + Número)</label>
+                    <input type="text" id="manual-phone" class="form-control" placeholder="Ex: 11999999999">
                 </div>
-                <button class="btn btn-primary" id="btn-manual" onclick="dialManual()" disabled>
+                <button class="btn btn-accent" id="btn-manual" onclick="dialManual()" disabled>
                     Ligar Manualmente
                 </button>
             </div>
 
             <div class="card">
-                <div class="card-title">3. Modo Automático (Base)</div>
-                <div class="input-group">
-                    <label>Importar Planilha (CSV ou TXT)</label>
-                    <input type="file" id="file-upload" class="input-control" accept=".csv, .txt">
-                    <small style="color:var(--text-muted); font-size:11px; margin-top:5px; display:block;">
-                        Formato: Nome,Telefone ou apenas Telefone.
-                    </small>
+                <div class="card-header">3. Disparo Automático (Planilha)</div>
+                <div class="form-group">
+                    <label>Importar Base (CSV, TXT, Excel)</label>
+                    <input type="file" id="file-input" class="form-control" accept=".csv, .txt">
                 </div>
-                <div class="input-group">
+                <div class="form-group">
                     <label>Desligar sozinho se não atender em (Segundos)</label>
-                    <input type="number" id="timeout-seconds" class="input-control" value="25">
+                    <input type="number" id="timeout-sec" class="form-control" value="25">
                 </div>
-                <button class="btn btn-success" id="btn-start-auto" onclick="startCampaign()" disabled style="margin-bottom: 0.5rem;">
-                    Iniciar Disparos em Massa
+                <button class="btn btn-success" id="btn-start" onclick="startCampaign()" disabled style="margin-bottom:0.5rem;">
+                    Iniciar Piloto Automático
                 </button>
-                <button class="btn btn-warning" id="btn-pause-auto" onclick="pauseCampaign()" style="display: none;">
-                    Pausar Operação
+                <button class="btn btn-warning" id="btn-pause" onclick="pauseCampaign()" style="display:none;">
+                    Pausar Disparos
                 </button>
             </div>
+
         </aside>
 
-        <main class="content">
+        <!-- Área Central -->
+        <main class="content-area">
             
-            <!-- Resumo KPI -->
-            <div class="kpi-board">
+            <!-- KPIs -->
+            <div class="kpi-grid">
                 <div class="kpi-card">
-                    <div style="font-size:1.5rem; font-weight:800;" id="kpi-total">0</div>
                     <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase;">Total na Base</div>
+                    <div class="kpi-val" id="kpi-total">0</div>
                 </div>
                 <div class="kpi-card">
-                    <div style="font-size:1.5rem; font-weight:800; color:var(--text-muted);" id="kpi-pendentes">0</div>
-                    <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase;">Pendentes</div>
+                    <div style="font-size:0.75rem; color:var(--warning); text-transform:uppercase;">Pendentes</div>
+                    <div class="kpi-val" id="kpi-pending" style="color:var(--warning);">0</div>
                 </div>
                 <div class="kpi-card">
-                    <div style="font-size:1.5rem; font-weight:800; color:var(--success);" id="kpi-concluidos">0</div>
-                    <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase;">Atendidos</div>
+                    <div style="font-size:0.75rem; color:var(--success); text-transform:uppercase;">Atendidos</div>
+                    <div class="kpi-val" id="kpi-success" style="color:var(--success);">0</div>
                 </div>
                 <div class="kpi-card">
-                    <div style="font-size:1.5rem; font-weight:800; color:var(--danger);" id="kpi-falhas">0</div>
-                    <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase;">Falhas (3x)</div>
+                    <div style="font-size:0.75rem; color:var(--danger); text-transform:uppercase;">Falhas (3x)</div>
+                    <div class="kpi-val" id="kpi-failed" style="color:var(--danger);">0</div>
                 </div>
             </div>
 
-            <!-- Mesa Central de Ligação -->
-            <div class="dial-panel" id="dial-panel">
-                <div class="contact-name" id="display-name">MESA OCIOSA</div>
-                <div class="contact-phone" id="display-phone">---</div>
-                
+            <!-- Mesa de Operação Central -->
+            <div class="dial-stage" id="dial-stage">
+                <div class="client-name" id="disp-name">MESA OCIOSA</div>
+                <div class="client-phone" id="disp-phone">---</div>
+
                 <div class="metrics-row">
                     <div class="metric-box">
-                        <div class="metric-value" id="display-attempt">0/3</div>
-                        <div class="metric-label">Tentativa Atual</div>
+                        <div class="metric-num" id="disp-attempt">0/3</div>
+                        <div class="metric-lbl">Tentativa</div>
                     </div>
                     <div class="metric-box">
-                        <div class="metric-value" id="display-timer" style="color:var(--warning);">00</div>
-                        <div class="metric-label">Tempo Restante</div>
+                        <div class="metric-num" id="disp-timer" style="color:var(--warning);">00</div>
+                        <div class="metric-lbl">Tempo Restante</div>
                     </div>
                 </div>
 
-                <div class="action-grid">
-                    <button class="btn btn-success" id="btn-answered" onclick="registerAnswer()" disabled style="height: 60px; font-size: 1rem;">
+                <div class="action-row">
+                    <button class="btn btn-success" id="btn-answered" onclick="registerAnswer()" disabled style="height:50px;">
                         🎙️ Cliente Atendeu
                     </button>
-                    <button class="btn btn-danger" id="btn-hangup" onclick="hangupAndNext(true)" disabled style="height: 60px; font-size: 1rem;">
+                    <button class="btn btn-danger" id="btn-hangup" onclick="hangupAndNext(true)" disabled style="height:50px;">
                         ❌ Desligar / Próximo
                     </button>
                 </div>
-                <div style="margin-top: 1.5rem; color: var(--text-muted); font-size: 0.875rem;" id="system-status">
-                    Conecte o celular para começar.
+                <div style="margin-top:1rem; color:var(--text-muted); font-size:0.85rem;" id="sys-status">
+                    Conecte o celular Samsung via cabo USB para iniciar.
                 </div>
             </div>
 
             <!-- Tabela de Fila -->
-            <div class="table-container">
+            <div class="table-box">
                 <table>
                     <thead>
                         <tr>
@@ -394,8 +365,8 @@
                             <th>Status</th>
                         </tr>
                     </thead>
-                    <tbody id="contacts-table">
-                        <tr><td colspan="4" style="text-align:center; color:var(--border);">Nenhum contato importado.</td></tr>
+                    <tbody id="queue-body">
+                        <tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Nenhum contato importado.</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -408,65 +379,64 @@
     </footer>
 
     <!-- Toast Notification -->
-    <div id="toast">Mensagem do sistema</div>
+    <div id="toast">Notificação do Sistema</div>
 
     <script>
-        // ESTADO DA APLICAÇÃO
         let adb = null;
         let shell = null;
-        
-        let contacts = []; // { id, name, phone, attempts, status }
+
+        let contacts = [];
         let currentIndex = -1;
         let isCampaignRunning = false;
         let isManualCall = false;
-        
+
         let callTimer = null;
         let timeLeft = 0;
         const MAX_RETRIES = 3;
 
-        // SISTEMA DE NOTIFICAÇÕES (Substitui o Alert)
-        function showToast(message, type = 'info') {
+        function showToast(msg, type = 'info') {
             const toast = document.getElementById('toast');
-            toast.innerText = message;
+            toast.innerText = msg;
             toast.style.borderLeftColor = type === 'error' ? 'var(--danger)' : (type === 'success' ? 'var(--success)' : 'var(--accent)');
             toast.classList.add('show');
             setTimeout(() => toast.classList.remove('show'), 4000);
         }
 
-        // 1. CONEXÃO USB (ADB)
         async function connectUSB() {
             try {
                 if (typeof Adb === 'undefined') {
-                    showToast("Erro: O arquivo webadb.js não foi carregado corretamente.", "error");
+                    showToast("Erro: Arquivo webadb.js não foi encontrado.", "error");
                     return;
                 }
 
-                adb = await Adb.open("WebUSB");
-                await adb.connectAdb("host::");
+                const driver = await Adb.open("WebUSB");
+                adb = await driver.connectAdb("host::", () => {
+                    showToast("Confirme a autorização na tela do seu celular Samsung!", "info");
+                });
+
                 shell = await adb.shell();
-                
+
                 // UI Update
                 const badge = document.getElementById('usb-badge');
                 badge.classList.add('connected');
-                document.getElementById('usb-text').innerText = "Samsung Conectado";
-                
-                document.getElementById('btn-connect').disabled = true;
-                document.getElementById('btn-connect').innerText = "Conexão Estabelecida";
-                document.getElementById('btn-manual').disabled = false;
-                
-                if(contacts.length > 0) document.getElementById('btn-start-auto').disabled = false;
-                
-                document.getElementById('system-status').innerText = "Sistema pronto. Importe contatos ou disque manualmente.";
-                showToast("Conexão USB estabelecida com sucesso!", "success");
+                document.getElementById('usb-text').innerText = "Samsung Conectado (USB)";
 
-            } catch (error) {
-                console.error(error);
-                showToast("Falha ao conectar. Verifique o cabo e permita a Depuração na tela do celular.", "error");
+                document.getElementById('btn-connect').disabled = true;
+                document.getElementById('btn-connect').innerText = "Conexão Ativa";
+                document.getElementById('btn-manual').disabled = false;
+
+                if (contacts.length > 0) document.getElementById('btn-start').disabled = false;
+
+                document.getElementById('sys-status').innerText = "Sistema conectado via USB. Pronto para operar.";
+                showToast("Samsung conectado via USB com sucesso!", "success");
+
+            } catch (err) {
+                console.error(err);
+                showToast("Falha na conexão. Conecte o cabo USB, ative a Depuração USB e mantenha a tela acesa.", "error");
             }
         }
 
-        // 2. IMPORTAÇÃO DE PLANILHA (CSV/TXT)
-        document.getElementById('file-upload').addEventListener('change', function(e) {
+        document.getElementById('file-input').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
 
@@ -474,12 +444,11 @@
             reader.onload = function(e) {
                 const lines = e.target.result.split('\n');
                 contacts = [];
-                
-                lines.forEach((line, index) => {
+
+                lines.forEach((line, idx) => {
                     if (!line.trim()) return;
-                    // Tenta separar por vírgula ou ponto-e-vírgula
                     let parts = line.split(/[,;]/);
-                    let name = "Contato " + (index + 1);
+                    let name = "Contato " + (idx + 1);
                     let phone = "";
 
                     if (parts.length > 1) {
@@ -491,7 +460,7 @@
 
                     if (phone.length >= 8) {
                         contacts.push({
-                            id: index,
+                            id: idx,
                             name: name,
                             phone: phone,
                             attempts: 0,
@@ -502,14 +471,13 @@
 
                 updateKPIs();
                 renderTable();
-                
-                if (adb) document.getElementById('btn-start-auto').disabled = false;
-                showToast(`${contacts.length} contatos importados com sucesso!`, "success");
+
+                if (adb) document.getElementById('btn-start').disabled = false;
+                showToast(`${contacts.length} contatos importados!`, "success");
             };
             reader.readAsText(file);
         });
 
-        // 3. COMANDOS ADB NATIVOS (Discar e Desligar)
         async function adbDial(phone) {
             if (!shell) return false;
             try {
@@ -524,134 +492,124 @@
         async function adbHangup() {
             if (!shell) return;
             try {
-                await shell.write("input keyevent 6\n"); // Keycode 6 = ENDCALL
+                await shell.write("input keyevent 6\n"); // KEYCODE_ENDCALL
             } catch (e) {
                 console.error("Erro ao desligar", e);
             }
         }
 
-        // 4. MODO MANUAL
         async function dialManual() {
             const phone = document.getElementById('manual-phone').value.replace(/\D/g, '');
-            const name = document.getElementById('manual-name').value || "LIGAÇÃO AVULSA";
+            const name = document.getElementById('manual-name').value || "LIGAÇÃO MANUAL";
 
-            if (!phone) return showToast("Digite um número de telefone.", "error");
+            if (!phone) return showToast("Digite um número de telefone válido.", "error");
             if (isCampaignRunning) pauseCampaign();
 
             isManualCall = true;
-            
-            // UI Update
-            document.getElementById('dial-panel').className = 'dial-panel active';
-            document.getElementById('display-name').innerText = name;
-            document.getElementById('display-phone').innerText = phone;
-            document.getElementById('display-attempt').innerText = "-";
-            document.getElementById('display-timer').innerText = "☎️";
-            document.getElementById('system-status').innerText = "Ligação manual em andamento...";
-            
+
+            document.getElementById('dial-stage').className = 'dial-stage active';
+            document.getElementById('disp-name').innerText = name;
+            document.getElementById('disp-phone').innerText = phone;
+            document.getElementById('disp-attempt').innerText = "-";
+            document.getElementById('disp-timer').innerText = "☎️";
+            document.getElementById('sys-status').innerText = "Ligação manual em andamento...";
+
             document.getElementById('btn-answered').disabled = false;
             document.getElementById('btn-hangup').disabled = false;
 
             await adbDial(phone);
         }
 
-        // 5. MOTOR AUTOMÁTICO (Piloto Automático)
         function startCampaign() {
-            if (contacts.length === 0) return showToast("A base de contatos está vazia.", "error");
-            
+            if (contacts.length === 0) return showToast("Sua base de contatos está vazia.", "error");
+
             isCampaignRunning = true;
             isManualCall = false;
-            
-            document.getElementById('btn-start-auto').style.display = 'none';
-            document.getElementById('btn-pause-auto').style.display = 'block';
-            
-            processNextPendingContact();
+
+            document.getElementById('btn-start').style.display = 'none';
+            document.getElementById('btn-pause').style.display = 'block';
+
+            processNextContact();
         }
 
         function pauseCampaign() {
             isCampaignRunning = false;
             clearInterval(callTimer);
-            
-            document.getElementById('btn-start-auto').style.display = 'block';
-            document.getElementById('btn-pause-auto').style.display = 'none';
-            
-            document.getElementById('system-status').innerText = "Operação Pausada.";
-            showToast("Disparo automático pausado.", "info");
+
+            document.getElementById('btn-start').style.display = 'block';
+            document.getElementById('btn-pause').style.display = 'none';
+
+            document.getElementById('sys-status').innerText = "Piloto Automático Pausado.";
+            showToast("Operação pausada pelo usuário.", "info");
         }
 
-        function getNextPendingContactIndex() {
-            // Busca o próximo que ainda não foi atendido e tem menos de 3 tentativas
+        function getNextPendingIndex() {
             return contacts.findIndex(c => c.status !== 'Atendido' && c.attempts < MAX_RETRIES);
         }
 
-        async function processNextPendingContact() {
+        async function processNextContact() {
             if (!isCampaignRunning) return;
 
-            currentIndex = getNextPendingContactIndex();
-            
+            currentIndex = getNextPendingIndex();
+
             if (currentIndex === -1) {
                 pauseCampaign();
-                document.getElementById('dial-panel').className = 'dial-panel';
-                document.getElementById('display-name').innerText = "OPERAÇÃO CONCLUÍDA";
-                document.getElementById('display-phone').innerText = "---";
-                document.getElementById('system-status').innerText = "Todos os contatos foram processados.";
-                showToast("Fim da Fila! Todos os contatos processados.", "success");
+                document.getElementById('dial-stage').className = 'dial-stage';
+                document.getElementById('disp-name').innerText = "FILA CONCLUÍDA";
+                document.getElementById('disp-phone').innerText = "---";
+                document.getElementById('sys-status').innerText = "Todos os contatos foram processados.";
+                showToast("Fim da fila! Todos os contatos foram processados.", "success");
                 return;
             }
 
             const contact = contacts[currentIndex];
             contact.attempts++;
-            
-            // UI Update
-            document.getElementById('dial-panel').className = 'dial-panel active';
-            document.getElementById('display-name').innerText = contact.name;
-            document.getElementById('display-phone').innerText = contact.phone;
-            document.getElementById('display-attempt').innerText = `${contact.attempts}/${MAX_RETRIES}`;
-            document.getElementById('system-status').innerText = "Chamando contato... Aguarde atendimento.";
-            
+
+            document.getElementById('dial-stage').className = 'dial-stage active';
+            document.getElementById('disp-name').innerText = contact.name;
+            document.getElementById('disp-phone').innerText = contact.phone;
+            document.getElementById('disp-attempt').innerText = `${contact.attempts}/${MAX_RETRIES}`;
+            document.getElementById('sys-status').innerText = "Discando via cabo USB...";
+
             document.getElementById('btn-answered').disabled = false;
             document.getElementById('btn-hangup').disabled = false;
 
-            renderTable(); // Atualiza tentativa na tabela
+            renderTable();
 
-            // Executa a ligação física
             await adbDial(contact.phone);
-
-            // Inicia o Timer de Abandono
             startCallTimer();
         }
 
         function startCallTimer() {
             clearInterval(callTimer);
-            timeLeft = parseInt(document.getElementById('timeout-seconds').value) || 25;
-            
-            document.getElementById('display-timer').innerText = timeLeft;
-            document.getElementById('display-timer').style.color = "var(--warning)";
+            timeLeft = parseInt(document.getElementById('timeout-sec').value) || 25;
+
+            document.getElementById('disp-timer').innerText = timeLeft;
+            document.getElementById('disp-timer').style.color = "var(--warning)";
 
             callTimer = setInterval(async () => {
                 timeLeft--;
-                document.getElementById('display-timer').innerText = timeLeft;
+                document.getElementById('disp-timer').innerText = timeLeft;
 
                 if (timeLeft <= 0) {
                     clearInterval(callTimer);
-                    document.getElementById('system-status').innerText = "Tempo esgotado. Ninguém atendeu.";
-                    await hangupAndNext(false); // Falso = Timeout automático
+                    document.getElementById('sys-status').innerText = "Tempo esgotado. Ninguém atendeu.";
+                    await hangupAndNext(false);
                 }
             }, 1000);
         }
 
-        // 6. AÇÕES DO OPERADOR (Botões Verdes e Vermelhos)
         function registerAnswer() {
-            // Cliente disse Alô. O operador clicou no botão verde.
             clearInterval(callTimer);
-            
-            document.getElementById('dial-panel').className = 'dial-panel talking';
-            document.getElementById('display-timer').innerText = "REC";
-            document.getElementById('display-timer').style.color = "var(--success)";
-            document.getElementById('system-status').innerText = "Em atendimento. Continue falando pelo Headset.";
-            
-            document.getElementById('btn-answered').disabled = true; // Desabilita pois já atendeu
-            
-            if (!isManualCall) {
+
+            document.getElementById('dial-stage').className = 'dial-stage talking';
+            document.getElementById('disp-timer').innerText = "EM CURSO";
+            document.getElementById('disp-timer').style.color = "var(--success)";
+            document.getElementById('sys-status').innerText = "Em atendimento. Fale normalmente pelo seu Headset Bluetooth.";
+
+            document.getElementById('btn-answered').disabled = true;
+
+            if (!isManualCall && currentIndex !== -1) {
                 contacts[currentIndex].status = 'Atendido';
                 updateKPIs();
                 renderTable();
@@ -659,31 +617,27 @@
         }
 
         async function hangupAndNext(isManualClick) {
-            // Operador clicou no vermelho OU o tempo estourou
             clearInterval(callTimer);
-            
-            // Derruba a ligação no celular
+
             await adbHangup();
 
             document.getElementById('btn-answered').disabled = true;
             document.getElementById('btn-hangup').disabled = true;
-            document.getElementById('dial-panel').className = 'dial-panel';
+            document.getElementById('dial-stage').className = 'dial-stage';
 
             if (isManualCall) {
-                document.getElementById('system-status').innerText = "Ligação manual encerrada.";
-                document.getElementById('display-timer').innerText = "00";
+                document.getElementById('sys-status').innerText = "Ligação manual encerrada.";
+                document.getElementById('disp-timer').innerText = "00";
                 document.getElementById('manual-name').value = "";
                 document.getElementById('manual-phone').value = "";
                 return;
             }
 
-            // Lógica de Retentativa para o Automático
             const contact = contacts[currentIndex];
-            
-            // Se o operador não clicou em "Atendeu" antes de clicar em desligar, é falha.
+
             if (contact.status !== 'Atendido') {
                 if (contact.attempts >= MAX_RETRIES) {
-                    contact.status = 'Falha Final';
+                    contact.status = 'Falha Final (3x)';
                 } else {
                     contact.status = 'Retentar';
                 }
@@ -693,48 +647,42 @@
             renderTable();
 
             if (isCampaignRunning) {
-                document.getElementById('system-status').innerText = "Avançando para o próximo contato...";
-                document.getElementById('display-timer').innerText = "--";
-                
-                // Aguarda 2 segundos para o Android respirar e liberar o App de Telefone
+                document.getElementById('sys-status').innerText = "Avançando para o próximo contato em 2 segundos...";
+                document.getElementById('disp-timer').innerText = "--";
+
                 setTimeout(() => {
-                    processNextPendingContact();
+                    processNextContact();
                 }, 2000);
             }
         }
 
-        // 7. ATUALIZAÇÃO VISUAL (Tabela e KPIs)
         function updateKPIs() {
             const total = contacts.length;
-            const atendidos = contacts.filter(c => c.status === 'Atendido').length;
-            const falhas = contacts.filter(c => c.status === 'Falha Final').length;
-            
-            // Pendentes são todos os que não foram atendidos e não chegaram no limite de falha
-            const pendentes = contacts.filter(c => c.status !== 'Atendido' && c.attempts < MAX_RETRIES).length;
+            const success = contacts.filter(c => c.status === 'Atendido').length;
+            const failed = contacts.filter(c => c.status === 'Falha Final (3x)').length;
+            const pending = contacts.filter(c => c.status !== 'Atendido' && c.attempts < MAX_RETRIES).length;
 
             document.getElementById('kpi-total').innerText = total;
-            document.getElementById('kpi-pendentes').innerText = pendentes;
-            document.getElementById('kpi-concluidos').innerText = atendidos;
-            document.getElementById('kpi-falhas').innerText = falhas;
+            document.getElementById('kpi-pending').innerText = pending;
+            document.getElementById('kpi-success').innerText = success;
+            document.getElementById('kpi-failed').innerText = failed;
         }
 
         function renderTable() {
-            const tbody = document.getElementById('contacts-table');
+            const tbody = document.getElementById('queue-body');
             if (contacts.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Nenhum contato importado.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Nenhum contato importado.</td></tr>';
                 return;
             }
 
-            // Renderiza apenas os 100 primeiros para não travar o navegador
             let html = '';
             for (let i = 0; i < Math.min(contacts.length, 100); i++) {
                 const c = contacts[i];
-                let tagClass = 'tag-pendente';
-                if (c.status === 'Atendido') tagClass = 'tag-sucesso';
-                if (c.status === 'Falha Final') tagClass = 'tag-falha';
+                let tagClass = 'tag-pending';
+                if (c.status === 'Atendido') tagClass = 'tag-success';
+                if (c.status.includes('Falha')) tagClass = 'tag-danger';
 
-                // Destaca a linha que está sendo ligada agora
-                const rowStyle = (i === currentIndex && isCampaignRunning) ? 'background-color: rgba(59, 130, 246, 0.1); font-weight: bold;' : '';
+                const rowStyle = (i === currentIndex && isCampaignRunning) ? 'background-color: rgba(37, 99, 235, 0.15); font-weight: bold;' : '';
 
                 html += `
                     <tr style="${rowStyle}">
