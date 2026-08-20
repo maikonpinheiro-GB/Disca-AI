@@ -3,294 +3,219 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dispara AI</title>
+    <title>Dispara AI - Mesa de Operação</title>
     
-    <!-- Tailwind CSS (Framework de Design Moderno) -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- FontAwesome para Ícones -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Puxa a biblioteca DE DENTRO do seu GitHub, enganando o Firewall -->
+    <script src="webadb.js"></script>
 
-    <!-- Configuração de Cores do CRM (Slate Dark + Emerald Green) -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'] },
-                    colors: {
-                        crm: {
-                            bg: '#0f172a',      /* Fundo geral (Slate 900) */
-                            card: '#1e293b',    /* Fundo dos painéis (Slate 800) */
-                            border: '#334155',  /* Bordas suaves */
-                            text: '#f8fafc',    /* Texto principal */
-                            muted: '#94a3b8',   /* Texto secundário */
-                            green: '#10b981',   /* Verde de ação principal */
-                            greenHover: '#059669',
-                            red: '#ef4444',     /* Vermelho para desligar */
-                            blue: '#3b82f6'     /* Azul para em andamento */
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-
-    <!-- Bibliotecas do Cabo USB -->
-    <script src="https://unpkg.com/webadb/dist/webadb.js"></script>
-
+    <!-- Design Escrito "na mão" para o Firewall não bloquear (Estilo CRM/Blip Escuro) -->
     <style>
-        body { background-color: #0f172a; color: #f8fafc; font-family: 'Inter', sans-serif; overflow-x: hidden; }
-        .crm-card { background-color: #1e293b; border: 1px solid #334155; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
-        .input-crm { background-color: #0f172a; border: 1px solid #334155; color: #f8fafc; transition: all 0.2s; }
-        .input-crm:focus { border-color: #10b981; outline: none; box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2); }
-        
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        :root {
+            --bg-body: #0f172a; /* Slate 900 */
+            --bg-card: #1e293b; /* Slate 800 */
+            --border: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --green: #10b981;
+            --green-hover: #059669;
+            --blue: #3b82f6;
+            --blue-hover: #2563eb;
+            --red: #ef4444;
+            --red-hover: #dc2626;
+        }
 
-        .btn-hover { transition: all 0.2s; }
-        .btn-hover:active:not(:disabled) { transform: scale(0.98); }
+        body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; padding: 20px; }
         
-        /* Funil Stages */
-        .stage-badge { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .stage-wait { background-color: #334155; color: #cbd5e1; }
-        .stage-call { background-color: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid #3b82f6; }
-        .stage-talk { background-color: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; }
+        /* Layout Grid */
+        .app-container { max-width: 1300px; margin: 0 auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 20px; background: var(--bg-card); border-bottom: 1px solid var(--border); border-radius: 12px; margin-bottom: 20px; }
+        .header h1 { margin: 0; font-size: 22px; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 10px; }
+        .header h1 span { color: var(--green); }
+        
+        .status-badge { padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: bold; background: #334155; color: #cbd5e1; display: flex; align-items: center; gap: 8px; }
+        .status-badge.online { background: rgba(16, 185, 129, 0.2); color: var(--green); border: 1px solid var(--green); }
+
+        .main-grid { display: grid; grid-template-columns: 350px 1fr; gap: 20px; }
+        @media (max-width: 900px) { .main-grid { grid-template-columns: 1fr; } }
+        
+        .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+        .card h2 { margin-top: 0; font-size: 16px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 20px; }
+
+        /* Formulários e Botões */
+        label { display: block; font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; }
+        input[type="text"], input[type="number"], input[type="file"] { width: 100%; padding: 12px; background: var(--bg-body); border: 1px solid var(--border); border-radius: 8px; color: var(--text-main); font-size: 14px; box-sizing: border-box; margin-bottom: 15px; }
+        input:focus { outline: none; border-color: var(--green); }
+
+        .btn { width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 14px; font-weight: bold; text-transform: uppercase; cursor: pointer; transition: 0.2s; color: white; margin-bottom: 10px; }
+        .btn-blue { background: var(--blue); } .btn-blue:hover { background: var(--blue-hover); }
+        .btn-green { background: var(--green); } .btn-green:hover { background: var(--green-hover); }
+        .btn-red { background: var(--red); } .btn-red:hover { background: var(--red-hover); }
+        .btn:disabled { background: var(--border); color: var(--text-muted); cursor: not-allowed; }
+        
+        /* Mesa de Operação (Estilo Funil/Ticket) */
+        .ticket-area { text-align: center; background: var(--bg-body); padding: 40px 20px; border-radius: 12px; border: 2px dashed var(--border); margin-bottom: 20px; transition: 0.3s; }
+        .ticket-area.chamando { border-color: var(--blue); box-shadow: inset 0 0 50px rgba(59, 130, 246, 0.05); }
+        .ticket-area.falando { border-color: var(--green); box-shadow: inset 0 0 50px rgba(16, 185, 129, 0.05); }
+        
+        .client-name { font-size: 14px; color: var(--text-muted); text-transform: uppercase; font-weight: bold; letter-spacing: 2px; margin-bottom: 10px; }
+        .client-number { font-size: 42px; font-weight: 900; color: var(--text-main); margin: 0; font-family: monospace; }
+        .timer-display { font-size: 56px; font-weight: 900; color: var(--text-muted); margin: 10px 0; line-height: 1; }
+        .ticket-status { font-size: 15px; color: var(--blue); font-weight: 600; margin-top: 15px; }
+
+        .action-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+
+        /* Tabela Histórico */
+        .table-wrap { max-height: 250px; overflow-y: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th, td { padding: 12px 15px; border-bottom: 1px solid var(--border); font-size: 14px; }
+        th { background: var(--bg-body); color: var(--text-muted); position: sticky; top: 0; font-size: 12px; text-transform: uppercase; }
+        .tag { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
+        .tag-success { background: rgba(16, 185, 129, 0.1); color: var(--green); border: 1px solid var(--green); }
+        .tag-error { background: rgba(239, 68, 68, 0.1); color: var(--red); border: 1px solid var(--red); }
+        .tag-manual { background: rgba(59, 130, 246, 0.1); color: var(--blue); border: 1px solid var(--blue); }
     </style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body>
 
-    <!-- Topbar (Navbar) -->
-    <header class="bg-crm-card border-b border-crm-border px-6 py-4 flex justify-between items-center sticky top-0 z-50">
-        <div class="flex items-center gap-3">
-            <div class="bg-crm-green w-10 h-10 rounded-lg flex items-center justify-center shadow-lg shadow-crm-green/20">
-                <i class="fa-solid fa-bolt text-white text-lg"></i>
-            </div>
-            <div>
-                <h1 class="text-xl font-bold tracking-tight text-white leading-tight">Dispara AI</h1>
-                <p class="text-[11px] text-crm-muted font-medium uppercase tracking-wider">Módulo Operacional</p>
-            </div>
-        </div>
+    <div class="app-container">
         
-        <!-- Status USB no Topo -->
-        <div id="usb-status-badge" class="flex items-center gap-2 bg-crm-bg border border-crm-border px-4 py-2 rounded-full">
-            <div class="w-2.5 h-2.5 rounded-full bg-crm-red" id="usb-dot"></div>
-            <span class="text-xs font-bold text-crm-muted" id="usb-text">Sistema Offline (Cabo Desconectado)</span>
-        </div>
-    </header>
+        <!-- Cabeçalho -->
+        <header class="header">
+            <h1>⚡ Dispara <span>AI</span></h1>
+            <div class="status-badge" id="usb-status">
+                <span style="display:inline-block; width:8px; height:8px; background:red; border-radius:50%; margin-right:5px;" id="usb-dot"></span>
+                CABO DESCONECTADO
+            </div>
+        </header>
 
-    <!-- Main Content (Grid Estilo CRM) -->
-    <main class="flex-1 max-w-[1400px] w-full mx-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
-        
-        <!-- COLUNA ESQUERDA: SETUP E CONTROLES (Largura 4/12) -->
-        <aside class="lg:col-span-4 flex flex-col gap-6">
+        <div class="main-grid">
             
-            <!-- Conexão -->
-            <div class="crm-card p-5">
-                <h2 class="text-sm font-bold text-crm-text mb-4 flex items-center gap-2">
-                    <i class="fa-brands fa-usb text-crm-muted"></i> 1. Equipamento
-                </h2>
-                <button onclick="conectarUSB()" id="btn-conectar" class="btn-hover w-full bg-crm-border hover:bg-slate-600 text-white py-3 rounded-lg font-bold text-sm transition-colors border border-slate-500">
-                    Conectar Celular Samsung
-                </button>
-                <div id="aviso-seguranca" class="hidden mt-3 text-[11px] text-crm-red bg-crm-red/10 p-2 rounded border border-crm-red/20 text-center">
-                    Acesso via HTTPS (GitHub) obrigatório para o USB funcionar.
+            <!-- COLUNA ESQUERDA: SETUP E CONTROLES -->
+            <aside>
+                <div class="card">
+                    <h2>🔌 Equipamento</h2>
+                    <button class="btn btn-blue" id="btn-conectar" onclick="conectarUSB()">Conectar Samsung</button>
+                    <p id="msg-erro-lib" style="color:var(--red); font-size:12px; display:none; margin-top:10px; font-weight:bold;">Erro: O arquivo webadb.js não foi encontrado no seu GitHub.</p>
                 </div>
-            </div>
 
-            <!-- Ligação Manual -->
-            <div class="crm-card p-5 border-l-4 border-l-crm-blue">
-                <h2 class="text-sm font-bold text-crm-text mb-4 flex items-center gap-2">
-                    <i class="fa-solid fa-phone text-crm-blue"></i> Ligação Avulsa (Manual)
-                </h2>
-                <div class="flex flex-col gap-3">
-                    <input type="text" id="num-manual" placeholder="DDD + Número (Ex: 11999999999)" class="input-crm w-full px-4 py-2.5 rounded-lg text-sm font-mono placeholder:text-crm-muted/50">
-                    <button onclick="discarManual()" class="btn-hover w-full bg-crm-blue hover:bg-blue-600 text-white py-2.5 rounded-lg font-bold text-sm transition-colors">
-                        Discar Agora
-                    </button>
+                <div class="card" style="border-left: 4px solid var(--blue);">
+                    <h2>📞 Ligação Manual</h2>
+                    <label>Número avulso (DDD + Num):</label>
+                    <input type="text" id="num-manual" placeholder="Ex: 11999999999">
+                    <button class="btn btn-blue" onclick="discarManual()">Discar Manualmente</button>
                 </div>
-            </div>
 
-            <!-- Automação / Funil -->
-            <div class="crm-card p-5 border-l-4 border-l-crm-green">
-                <h2 class="text-sm font-bold text-crm-text mb-4 flex items-center gap-2">
-                    <i class="fa-solid fa-rocket text-crm-green"></i> Esteira de Disparo
-                </h2>
-                
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-crm-muted mb-1.5">1. Importar Base (CSV/TXT)</label>
-                        <input type="file" id="arquivo-lista" accept=".csv, .txt" class="block w-full text-xs text-crm-muted file:mr-3 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-bold file:bg-crm-bg file:text-crm-text hover:file:bg-slate-800 cursor-pointer border border-crm-border rounded-lg p-1">
+                <div class="card" style="border-left: 4px solid var(--green);">
+                    <h2>🚀 Esteira Automática</h2>
+                    <label>1. Planilha (CSV/TXT):</label>
+                    <input type="file" id="arquivo-lista" accept=".csv, .txt">
+                    
+                    <label>2. Desligar sozinho após (Segundos):</label>
+                    <input type="number" id="tempo-espera" value="25">
+                    
+                    <button class="btn btn-green" id="btn-iniciar" onclick="iniciarDisparo()" disabled>Iniciar Operação</button>
+                </div>
+            </aside>
+
+            <!-- COLUNA DIREITA: CRM E TICKET -->
+            <main>
+                <div class="card">
+                    <h2>Mesa de Atendimento</h2>
+                    
+                    <!-- Ticket Visual -->
+                    <div class="ticket-area" id="ticket-area">
+                        <div class="client-name" id="cliente-nome">STATUS: STANDBY</div>
+                        <div class="client-number" id="cliente-numero">---</div>
+                        <div class="timer-display" id="display-timer">00</div>
+                        <div class="ticket-status" id="status-ligacao">Importe uma base para começar.</div>
                     </div>
 
-                    <div>
-                        <label class="block text-xs font-semibold text-crm-muted mb-1.5">2. Desligar automático após (Segundos):</label>
-                        <input type="number" id="tempo-espera" value="25" class="input-crm w-full px-4 py-2 rounded-lg text-sm font-mono">
+                    <!-- Botões de Ação -->
+                    <div class="action-row">
+                        <button class="btn btn-green" id="btn-atendeu" onclick="clienteAtendeu()" disabled>🎙️ Atendeu (Falar)</button>
+                        <button class="btn btn-red" id="btn-desligar" onclick="encerrarEAvancar(true)" disabled>❌ Desligar / Próximo</button>
                     </div>
-
-                    <button id="btn-iniciar" onclick="iniciarDisparo()" disabled class="btn-hover w-full bg-crm-green hover:bg-crm-greenHover disabled:bg-crm-bg disabled:text-crm-muted disabled:border-crm-border text-white py-3.5 rounded-lg font-bold text-sm mt-2 transition-colors border border-transparent shadow-lg shadow-crm-green/10">
-                        Iniciar Operação em Lote
-                    </button>
-                </div>
-            </div>
-            
-        </aside>
-
-        <!-- COLUNA DIREITA: TELA DO CRM (Largura 8/12) -->
-        <div class="lg:col-span-8 flex flex-col gap-6">
-            
-            <!-- Ticket de Chamada Ativa -->
-            <div class="crm-card flex flex-col overflow-hidden relative">
-                <!-- Barra de status superior do card -->
-                <div class="bg-crm-bg px-6 py-3 border-b border-crm-border flex justify-between items-center">
-                    <span class="text-xs font-bold text-crm-muted uppercase tracking-wider" id="ticket-id">Status: Standby</span>
-                    <span class="stage-badge stage-wait" id="stage-badge">Aguardando</span>
-                </div>
-                
-                <div class="p-8 md:p-12 flex flex-col items-center justify-center text-center relative z-10 transition-colors duration-300" id="ticket-body">
-                    
-                    <h3 id="cliente-nome" class="text-lg font-medium text-crm-muted mb-2">Painel de Atendimento</h3>
-                    <div id="cliente-numero" class="text-5xl md:text-6xl font-black text-white tracking-tight font-mono mb-6">
-                        ---
-                    </div>
-                    
-                    <div class="flex items-center justify-center gap-4 mb-4">
-                        <i class="fa-regular fa-clock text-crm-muted text-xl"></i>
-                        <div id="display-timer" class="text-6xl font-bold tabular-nums text-crm-border leading-none">
-                            00
-                        </div>
-                    </div>
-                    
-                    <p id="status-ligacao" class="text-sm text-crm-muted font-medium mt-2 h-5">Sistema ocioso. Importe uma base para iniciar.</p>
                 </div>
 
-                <!-- Botões de Ação do Ticket -->
-                <div class="grid grid-cols-2 gap-4 p-6 border-t border-crm-border bg-crm-bg/50">
-                    <button id="btn-atendeu" onclick="clienteAtendeu()" disabled class="btn-hover bg-crm-bg border border-crm-border hover:border-crm-green hover:text-crm-green disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-4 rounded-xl flex items-center justify-center gap-3 transition-colors">
-                        <i class="fa-solid fa-microphone"></i>
-                        <span>Ouvir Alô (Pausar)</span>
-                    </button>
-                    
-                    <button id="btn-desligar" onclick="encerrarEAvancar(true)" disabled class="btn-hover bg-crm-bg border border-crm-border hover:border-crm-red hover:text-crm-red disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-4 rounded-xl flex items-center justify-center gap-3 transition-colors">
-                        <i class="fa-solid fa-phone-slash"></i>
-                        <span>Desligar / Próximo</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Tabela de Histórico (Pipeline Concluído) -->
-            <div class="crm-card flex-1 flex flex-col min-h-[250px]">
-                <div class="px-6 py-4 border-b border-crm-border">
-                    <h2 class="text-sm font-bold text-crm-text flex items-center gap-2">
-                        <i class="fa-solid fa-list-check text-crm-muted"></i> Relatório da Sessão Atual
-                    </h2>
-                </div>
-                <div class="flex-1 p-2 overflow-y-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead class="text-xs uppercase text-crm-muted bg-crm-bg">
+                <!-- Histórico -->
+                <div class="card">
+                    <h2>Histórico da Sessão Atual</h2>
+                    <div class="table-wrap">
+                        <table id="tabela-historico">
                             <tr>
-                                <th class="py-3 px-4 font-semibold rounded-tl-lg">Número / Cliente</th>
-                                <th class="py-3 px-4 font-semibold text-right rounded-tr-lg">Desfecho</th>
+                                <th>Número</th>
+                                <th>Desfecho</th>
                             </tr>
-                        </thead>
-                        <tbody id="tabela-historico" class="divide-y divide-crm-border text-sm">
-                            <!-- Inserção via JS -->
-                        </tbody>
-                    </table>
+                        </table>
+                    </div>
                 </div>
-            </div>
-            
+            </main>
         </div>
-    </main>
+    </div>
 
+    <!-- Scripts de Lógica -->
     <script>
-        let adbDevice = null;
+        let adb = null;
+        let shell = null;
         let contatos = [];
         let indexAtual = 0;
         let cronometro = null;
         let tempoRestante = 0;
         let modoAutomatico = false;
 
+        // Verifica se a biblioteca local carregou
         window.onload = function() {
-            if (!window.isSecureContext && location.hostname !== "localhost") {
-                document.getElementById('aviso-seguranca').classList.remove('hidden');
+            if (typeof Adb === 'undefined') {
+                document.getElementById('msg-erro-lib').style.display = 'block';
+                document.getElementById('btn-conectar').disabled = true;
             }
         };
 
-        // Função de envio seguro para o ADB
-        async function runAdbCommand(cmd) {
-            if (!adbDevice) return false;
-            try {
-                const shell = await adbDevice.shell(cmd);
-                await shell.receive(); 
-                return true;
-            } catch (error) {
-                console.error("Erro ADB:", error);
-                return false;
-            }
-        }
-
-        // ==========================================
         // 1. CONEXÃO USB
-        // ==========================================
         async function conectarUSB() {
             try {
-                if (typeof Adb === 'undefined') {
-                    return alert("Biblioteca bloqueada pela rede. Roteie seu 4G rapidamente no PC e recarregue a página.");
-                }
-
-                const webusb = await Adb.open("WebUSB");
-                adbDevice = await webusb.connectAdb("host::");
+                adb = await Adb.open("WebUSB");
+                await adb.connectAdb("host::");
+                shell = await adb.shell();
                 
-                // Atualiza UI Topo
-                document.getElementById('usb-dot').className = "w-2.5 h-2.5 rounded-full bg-crm-green shadow-[0_0_8px_#10b981]";
-                document.getElementById('usb-text').innerText = "Sistema Online e Autenticado";
-                document.getElementById('usb-text').className = "text-xs font-bold text-white";
+                let badge = document.getElementById('usb-status');
+                badge.classList.add('online');
+                document.getElementById('usb-dot').style.background = "var(--green)";
+                badge.innerHTML = `<span style="display:inline-block; width:8px; height:8px; background:var(--green); border-radius:50%; margin-right:5px; box-shadow: 0 0 10px var(--green);"></span> SISTEMA ONLINE`;
                 
-                // Botões liberação
+                document.getElementById('btn-conectar').innerText = "Cabo Conectado";
                 document.getElementById('btn-conectar').disabled = true;
-                document.getElementById('btn-conectar').innerText = "Equipamento Conectado";
-                document.getElementById('btn-conectar').className = "w-full bg-crm-border text-crm-green py-3 rounded-lg font-bold text-sm border border-crm-green/50 opacity-50 cursor-not-allowed";
-                
                 document.getElementById('btn-iniciar').disabled = false;
-                
             } catch (error) {
-                if (error.message.includes("No device selected")) return;
-                alert("Falha. Desconecte o cabo, veja se a tela do celular está acesa e se a Depuração USB está ligada, e tente de novo.");
+                alert("Falha ao conectar. Desconecte e conecte o cabo no celular novamente e veja se a tela está acesa.");
             }
         }
 
-        // ==========================================
-        // 2. LIGAÇÃO AVULSA (MANUAL)
-        // ==========================================
+        // 2. LIGAÇÃO MANUAL
         async function discarManual() {
             let num = document.getElementById('num-manual').value.trim();
             if (!num) return alert("Digite o número para ligar.");
-            if (!adbDevice) return alert("Conecte o celular no Passo 1 primeiro.");
+            if (!shell) return alert("Conecte o Samsung primeiro.");
 
             clearInterval(cronometro);
             modoAutomatico = false;
             
-            atualizarTicket(
-                "LIGAÇÃO MANUAL", 
-                num, 
-                "stage-call", 
-                "Chamando", 
-                "Disparando chamada avulsa...", 
-                "text-crm-blue"
-            );
+            let ticket = document.getElementById('ticket-area');
+            ticket.className = 'ticket-area chamando';
             
-            await runAdbCommand(`am start -a android.intent.action.CALL -d tel:${num.replace(/\D/g, '')}`);
+            document.getElementById('cliente-nome').innerText = "LIGAÇÃO MANUAL";
+            document.getElementById('cliente-numero').innerText = num;
+            document.getElementById('display-timer').innerText = "☎️";
+            document.getElementById('display-timer').style.color = "var(--blue)";
+            document.getElementById('status-ligacao').innerText = "Disparando chamada...";
+            
+            await shell.write(`am start -a android.intent.action.CALL -d tel:${num.replace(/\D/g, '')}\n`);
             
             document.getElementById('btn-atendeu').disabled = false;
             document.getElementById('btn-desligar').disabled = false;
         }
 
-        // ==========================================
-        // 3. LEITURA DE ARQUIVO
-        // ==========================================
+        // 3. LER PLANILHA
         document.getElementById('arquivo-lista').addEventListener('change', function(e) {
             let file = e.target.files[0];
             if (!file) return;
@@ -298,50 +223,48 @@
             reader.onload = function(e) {
                 let linhas = e.target.result.split('\n');
                 contatos = linhas.map(l => l.trim().replace(/\D/g, '')).filter(l => l.length >= 8);
-                document.getElementById('btn-iniciar').innerText = `Iniciar Operação (${contatos.length} contatos)`;
+                document.getElementById('btn-iniciar').innerText = `Iniciar Operação (${contatos.length})`;
             };
             reader.readAsText(file);
         });
 
-        // ==========================================
-        // 4. MOTOR DO FUNIL (AUTOMÁTICO)
-        // ==========================================
+        // 4. MOTOR AUTOMÁTICO
         async function iniciarDisparo() {
-            if (contatos.length === 0) return alert("Importe uma lista CSV ou TXT primeiro.");
-            if (!adbDevice) return alert("Conecte o celular no Passo 1 primeiro.");
+            if (contatos.length === 0) return alert("Importe uma lista CSV ou TXT.");
+            if (!shell) return alert("Conecte o USB primeiro.");
             
             modoAutomatico = true;
             document.getElementById('btn-iniciar').disabled = true;
-            document.getElementById('btn-iniciar').className = "w-full bg-crm-border text-crm-muted py-3.5 rounded-lg font-bold text-sm mt-2 cursor-not-allowed";
+            document.getElementById('btn-iniciar').style.opacity = "0.5";
             
             discarProximo();
         }
 
         async function discarProximo() {
             if (indexAtual >= contatos.length) {
-                atualizarTicket("LOTE FINALIZADO", "---", "stage-wait", "Concluído", "Fim da lista atingido.", "text-crm-border");
+                document.getElementById('cliente-nome').innerText = "OPERAÇÃO CONCLUÍDA";
+                document.getElementById('cliente-numero').innerText = "---";
                 document.getElementById('btn-iniciar').disabled = false;
+                document.getElementById('btn-iniciar').style.opacity = "1";
                 return;
             }
 
             let numero = contatos[indexAtual];
+            let ticket = document.getElementById('ticket-area');
+            ticket.className = 'ticket-area chamando';
             
-            atualizarTicket(
-                `Contato ${indexAtual + 1} de ${contatos.length}`, 
-                numero, 
-                "stage-call", 
-                "Chamando", 
-                "Aguardando atendimento...", 
-                "text-crm-red"
-            );
+            document.getElementById('cliente-nome').innerText = `CONTATO ${indexAtual + 1} DE ${contatos.length}`;
+            document.getElementById('cliente-numero').innerText = numero;
+            document.getElementById('status-ligacao').innerText = "Chamando...";
             
             document.getElementById('btn-atendeu').disabled = false;
             document.getElementById('btn-desligar').disabled = false;
             
-            await runAdbCommand(`am start -a android.intent.action.CALL -d tel:${numero}`);
+            await shell.write(`am start -a android.intent.action.CALL -d tel:${numero}\n`);
             
             tempoRestante = parseInt(document.getElementById('tempo-espera').value) || 25;
             document.getElementById('display-timer').innerText = tempoRestante;
+            document.getElementById('display-timer').style.color = "var(--text-muted)";
             
             clearInterval(cronometro);
             cronometro = setInterval(async () => {
@@ -350,28 +273,21 @@
                 
                 if (tempoRestante <= 0) {
                     clearInterval(cronometro);
-                    registrarHistorico(numero, "Caixa Postal / Timeout", "text-crm-red");
+                    registrarHistorico(numero, "Falhou / Caixa Postal", "tag-error");
                     await encerrarEAvancar(false); 
                 }
             }, 1000);
         }
 
-        // ==========================================
         // 5. AÇÕES DO OPERADOR
-        // ==========================================
         function clienteAtendeu() {
             clearInterval(cronometro);
-            
-            atualizarTicket(
-                modoAutomatico ? `Contato ${indexAtual + 1}` : "LIGAÇÃO MANUAL",
-                document.getElementById('cliente-numero').innerText,
-                "stage-talk",
-                "Em Atendimento",
-                "Cronômetro pausado. Conversando...",
-                "text-crm-green"
-            );
+            let ticket = document.getElementById('ticket-area');
+            ticket.className = 'ticket-area falando';
             
             document.getElementById('display-timer').innerText = "REC";
+            document.getElementById('display-timer').style.color = "var(--green)";
+            document.getElementById('status-ligacao').innerText = "Em atendimento. Pode falar!";
             document.getElementById('btn-atendeu').disabled = true;
         }
 
@@ -379,64 +295,45 @@
             clearInterval(cronometro);
             let numero = modoAutomatico ? contatos[indexAtual] : document.getElementById('num-manual').value;
             
-            // Grava histórico
+            // Registra no histórico
             if (foiManual) {
-                let status = document.getElementById('btn-atendeu').disabled ? "Atendimento Concluído" : "Desligado / Ocupado";
-                let colorClass = document.getElementById('btn-atendeu').disabled ? "text-crm-green" : "text-crm-muted";
-                if(!modoAutomatico) { status = "[Manual] " + status; colorClass = "text-crm-blue"; }
-                registrarHistorico(numero, status, colorClass);
+                let btnAtendeuDesabilitado = document.getElementById('btn-atendeu').disabled;
+                let status = btnAtendeuDesabilitado ? "Atendimento Concluído" : "Desligado / Ocupado";
+                let tagClass = btnAtendeuDesabilitado ? "tag-success" : "tag-error";
+                
+                if (!modoAutomatico) { status = "Manual: " + status; tagClass = "tag-manual"; }
+                registrarHistorico(numero, status, tagClass);
             }
             
-            // Derruba a ligação no Android
-            await runAdbCommand(`input keyevent 6`);
+            // Derruba a ligação no celular (Código 6 = ENDCALL)
+            if (shell) await shell.write("input keyevent 6\n");
 
+            document.getElementById('ticket-area').className = 'ticket-area';
             document.getElementById('btn-atendeu').disabled = true;
             document.getElementById('btn-desligar').disabled = true;
             
             if (modoAutomatico) {
                 indexAtual++;
-                atualizarTicket("AVANÇANDO", "---", "stage-wait", "Preparando", "Puxando próximo ticket...", "text-crm-border");
+                document.getElementById('status-ligacao').innerText = "Avançando...";
                 setTimeout(() => { discarProximo(); }, 1500);
             } else {
                 document.getElementById('num-manual').value = "";
-                atualizarTicket("STANDBY", "---", "stage-wait", "Aguardando", "Sistema ocioso.", "text-crm-border");
+                document.getElementById('cliente-nome').innerText = "STANDBY";
+                document.getElementById('cliente-numero').innerText = "---";
                 document.getElementById('display-timer').innerText = "00";
+                document.getElementById('display-timer').style.color = "var(--text-muted)";
+                document.getElementById('status-ligacao').innerText = "Sistema ocioso.";
             }
         }
 
-        // ==========================================
-        // 6. FUNÇÕES VISUAIS (UI)
-        // ==========================================
-        function atualizarTicket(nome, numero, badgeClass, badgeText, statusText, timerColor) {
-            document.getElementById('cliente-nome').innerText = nome;
-            document.getElementById('cliente-numero').innerText = numero;
-            
-            let badge = document.getElementById('stage-badge');
-            badge.className = `stage-badge ${badgeClass}`;
-            badge.innerText = badgeText;
-            
-            document.getElementById('status-ligacao').innerText = statusText;
-            
-            let timerEl = document.getElementById('display-timer');
-            timerEl.className = `text-6xl font-bold tabular-nums leading-none ${timerColor}`;
-            
-            // Efeito de brilho na borda baseado no estágio
-            let ticketBody = document.getElementById('ticket-body');
-            if(badgeClass === 'stage-call') ticketBody.style.boxShadow = "inset 0 4px 50px rgba(59, 130, 246, 0.05)";
-            else if(badgeClass === 'stage-talk') ticketBody.style.boxShadow = "inset 0 4px 50px rgba(16, 185, 129, 0.05)";
-            else ticketBody.style.boxShadow = "none";
-        }
-
-        function registrarHistorico(numero, status, colorClass) {
+        // 6. UI Tabela
+        function registrarHistorico(numero, status, cssClass) {
             let tabela = document.getElementById('tabela-historico');
-            let tr = document.createElement('tr');
-            tr.className = "hover:bg-crm-bg transition-colors";
+            let tr = tabela.insertRow(1);
             tr.innerHTML = `
-                <td class="py-3 px-4 text-sm font-mono text-white">${numero}</td>
-                <td class="py-3 px-4 text-[11px] font-bold text-right uppercase tracking-wider ${colorClass}">${status}</td>
+                <td style="font-family:monospace; font-weight:bold; color:var(--text-main);">${numero}</td>
+                <td><span class="tag ${cssClass}">${status}</span></td>
             `;
-            // Insere no topo da tabela
-            tabela.insertBefore(tr, tabela.firstChild);
         }
     </script>
 </body>
