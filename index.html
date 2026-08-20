@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Disca AI - Central de Operação</title>
+    <title>Disca AI - Operação Avançada</title>
     <style>
         /* === TEMA LUXURY DARK (OFF-BLACK / OFF-WHITE) === */
         :root {
-            --bg-base: #09090b; /* Preto profundo / Off-black */
-            --bg-panel: #18181b; /* Cinza escuro elegante */
+            --bg-base: #09090b; /* Off-black */
+            --bg-panel: #18181b; 
             --border: #27272a;
             --text-main: #fafafa; /* Off-white */
             --text-muted: #a1a1aa;
@@ -19,23 +19,19 @@
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-        
         body { background-color: var(--bg-base); color: var(--text-main); line-height: 1.5; padding: 20px; font-size: 14px; }
         
-        /* Layout Grid */
         .app-container { max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: 350px 1fr 350px; gap: 20px; }
         @media (max-width: 1200px) { .app-container { grid-template-columns: 300px 1fr; } }
+        @media (max-width: 800px) { .app-container { grid-template-columns: 1fr; } }
         
-        /* Paineis */
         .panel { background-color: var(--bg-panel); border: 1px solid var(--border); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
         .panel-header { font-size: 16px; font-weight: 600; color: var(--text-main); border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; }
         
-        /* Tipografia e Inputs */
         label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
         input[type="text"], input[type="number"], input[type="file"] { width: 100%; background: var(--bg-base); border: 1px solid var(--border); color: var(--text-main); padding: 10px 12px; border-radius: 6px; font-size: 14px; margin-top: 5px; outline: none; transition: border 0.2s; }
         input:focus { border-color: var(--accent-blue); }
         
-        /* Botões */
         .btn { padding: 12px 16px; border: none; border-radius: 6px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase; letter-spacing: 0.5px; width: 100%; color: #fff; }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
         .btn-blue { background-color: var(--accent-blue); }
@@ -44,18 +40,19 @@
         .btn-green:hover:not(:disabled) { background-color: #059669; }
         .btn-red { background-color: var(--accent-red); }
         .btn-red:hover:not(:disabled) { background-color: #dc2626; }
-        .btn-amber { background-color: var(--accent-amber); }
+        .btn-amber { background-color: var(--accent-amber); color: #000; }
         .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-main); }
         .btn-outline:hover:not(:disabled) { border-color: var(--text-muted); }
         
-        /* Mesa de Operação (Centro) */
-        .stage { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; background: var(--bg-base); border: 1px dashed var(--border); border-radius: 12px; text-align: center; min-height: 250px; }
+        /* Mesa de Operação */
+        .stage { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; background: var(--bg-base); border: 1px dashed var(--border); border-radius: 12px; text-align: center; min-height: 250px; position: relative; }
+        .stage-overlay { position: absolute; inset: 0; background: rgba(9, 9, 11, 0.85); backdrop-filter: blur(4px); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-direction: column; z-index: 10; text-align: center; padding: 20px;}
         .stage-title { font-size: 14px; color: var(--accent-blue); font-weight: bold; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
         .stage-contact { font-size: 20px; color: var(--text-muted); margin-bottom: 5px; }
         .stage-number { font-size: 42px; font-weight: 800; letter-spacing: 2px; margin-bottom: 20px; color: var(--text-main); }
         .stage-timer { font-size: 56px; font-weight: 300; font-variant-numeric: tabular-nums; color: var(--accent-amber); line-height: 1; }
         
-        /* Grid de Respostas */
+        /* Grid de Resultados */
         .disposition-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 20px; }
         .disposition-btn { background: var(--bg-base); border: 1px solid var(--border); color: var(--text-muted); padding: 15px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 13px; }
         .disposition-btn:hover:not(:disabled) { background: var(--border); color: var(--text-main); }
@@ -63,23 +60,25 @@
         .disposition-btn.success { border-color: var(--accent-green); color: var(--accent-green); }
         .disposition-btn.success:hover:not(:disabled) { background: var(--accent-green); color: #fff; }
         .disposition-btn.warning { border-color: var(--accent-amber); color: var(--accent-amber); }
-        .disposition-btn.warning:hover:not(:disabled) { background: var(--accent-amber); color: #fff; }
+        .disposition-btn.warning:hover:not(:disabled) { background: var(--accent-amber); color: #000; }
 
-        /* Lista e Relatórios */
-        .list-container { max-height: 400px; overflow-y: auto; padding-right: 5px; }
+        /* Listas e Diagnósticos */
+        .list-container { max-height: 350px; overflow-y: auto; padding-right: 5px; }
         .list-container::-webkit-scrollbar { width: 6px; }
         .list-container::-webkit-scrollbar-track { background: var(--bg-base); }
         .list-container::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-        .contact-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid var(--border); font-size: 13px; }
-        .contact-item:last-child { border-bottom: none; }
-        .badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
         
-        /* Status Bar (Diagnóstico Real) */
-        .status-bar { display: flex; justify-content: space-between; align-items: center; background: var(--bg-panel); padding: 15px 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--border); }
-        .status-indicator { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14px; }
-        .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent-red); box-shadow: 0 0 10px var(--accent-red); }
-        .dot.connected { background: var(--accent-green); box-shadow: 0 0 10px var(--accent-green); }
-        .log-text { font-family: monospace; font-size: 12px; color: var(--text-muted); }
+        .diag-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 600; }
+        .diag-item:last-child { border-bottom: none; }
+        .diag-status { display: flex; align-items: center; gap: 8px; }
+        .diag-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--border); }
+        .diag-dot.active { background: var(--accent-amber); box-shadow: 0 0 10px var(--accent-amber); animation: pulse 1s infinite; }
+        .diag-dot.success { background: var(--accent-green); box-shadow: 0 0 10px var(--accent-green); }
+        .diag-dot.error { background: var(--accent-red); box-shadow: 0 0 10px var(--accent-red); }
+
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+
+        .log-box { background: #000; color: #0f0; font-family: monospace; font-size: 11px; padding: 10px; border-radius: 6px; height: 150px; overflow-y: auto; border: 1px solid var(--border); margin-top: 10px; white-space: pre-wrap; }
 
         .footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border); font-size: 12px; color: var(--text-muted); }
     </style>
@@ -87,61 +86,91 @@
 <body>
 
 <div class="app-container" style="display: block; margin-bottom: 20px;">
-    <div class="status-bar">
-        <div class="status-indicator">
-            <div class="dot" id="usb-dot"></div>
-            <span id="usb-status-text">Sistema Desconectado</span>
+    <div class="panel" style="flex-direction: row; justify-content: space-between; align-items: center;">
+        <div>
+            <h1 style="font-size: 20px; font-weight: 800;">Disca AI</h1>
+            <span style="font-size: 12px; color: var(--text-muted);">Central de Operação Premium via USB</span>
         </div>
-        <div class="log-text" id="live-log">Aguardando conexão USB...</div>
-        <button class="btn btn-outline" style="width: auto; padding: 8px 15px;" onclick="connectToDevice()" id="btn-connect">
-            🔌 Conectar USB
+        <button class="btn btn-blue" style="width: auto; padding: 10px 20px;" onclick="iniciarConexao()" id="btn-conectar">
+            🔌 CONECTAR SAMSUNG
         </button>
     </div>
 </div>
 
 <div class="app-container">
     
-    <!-- COLUNA 1: CONFIGURAÇÕES E MANUAL -->
+    <!-- COLUNA 1: DIAGNÓSTICO E CONFIGURAÇÕES -->
     <div class="panel">
-        <div class="panel-header">Opções de Discagem</div>
+        <div class="panel-header">Status da Conexão ADB</div>
         
-        <div style="margin-bottom: 20px;">
-            <label>1. Discagem Manual</label>
-            <div style="display: flex; gap: 10px; margin-top: 5px;">
-                <input type="text" id="manual-phone" placeholder="Ex: 41999999999">
-                <button class="btn btn-blue" style="width: 80px;" onclick="startManualCall()" id="btn-manual" disabled>LIGAR</button>
+        <div class="list-container" style="max-height: none;">
+            <div class="diag-item">
+                <span>1. Aparelho USB Detectado</span>
+                <div class="diag-status"><div class="diag-dot" id="diag-1"></div></div>
+            </div>
+            <div class="diag-item">
+                <span>2. Handshake Iniciado (A_CNXN)</span>
+                <div class="diag-status"><div class="diag-dot" id="diag-2"></div></div>
+            </div>
+            <div class="diag-item">
+                <span id="text-diag-3">3. Aguardando Autorização RSA</span>
+                <div class="diag-status"><div class="diag-dot" id="diag-3"></div></div>
+            </div>
+            <div class="diag-item">
+                <span>4. Sessão ADB Estabelecida</span>
+                <div class="diag-status"><div class="diag-dot" id="diag-4"></div></div>
+            </div>
+            <div class="diag-item">
+                <span>5. Teste de Shell (Ping/Pong)</span>
+                <div class="diag-status"><div class="diag-dot" id="diag-5"></div></div>
             </div>
         </div>
 
-        <hr style="border-color: var(--border); margin: 15px 0;">
+        <div class="log-box" id="sys-log">Aguardando início da conexão...</div>
 
+        <hr style="border-color: var(--border); margin: 10px 0;">
+
+        <div class="panel-header" style="border: none; padding: 0;">Opções de Discagem</div>
+        
         <div>
-            <label>2. Base de Contatos (Automático)</label>
-            <input type="file" id="file-upload" accept=".csv, .txt" style="margin-bottom: 15px;">
+            <label>Ligação Manual</label>
+            <div style="display: flex; gap: 10px; margin-top: 5px;">
+                <input type="text" id="manual-phone" placeholder="Ex: 41999999999">
+                <button class="btn btn-outline" style="width: 80px;" onclick="startManualCall()" id="btn-manual" disabled>Ligar</button>
+            </div>
+        </div>
+
+        <div style="margin-top: 15px;">
+            <label>Base Automática (CSV/TXT)</label>
+            <input type="file" id="file-upload" accept=".csv, .txt">
             
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
                 <div>
-                    <label>Meta de Ligações</label>
-                    <input type="number" id="cfg-limit" value="100" min="1">
+                    <label>Limite</label>
+                    <input type="number" id="cfg-limit" value="1500" min="1">
                 </div>
                 <div>
-                    <label>Tempo (Segundos)</label>
+                    <label>Tempo (Seg)</label>
                     <input type="number" id="cfg-time" value="30" min="5">
                 </div>
             </div>
 
-            <div style="display: flex; gap: 10px;">
-                <button class="btn btn-green" onclick="startAutoDial()" id="btn-start-auto" disabled>▶ INICIAR AUTOMÁTICO</button>
-                <button class="btn btn-outline" onclick="pauseAutoDial()" id="btn-pause-auto" style="display: none;">⏸ PAUSAR</button>
-            </div>
+            <button class="btn btn-green" style="margin-top: 15px;" onclick="startAutoDial()" id="btn-start-auto" disabled>▶ INICIAR AUTOMÁTICO</button>
+            <button class="btn btn-amber" style="margin-top: 10px; display: none;" onclick="pauseAutoDial()" id="btn-pause-auto">⏸ PAUSAR</button>
         </div>
     </div>
 
     <!-- COLUNA 2: MESA DE OPERAÇÃO -->
     <div class="panel">
-        <div class="panel-header">Mesa de Operação <span id="op-mode" style="font-size: 12px; color: var(--accent-blue);"></span></div>
+        <div class="panel-header">Mesa de Operação <span id="op-mode" style="font-size: 12px; color: var(--accent-blue);">Bloqueado</span></div>
         
         <div class="stage">
+            <div class="stage-overlay" id="stage-overlay">
+                <span style="font-size: 30px; margin-bottom: 10px;">🔒</span>
+                <h3 style="color: var(--text-main); margin-bottom: 5px;">Mesa Bloqueada</h3>
+                <p style="color: var(--text-muted); font-size: 13px;">Conclua as 5 etapas de diagnóstico para operar.</p>
+            </div>
+
             <div class="stage-title" id="stage-status">Pronto</div>
             <div class="stage-contact" id="stage-name">---</div>
             <div class="stage-number" id="stage-phone">---</div>
@@ -151,12 +180,13 @@
         <div class="panel-header" style="margin-top: 20px; border: none;">Registrar Resultado (Tabulação)</div>
         <div class="disposition-grid">
             <button class="disposition-btn success" onclick="handleDisposition('Atendeu')" id="disp-atendeu" disabled>✅ ATENDEU</button>
-            <button class="disposition-btn warning" onclick="handleDisposition('Callback')" id="disp-callback" disabled>🔄 CALLBACK (RETORNAR)</button>
+            <button class="disposition-btn warning" onclick="handleDisposition('Callback')" id="disp-callback" disabled>🔄 CALLBACK</button>
             <button class="disposition-btn" onclick="handleDisposition('Caixa Postal')" id="disp-caixa" disabled>🎙️ Caixa Postal</button>
             <button class="disposition-btn" onclick="handleDisposition('Desligou')" id="disp-desligou" disabled>❌ Desligou</button>
             <button class="disposition-btn" onclick="handleDisposition('Só chama')" id="disp-chama" disabled>⏳ Só chama</button>
             <button class="disposition-btn" onclick="handleDisposition('Desconhece Titular')" id="disp-desconhece" disabled>🤷 Desconhece Titular</button>
             <button class="disposition-btn" onclick="handleDisposition('Número Cancelado')" id="disp-cancelado" disabled>🚫 Número Cancelado</button>
+            <button class="disposition-btn" onclick="handleDisposition('Apenas Desligar (S/ Sucesso)')" id="disp-encerrar" disabled>🛑 Apenas Desligar</button>
         </div>
     </div>
 
@@ -175,9 +205,9 @@
             </div>
         </div>
 
-        <div class="panel-header" style="font-size: 14px;">Fila de Chamadas</div>
-        <div class="list-container" id="contact-list">
-            <div style="text-align: center; color: var(--text-muted); padding: 20px;">Nenhuma base importada.</div>
+        <div class="panel-header" style="font-size: 14px;">Resumo dos Resultados</div>
+        <div class="list-container" id="report-summary">
+            <div style="text-align: center; color: var(--text-muted); padding: 20px;">Nenhuma ligação registrada.</div>
         </div>
 
         <button class="btn btn-outline" style="margin-top: 15px;" onclick="exportReport()">📥 EXPORTAR RELATÓRIO (CSV)</button>
@@ -186,52 +216,62 @@
 </div>
 
 <div class="footer">
-    Disca AI - Operação Premium USB<br>
+    Disca AI<br>
     <strong>App criado por Maikon Nattan</strong>
 </div>
 
 <script>
     /* ==========================================================================
-       1. MOTOR ADB NATIVO & CRIPTOGRAFIA (Testado e Homologado)
+       1. SISTEMA DE LOGS E DIAGNÓSTICO
        ========================================================================== */
-    const A_CNXN = 0x4e584e43;
-    const A_OPEN = 0x4e45504f;
-    const A_OKAY = 0x59414b4f;
-    const A_CLSE = 0x45534c43;
-    const A_WRTE = 0x45545257;
-    const A_AUTH = 0x48545541;
-
-    let usbDevice = null;
-    let epIn = null;
-    let epOut = null;
-    let localIdCounter = 1;
-    let cryptoKey = null;
-
-    function logMsg(msg, isError = false) {
-        const logEl = document.getElementById('live-log');
-        logEl.innerText = msg;
-        logEl.style.color = isError ? 'var(--accent-red)' : 'var(--text-muted)';
-        console.log("[ADB] " + msg);
+    function sysLog(msg, type = "INFO") {
+        const logBox = document.getElementById('sys-log');
+        const time = new Date().toLocaleTimeString();
+        let color = "#0f0";
+        if (type === "ERROR") color = "#f00";
+        if (type === "WARN") color = "#fd0";
+        
+        const line = document.createElement("div");
+        line.style.color = color;
+        line.innerText = `[${time}] ${msg}`;
+        logBox.appendChild(line);
+        logBox.scrollTop = logBox.scrollHeight;
+        console.log(`[ADB] ${msg}`);
     }
 
-    async function generateRSAKey() {
-        if (cryptoKey) return cryptoKey;
-        logMsg("Gerando chaves de segurança RSA...");
-        cryptoKey = await crypto.subtle.generateKey(
+    function setDiagState(step, state, text = null) {
+        const dot = document.getElementById(`diag-${step}`);
+        dot.className = "diag-dot " + state;
+        if (text) {
+            document.getElementById(`text-diag-${step}`).innerText = text;
+            if(state === "active") document.getElementById(`text-diag-${step}`).style.color = "var(--accent-amber)";
+            if(state === "success") document.getElementById(`text-diag-${step}`).style.color = "var(--text-main)";
+        }
+    }
+
+    /* ==========================================================================
+       2. CRIPTOGRAFIA RSA NATIVA PARA ADB (WebCrypto)
+       ========================================================================== */
+    let cryptoKeyPair = null;
+
+    async function getAdbKeyPair() {
+        if (cryptoKeyPair) return cryptoKeyPair;
+        sysLog("Gerando chaves RSA-2048 locais...");
+        cryptoKeyPair = await crypto.subtle.generateKey(
             { name: "RSASSA-PKCS1-v1_5", modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: "SHA-256" },
             true, ["sign", "verify"]
         );
-        return cryptoKey;
+        return cryptoKeyPair;
     }
 
     async function signAdbToken(token) {
-        const key = await generateRSAKey();
+        const key = await getAdbKeyPair();
         const signature = await crypto.subtle.sign("RSASSA-PKCS1-v1_5", key.privateKey, token);
         return new Uint8Array(signature);
     }
 
     async function getAdbPublicKeyPayload() {
-        const key = await generateRSAKey();
+        const key = await getAdbKeyPair();
         const exported = await crypto.subtle.exportKey("jwk", key.publicKey);
         const b64 = exported.n.replace(/-/g, '+').replace(/_/g, '/');
         const binaryStr = atob(b64);
@@ -254,10 +294,8 @@
 
         view.setUint32(0, 64, true);
         view.setUint32(4, n0inv, true);
-
         let tempN = n;
         for (let i = 0; i < 256; i++) { bytes[8 + i] = Number(tempN & 0xffn); tempN >>= 8n; }
-        
         let tempRR = rr;
         for (let i = 0; i < 256; i++) { bytes[264 + i] = Number(tempRR & 0xffn); tempRR >>= 8n; }
         view.setUint32(520, 65537, true);
@@ -269,19 +307,27 @@
         return fullPayload;
     }
 
+    /* ==========================================================================
+       3. PROTOCOLO ADB DE BAIXO NÍVEL
+       ========================================================================== */
+    const CMD = { CNXN: 0x4e584e43, AUTH: 0x48545541, OPEN: 0x4e45504f, OKAY: 0x59414b4f, CLSE: 0x45534c43, WRTE: 0x45545257 };
+    let usbDevice = null;
+    let epIn = null;
+    let epOut = null;
+    let localIdCounter = 1;
+
     async function sendPacket(cmd, arg0, arg1, data = new Uint8Array(0)) {
-        if (!usbDevice) return;
+        if (!usbDevice) throw new Error("USB não conectado");
         const header = new ArrayBuffer(24);
         const view = new DataView(header);
         let checksum = 0;
         for (let i = 0; i < data.length; i++) checksum += data[i];
-        checksum = checksum & 0xffffffff;
-
+        
         view.setUint32(0, cmd, true);
         view.setUint32(4, arg0, true);
         view.setUint32(8, arg1, true);
         view.setUint32(12, data.length, true);
-        view.setUint32(16, checksum, true);
+        view.setUint32(16, checksum & 0xffffffff, true);
         view.setUint32(20, (cmd ^ 0xffffffff) >>> 0, true);
 
         const buffer = new Uint8Array(24 + data.length);
@@ -290,35 +336,50 @@
         await usbDevice.transferOut(epOut, buffer);
     }
 
-    async function readPacket() {
+    // Função vital: Espera até receber um pacote ou dar timeout (sem congelar a interface)
+    async function readPacket(timeoutMs = 0) {
         if (!usbDevice) return null;
-        try {
-            const headerRes = await usbDevice.transferIn(epIn, 24);
-            if (!headerRes.data || headerRes.data.byteLength < 24) return null;
-            const view = new DataView(headerRes.data.buffer);
-            const cmd = view.getUint32(0, true);
-            const arg0 = view.getUint32(4, true);
-            const arg1 = view.getUint32(8, true);
-            const len = view.getUint32(12, true);
+        
+        const readPromise = async () => {
+            try {
+                const headerRes = await usbDevice.transferIn(epIn, 24);
+                if (!headerRes.data || headerRes.data.byteLength < 24) return null;
+                const view = new DataView(headerRes.data.buffer);
+                const cmd = view.getUint32(0, true);
+                const arg0 = view.getUint32(4, true);
+                const arg1 = view.getUint32(8, true);
+                const len = view.getUint32(12, true);
 
-            let payload = new Uint8Array(0);
-            if (len > 0) {
-                const dataRes = await usbDevice.transferIn(epIn, len);
-                if (dataRes.data) payload = new Uint8Array(dataRes.data.buffer);
+                let payload = new Uint8Array(0);
+                if (len > 0) {
+                    const dataRes = await usbDevice.transferIn(epIn, len);
+                    if (dataRes.data) payload = new Uint8Array(dataRes.data.buffer);
+                }
+                return { cmd, arg0, arg1, data: payload };
+            } catch (e) {
+                // Erros aqui geralmente significam que o celular fechou a porta (ex: ao rejeitar auth)
+                return { error: true, msg: e.message };
             }
-            return { cmd, arg0, arg1, data: payload };
-        } catch (e) {
-            logMsg("Conexão interrompida pelo celular. Tente conectar novamente.", true);
-            return null;
-        }
+        };
+
+        if (timeoutMs <= 0) return await readPromise();
+
+        return Promise.race([
+            readPromise(),
+            new Promise(resolve => setTimeout(() => resolve({ timeout: true }), timeoutMs))
+        ]);
     }
 
     /* ==========================================================================
-       2. FLUXO DE CONEXÃO E DIAGNÓSTICO
+       4. FLUXO DE CONEXÃO E AUTENTICAÇÃO BLINDADO
        ========================================================================== */
-    async function connectToDevice() {
+    async function iniciarConexao() {
         try {
-            logMsg("Solicitando acesso USB...");
+            document.getElementById('btn-conectar').disabled = true;
+            sysLog("Iniciando fluxo de diagnóstico e conexão...");
+            
+            // PASSO 1: USB
+            setDiagState(1, "active");
             usbDevice = await navigator.usb.requestDevice({ filters: [{ classCode: 255, subclassCode: 66, protocolCode: 1 }] });
             await usbDevice.open();
             if (usbDevice.configuration === null) await usbDevice.selectConfiguration(1);
@@ -336,103 +397,146 @@
                     }
                 }
             }
-
-            if (intfNum === -1) throw new Error("Interface ADB não encontrada.");
+            if (intfNum === -1) throw new Error("Interface ADB não localizada no USB.");
             await usbDevice.claimInterface(intfNum);
-            logMsg("USB Aberto. Iniciando Handshake ADB...");
+            setDiagState(1, "success");
+            sysLog("USB aberto e endpoints mapeados.");
 
-            // Inicia Handshake
-            const banner = new TextEncoder().encode("host::DiscaAI\0");
-            await sendPacket(A_CNXN, 0x01000000, 4096, banner);
+            // PASSO 2: HANDSHAKE ADB
+            setDiagState(2, "active");
+            sysLog("Enviando A_CNXN...");
+            await sendPacket(CMD.CNXN, 0x01000000, 4096, new TextEncoder().encode("host::DiscaAI\0"));
+            setDiagState(2, "success");
 
-            let autorizado = false;
-            for(let i=0; i<10; i++) {
-                const packet = await readPacket();
-                if (!packet) continue;
+            // PASSO 3 & 4: GERENCIAR AUTORIZAÇÃO E SESSÃO
+            setDiagState(3, "active");
+            let isAuthorized = false;
 
-                if (packet.cmd === A_AUTH) {
-                    if (packet.arg0 === 1) {
-                        logMsg("Autorizando... Verifique a tela do Samsung!");
-                        const signature = await signAdbToken(packet.data);
-                        await sendPacket(A_AUTH, 2, 0, signature);
-                        const pubKey = await getAdbPublicKeyPayload();
-                        await sendPacket(A_AUTH, 3, 0, pubKey); // Força popup
+            while (true) {
+                sysLog("Aguardando pacote do Android...", "WARN");
+                let packet = await readPacket(120000); // 2 minutos de paciência para o humano
+
+                if (!packet || packet.timeout) {
+                    throw new Error("Timeout: O celular não respondeu após 2 minutos.");
+                }
+                if (packet.error) {
+                    throw new Error("Comunicação USB interrompida pelo celular.");
+                }
+
+                if (packet.cmd === CMD.CNXN) {
+                    sysLog("Recebido A_CNXN! Sessão ADB Estabelecida.");
+                    setDiagState(3, "success", "3. Autorização Confirmada");
+                    setDiagState(4, "success");
+                    isAuthorized = true;
+                    break; 
+                }
+
+                if (packet.cmd === CMD.AUTH && packet.arg0 === 1) {
+                    sysLog("Celular pede autenticação. Enviando Assinatura RSA...");
+                    let sig = await signAdbToken(packet.data);
+                    await sendPacket(CMD.AUTH, 2, 0, sig);
+                    
+                    // Espera resposta rápida da assinatura
+                    let sigResp = await readPacket(3000); 
+                    if (sigResp && sigResp.cmd === CMD.CNXN) {
+                        sysLog("Assinatura reconhecida! Sessão Estabelecida.");
+                        setDiagState(3, "success", "3. Autorização Confirmada");
+                        setDiagState(4, "success");
+                        isAuthorized = true;
+                        break;
                     }
-                } else if (packet.cmd === A_CNXN) {
-                    autorizado = true;
-                    break;
+
+                    // Se não reconheceu a assinatura, forçamos o Pop-up UMA VEZ
+                    sysLog("Assinatura desconhecida. Enviando Chave Pública para abrir pop-up...");
+                    let pubKey = await getAdbPublicKeyPayload();
+                    await sendPacket(CMD.AUTH, 3, 0, pubKey);
+                    
+                    sysLog("🚨 OLHE PARA O CELULAR E CLIQUE EM 'PERMITIR'!", "ERROR");
+                    setDiagState(3, "active", "🚨 CLIQUE PERMITIR NO CELULAR!");
+                    
+                    // Agora voltamos para o início do While e esperamos pacientemente o humano clicar
                 }
             }
 
-            if (autorizado) {
-                document.getElementById('usb-dot').classList.add('connected');
-                document.getElementById('usb-status-text').innerText = "Samsung Conectado e Autorizado";
-                document.getElementById('usb-status-text').style.color = "var(--accent-green)";
-                document.getElementById('btn-connect').style.display = 'none';
+            if (!isAuthorized) throw new Error("Falha no fluxo de autorização.");
+
+            // PASSO 5: TESTE DE SHELL (A PROVA FINAL)
+            setDiagState(5, "active");
+            sysLog("Iniciando Teste de Shell (Ping/Pong)...");
+            const shellOK = await executeAdbShell("echo PING_OK");
+            
+            if (shellOK) {
+                setDiagState(5, "success");
+                sysLog("🚀 SISTEMA 100% OPERACIONAL E HOMOLOGADO!");
+                document.getElementById('stage-overlay').style.display = 'none';
+                document.getElementById('op-mode').innerText = "[ OPERAÇÃO LIBERADA ]";
                 document.getElementById('btn-manual').disabled = false;
+                document.getElementById('btn-conectar').style.display = 'none';
                 if(contacts.length > 0) document.getElementById('btn-start-auto').disabled = false;
-                logMsg("Diagnóstico: Shell pronto para uso.");
             } else {
-                throw new Error("Handshake falhou. Autorização não concedida.");
+                throw new Error("O Android abriu a conexão, mas recusou o comando de teste de Shell.");
             }
-        } catch (error) {
-            logMsg(error.message, true);
+
+        } catch (err) {
+            sysLog(err.message, "ERROR");
+            setDiagState(1, "error"); setDiagState(2, "error"); setDiagState(3, "error"); setDiagState(4, "error"); setDiagState(5, "error");
+            document.getElementById('btn-conectar').disabled = false;
+            alert("Falha na Conexão ADB: \n" + err.message + "\n\nLeia os logs pretos na tela para entender onde parou.");
         }
     }
 
-    /* ==========================================================================
-       3. EXECUÇÃO DE COMANDOS (Ligar / Desligar)
-       ========================================================================== */
+    // Função auxiliar para enviar comandos e gerenciar a Stream do Shell
     async function executeAdbShell(commandStr) {
         if (!usbDevice) return false;
         try {
             const myId = localIdCounter++;
             const payload = new TextEncoder().encode("shell:" + commandStr + "\0");
-            await sendPacket(A_OPEN, myId, 0, payload);
+            await sendPacket(CMD.OPEN, myId, 0, payload);
 
             let success = false;
-            for(let i=0; i<5; i++) {
-                const packet = await readPacket();
-                if (!packet) continue;
-                if (packet.cmd === A_OKAY && packet.arg1 === myId) {
-                    success = true;
-                } else if (packet.cmd === A_WRTE && packet.arg1 === myId) {
-                    await sendPacket(A_OKAY, myId, packet.arg0);
-                } else if (packet.cmd === A_CLSE && packet.arg1 === myId) {
-                    await sendPacket(A_CLSE, myId, packet.arg0);
+            for(let i=0; i<10; i++) {
+                const packet = await readPacket(5000);
+                if (!packet || packet.error || packet.timeout) continue;
+                
+                if (packet.cmd === CMD.OKAY && packet.arg1 === myId) {
+                    success = true; // O celular aceitou abrir o tubo
+                } else if (packet.cmd === CMD.WRTE && packet.arg1 === myId) {
+                    await sendPacket(CMD.OKAY, myId, packet.arg0); // Confirma que lemos o "PING_OK"
+                } else if (packet.cmd === CMD.CLSE && packet.arg1 === myId) {
+                    await sendPacket(CMD.CLSE, myId, packet.arg0); // Fecha o tubo
                     break;
                 }
             }
             return success;
         } catch(e) {
-            logMsg("Erro ao executar comando: " + e.message, true);
+            sysLog("Erro Shell: " + e.message, "ERROR");
             return false;
         }
     }
 
     async function commandDial(phone) {
-        logMsg(`Discando para ${phone}...`);
+        sysLog(`Enviando comando para ligar: ${phone}...`);
         return await executeAdbShell(`am start -a android.intent.action.CALL -d tel:${phone}`);
     }
 
     async function commandHangup() {
-        logMsg(`Encerrando ligação...`);
+        sysLog(`Enviando comando para desligar...`);
         return await executeAdbShell("input keyevent 6");
     }
 
     /* ==========================================================================
-       4. LÓGICA DO CALL CENTER (Manual e Automático)
+       5. LÓGICA DE CALL CENTER (MANUAL / AUTO / RELATÓRIOS)
        ========================================================================== */
     let contacts = [];
-    let reportData = [];
+    let reportStats = { total: 0, executadas: 0, atendeu: 0, callback: 0, caixa: 0, desligou: 0, chama: 0, desconhece: 0, cancelado: 0, apenas_desligar: 0 };
     let currentIdx = 0;
     let isAutoMode = false;
     let isPaused = false;
     let callTimer = null;
     let timeLeft = 0;
-    let callsMade = 0;
+    let callsMadeThisSession = 0;
 
-    // Importar Arquivo
+    // Importar Planilha
     document.getElementById('file-upload').addEventListener('change', function(e) {
         const file = e.target.files[0];
         if(!file) return;
@@ -443,28 +547,30 @@
             lines.forEach(line => {
                 let parts = line.split(/[;,]/);
                 let num = (parts[parts.length-1] || line).replace(/\D/g, '');
-                let name = parts.length > 1 ? parts[0].trim() : "Contato";
+                let name = parts.length > 1 ? parts[0].trim() : "Contato Importado";
                 if(num.length >= 8) contacts.push({ name: name, phone: num, status: 'Pendente', retries: 0 });
             });
-            logMsg(`${contacts.length} contatos importados.`);
+            reportStats.total = contacts.length;
             document.getElementById('stat-pending').innerText = contacts.length;
-            if (usbDevice) document.getElementById('btn-start-auto').disabled = false;
-            renderList();
+            sysLog(`${contacts.length} contatos importados e prontos.`);
+            if (document.getElementById('op-mode').innerText === "[ OPERAÇÃO LIBERADA ]") {
+                document.getElementById('btn-start-auto').disabled = false;
+            }
         };
         reader.readAsText(file);
     });
 
     function toggleActionButtons(enable) {
-        const btns = document.querySelectorAll('.disposition-btn');
-        btns.forEach(b => b.disabled = !enable);
+        document.querySelectorAll('.disposition-btn').forEach(b => b.disabled = !enable);
     }
 
-    // Modo Manual
+    // LIGAÇÃO MANUAL
     async function startManualCall() {
         const num = document.getElementById('manual-phone').value.replace(/\D/g, '');
         if(num.length < 8) return alert("Número inválido.");
         
         isAutoMode = false;
+        clearInterval(callTimer);
         document.getElementById('op-mode').innerText = "[ MODO MANUAL ]";
         document.getElementById('stage-status').innerText = "Ligação Manual em Curso";
         document.getElementById('stage-name').innerText = "Contato Avulso";
@@ -474,21 +580,22 @@
         const ok = await commandDial(num);
         if(ok) {
             toggleActionButtons(true);
-            logMsg("Comando de ligação enviado com sucesso.");
+        } else {
+            alert("Falha ao enviar comando ADB para o celular.");
         }
     }
 
-    // Modo Automático
+    // MODO AUTOMÁTICO
     async function startAutoDial() {
         const limit = parseInt(document.getElementById('cfg-limit').value);
-        if (callsMade >= limit) return alert("Meta de ligações atingida.");
-        if (currentIdx >= contacts.length) return alert("Lista finalizada.");
+        if (callsMadeThisSession >= limit) return alert("Limite de ligações automáticas atingido.");
+        if (currentIdx >= contacts.length) return alert("Base de contatos finalizada.");
 
         isAutoMode = true;
         isPaused = false;
         document.getElementById('btn-start-auto').style.display = 'none';
         document.getElementById('btn-pause-auto').style.display = 'block';
-        document.getElementById('op-mode').innerText = "[ PILOTO AUTOMÁTICO ]";
+        document.getElementById('op-mode').innerText = "[ MODO AUTOMÁTICO ]";
         
         processNextAuto();
     }
@@ -497,20 +604,21 @@
         isPaused = true;
         document.getElementById('btn-start-auto').style.display = 'block';
         document.getElementById('btn-pause-auto').style.display = 'none';
-        logMsg("Sistema pausado.");
+        document.getElementById('stage-status').innerText = "Em Pausa (Pronto para Retomar)";
+        sysLog("Operação automática pausada pelo operador.");
     }
 
     async function processNextAuto() {
         if (isPaused) return;
         const limit = parseInt(document.getElementById('cfg-limit').value);
-        if (callsMade >= limit || currentIdx >= contacts.length) {
+        if (callsMadeThisSession >= limit || currentIdx >= contacts.length) {
             pauseAutoDial();
-            logMsg("Operação automática finalizada.");
+            sysLog("Fim do lote ou base finalizada.");
             return;
         }
 
         let contact = contacts[currentIdx];
-        // Pula contatos já finalizados com sucesso
+        // Pula sucessos e quem estourou 3 tentativas
         while (contact && (contact.status === 'Atendeu' || contact.retries >= 3)) {
             currentIdx++;
             contact = contacts[currentIdx];
@@ -525,14 +633,15 @@
 
         const ok = await commandDial(contact.phone);
         if (ok) {
-            callsMade++;
-            startTimerForAutoCall(contact);
+            callsMadeThisSession++;
+            startTimerForAutoCall();
         } else {
-            logMsg("Falha ao discar para " + contact.phone, true);
+            sysLog("Falha crítica ao discar para " + contact.phone, "ERROR");
+            pauseAutoDial();
         }
     }
 
-    function startTimerForAutoCall(contact) {
+    function startTimerForAutoCall() {
         clearInterval(callTimer);
         const maxTime = parseInt(document.getElementById('cfg-time').value) || 30;
         timeLeft = maxTime;
@@ -543,86 +652,90 @@
             document.getElementById('stage-timer').innerText = timeLeft;
             if (timeLeft <= 0) {
                 clearInterval(callTimer);
-                logMsg("Tempo limite atingido. Pulando...");
-                await handleDisposition("Não atendeu (Timeout)", true);
+                sysLog("Timeout. Pulando para o próximo contato...");
+                await handleDisposition("Caixa Postal / Timeout", true);
             }
         }, 1000);
     }
 
-    // Tabulação (Registrar Resultado)
+    // TABULAÇÃO E ENCERRAMENTO
     async function handleDisposition(resultText, isTimeout = false) {
         clearInterval(callTimer);
         toggleActionButtons(false);
         await commandHangup();
 
-        let phoneNum = isAutoMode ? contacts[currentIdx].phone : document.getElementById('manual-phone').value;
-        let cName = isAutoMode ? contacts[currentIdx].name : "Manual";
-
         if (isAutoMode) {
             let contact = contacts[currentIdx];
             contact.retries++;
             
-            // Lógica de Retentativa
-            if (resultText === 'Atendeu' || resultText === 'Callback' || resultText === 'Número Cancelado') {
+            // Controle de status para Retentativas (max 3)
+            if (resultText === 'Atendeu' || resultText === 'Callback' || resultText === 'Número Cancelado' || resultText === 'Desconhece Titular') {
                 contact.status = resultText;
+                currentIdx++; // Avança
             } else {
-                contact.status = contact.retries >= 3 ? "Falha 3x" : "Re-agendado";
+                if (contact.retries >= 3) {
+                    contact.status = `Falha 3x (${resultText})`;
+                    currentIdx++; // Estourou tentativa, avança
+                } else {
+                    contact.status = `Tentar Novamente (${resultText})`;
+                    // Não avança o ponteiro, vai tentar de novo na próxima rodada ou pular dependendo da lógica que você quiser.
+                    // Para funil real, geralmente avança o ponteiro e cria uma "fila de reciclo", mas aqui vamos avançar para não travar num número só.
+                    currentIdx++; 
+                }
             }
-            
-            // Avança o ponteiro se o contato foi finalizado ou falhou 3x
-            if (contact.status !== "Re-agendado") currentIdx++;
         }
 
-        reportData.push({ data: new Date().toLocaleString(), nome: cName, numero: phoneNum, resultado: resultText });
+        // Estatísticas
+        reportStats.executadas++;
+        if (resultText.includes('Atendeu')) reportStats.atendeu++;
+        if (resultText.includes('Callback')) reportStats.callback++;
+        if (resultText.includes('Caixa')) reportStats.caixa++;
+        if (resultText.includes('Desligou')) reportStats.desligou++;
+        if (resultText.includes('chama')) reportStats.chama++;
+        if (resultText.includes('Desconhece')) reportStats.desconhece++;
+        if (resultText.includes('Cancelado')) reportStats.cancelado++;
+        if (resultText.includes('Apenas Desligar')) reportStats.apenas_desligar++;
         
-        document.getElementById('stat-total').innerText = reportData.length;
+        document.getElementById('stat-total').innerText = reportStats.executadas;
         if(isAutoMode) document.getElementById('stat-pending').innerText = contacts.length - currentIdx;
         
-        renderList();
-        document.getElementById('stage-status').innerText = "Pronto para o próximo";
+        updateReportSummary();
+        document.getElementById('stage-status').innerText = "Aguardando próxima ação";
         document.getElementById('stage-timer').innerText = "00";
 
         if (isAutoMode && !isPaused) {
-            logMsg("Aguardando 2s para o próximo disparo...");
+            sysLog("Aguardando 2s para o próximo disparo...");
             setTimeout(processNextAuto, 2000);
         }
     }
 
-    // Visuais
-    function renderList() {
-        const container = document.getElementById('contact-list');
-        if (contacts.length === 0) return;
-        
-        let html = '';
-        const limit = Math.min(contacts.length, currentIdx + 20); // Mostra prox 20
-        for(let i = currentIdx; i < limit; i++) {
-            let c = contacts[i];
-            let badgeColor = c.retries === 0 ? '#3b82f6' : '#f59e0b';
-            html += `
-                <div class="contact-item">
-                    <div>
-                        <strong style="color: var(--text-main);">${c.name}</strong><br>
-                        <span style="font-family: monospace; color: var(--text-muted);">${c.phone}</span>
-                    </div>
-                    <div class="badge" style="background: ${badgeColor}20; color: ${badgeColor}; border: 1px solid ${badgeColor}50;">
-                        Tentativa ${c.retries}/3
-                    </div>
-                </div>
-            `;
-        }
-        container.innerHTML = html;
+    function updateReportSummary() {
+        const container = document.getElementById('report-summary');
+        container.innerHTML = `
+            <div class="diag-item"><span>Atendimentos de Sucesso:</span> <strong style="color:var(--accent-green)">${reportStats.atendeu}</strong></div>
+            <div class="diag-item"><span>Fila de Callback (Retornar):</span> <strong style="color:var(--accent-amber)">${reportStats.callback}</strong></div>
+            <div class="diag-item"><span>Caixa Postal / Timeout:</span> <strong>${reportStats.caixa}</strong></div>
+            <div class="diag-item"><span>Cliente Desligou:</span> <strong>${reportStats.desligou}</strong></div>
+            <div class="diag-item"><span>Apenas Chamou:</span> <strong>${reportStats.chama}</strong></div>
+            <div class="diag-item"><span>Desconhece Titular:</span> <strong>${reportStats.desconhece}</strong></div>
+            <div class="diag-item"><span>Número Cancelado:</span> <strong>${reportStats.cancelado}</strong></div>
+            <div class="diag-item"><span>Apenas Encerrou (S/ Sucesso):</span> <strong>${reportStats.apenas_desligar}</strong></div>
+        `;
     }
 
-    // Relatório
     function exportReport() {
-        if(reportData.length === 0) return alert("Nenhuma ligação registrada.");
-        let csv = "Data,Nome,Numero,Resultado\n";
-        reportData.forEach(r => csv += `${r.data},${r.nome},${r.numero},${r.resultado}\n`);
+        if(reportStats.executadas === 0) return alert("Nenhuma ligação executada.");
+        let csv = "Contato,Telefone,Status Final,Tentativas\n";
+        contacts.forEach(c => {
+            if (c.retries > 0 || c.status !== 'Pendente') {
+                csv += `${c.name},${c.phone},${c.status},${c.retries}\n`;
+            }
+        });
         
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
-        link.download = "Relatorio_DiscaAI.csv";
+        link.download = "Relatorio_Operacao_DiscaAI.csv";
         link.click();
     }
 </script>
