@@ -1,415 +1,225 @@
 <!DOCTYPE html>
-<html lang="pt-BR" class="dark">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Disca AI - Operação Premium</title>
-    
-    <!-- Tipografia Web3 / AI -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <!-- Ícones Phosphor (Modernos e Minimalistas) -->
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <title>Disca AI - Operação</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- SheetJS (Opcional, para arquivos. Se bloqueado, o Copiar e Colar salva a operação) -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
     <style>
-        /* === TEMA SERENDALE AI (DARK, GLASS, NEON) === */
         :root {
-            --bg-deep: #050507;
-            --glass-bg: rgba(20, 20, 25, 0.4);
-            --glass-border: rgba(255, 255, 255, 0.06);
-            --text-primary: #FFFFFF;
-            --text-secondary: #8B949E;
-            --accent-blue: #3B82F6;
-            --accent-purple: #8B5CF6;
-            --accent-green: #10B981;
-            --accent-red: #F43F5E;
-            --accent-glow: 0 0 40px rgba(139, 92, 246, 0.15);
+            --bg-dark: #0f172a;
+            --bg-panel: #1e293b;
+            --border: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #3b82f6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
         
-        body {
-            background-color: var(--bg-deep);
-            color: var(--text-primary);
-            min-height: 100vh;
-            overflow-x: hidden;
-            position: relative;
-        }
-
-        /* Efeitos de Luz no Fundo (Orbes Web3) */
-        body::before {
-            content: ''; position: absolute; top: -20%; left: -10%; width: 50vw; height: 50vw;
-            background: radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, transparent 60%);
-            z-index: -1; filter: blur(60px);
-        }
-        body::after {
-            content: ''; position: absolute; bottom: -20%; right: -10%; width: 40vw; height: 40vw;
-            background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 60%);
-            z-index: -1; filter: blur(60px);
-        }
-
-        /* Container Principal */
-        .app-layout {
-            max-width: 1440px; margin: 0 auto; padding: 40px 24px;
-            display: grid; grid-template-columns: 320px 1fr 320px; gap: 24px;
-        }
-
-        @media (max-width: 1200px) { .app-layout { grid-template-columns: 1fr; } }
-
-        /* Paineis Glassmorphism */
-        .glass-panel {
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 24px;
-            padding: 24px;
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
-        }
-
-        /* Topbar / Logo */
-        .header { display: flex; align-items: center; justify-content: space-between; grid-column: 1 / -1; margin-bottom: 10px; }
-        .logo { font-size: 24px; font-weight: 800; letter-spacing: -1px; display: flex; align-items: center; gap: 10px; }
-        .logo i { color: var(--accent-purple); font-size: 28px; }
+        body { background-color: var(--bg-dark); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; }
         
-        .usb-status {
-            display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600;
-            padding: 8px 16px; border-radius: 99px; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border);
-            transition: all 0.3s;
-        }
-        .usb-status.disconnected { color: var(--text-secondary); }
-        .usb-status.connected { color: var(--accent-green); border-color: rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.05); }
-
-        /* Typography */
-        .section-title { font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: var(--text-secondary); font-weight: 700; margin-bottom: 20px; }
+        .header { padding: 20px 30px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 10; }
+        .header h1 { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+        .header h1 span { color: var(--accent); }
         
-        /* Inputs & Controls */
-        .input-group { margin-bottom: 20px; }
-        .input-group label { display: block; font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; font-weight: 500; }
-        .modern-input {
-            width: 100%; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); color: white;
-            padding: 14px 16px; border-radius: 12px; font-size: 14px; outline: none; transition: 0.3s; font-family: inherit;
-        }
-        .modern-input:focus { border-color: var(--accent-purple); box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2); }
+        .usb-badge { padding: 8px 16px; border-radius: 99px; font-size: 13px; font-weight: 700; background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); transition: all 0.3s; display: flex; align-items: center; gap: 8px; }
+        .usb-badge.connected { background: rgba(16, 185, 129, 0.1); color: var(--success); border-color: rgba(16, 185, 129, 0.3); }
 
-        /* Botões */
-        .btn {
-            width: 100%; padding: 14px 20px; border-radius: 12px; font-weight: 600; font-size: 14px;
-            cursor: pointer; transition: all 0.3s ease; border: none; display: flex; align-items: center; justify-content: center; gap: 8px;
-            font-family: inherit;
-        }
+        .layout { display: grid; grid-template-columns: 350px 1fr; gap: 24px; padding: 24px 30px; flex: 1; max-width: 1600px; margin: 0 auto; width: 100%; }
+        @media (max-width: 1024px) { .layout { grid-template-columns: 1fr; } }
+
+        .panel { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 16px; padding: 24px; display: flex; flex-direction: column; }
+        .panel-title { font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 700; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
+
+        .form-group { margin-bottom: 16px; }
+        .form-label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: var(--text-muted); }
+        .form-input { width: 100%; background: var(--bg-dark); border: 1px solid var(--border); color: white; padding: 12px 16px; border-radius: 10px; font-size: 14px; outline: none; transition: border-color 0.2s; resize: vertical; }
+        .form-input:focus { border-color: var(--accent); }
+
+        .btn { width: 100%; padding: 14px; border: none; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        
-        .btn-primary { background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue)); color: white; box-shadow: var(--accent-glow); }
-        .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(139, 92, 246, 0.3); }
-        
-        .btn-ghost { background: transparent; border: 1px solid var(--glass-border); color: var(--text-primary); }
-        .btn-ghost:hover:not(:disabled) { background: rgba(255,255,255,0.05); }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover:not(:disabled) { background: #2563eb; }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: white; }
+        .btn-outline:hover:not(:disabled) { background: rgba(255,255,255,0.05); border-color: var(--text-muted); }
+        .btn-success { background: var(--success); color: white; }
+        .btn-success:hover:not(:disabled) { background: #059669; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-danger:hover:not(:disabled) { background: #dc2626; }
 
-        /* Estágio Central (Hero) */
-        .hero-stage { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px 20px; min-height: 400px; position: relative; }
-        .hero-stage::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle, rgba(255,255,255,0.02) 0%, transparent 70%); border-radius: 24px; pointer-events: none; }
+        .stage { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px 20px; background: rgba(15, 23, 42, 0.4); border-radius: 16px; border: 1px dashed var(--border); margin-bottom: 24px; position: relative; }
+        .stage-code { font-size: 14px; font-weight: 700; color: var(--accent); margin-bottom: 8px; letter-spacing: 2px; }
+        .stage-name { font-size: 24px; font-weight: 800; margin-bottom: 8px; }
+        .stage-phone { font-size: 48px; font-weight: 800; letter-spacing: -1px; margin-bottom: 24px; color: white; }
         
-        .contact-label { font-size: 14px; color: var(--accent-blue); font-weight: 600; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 12px; }
-        .contact-number { font-size: 56px; font-weight: 800; letter-spacing: -2px; margin-bottom: 24px; background: linear-gradient(to right, #fff, #a1a1aa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        
-        .timer-ring {
-            width: 120px; height: 120px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            font-size: 36px; font-weight: 300; font-variant-numeric: tabular-nums;
-            border: 2px solid rgba(255,255,255,0.05); position: relative; margin-bottom: 30px; color: var(--text-secondary);
-        }
-        .timer-ring.active { color: var(--accent-red); border-color: rgba(244, 63, 94, 0.3); box-shadow: 0 0 30px rgba(244, 63, 94, 0.1); }
-        .timer-ring.success { color: var(--accent-green); border-color: rgba(16, 185, 129, 0.3); box-shadow: 0 0 30px rgba(16, 185, 129, 0.1); }
+        .timer-display { font-size: 72px; font-weight: 800; line-height: 1; margin-bottom: 16px; font-variant-numeric: tabular-nums; color: var(--text-muted); transition: color 0.3s; }
+        .timer-display.active { color: var(--warning); }
+        .timer-display.talking { color: var(--success); }
 
-        /* Tabulação (Disposition) */
-        .disposition-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; width: 100%; margin-top: auto; }
-        .disp-btn {
-            background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); padding: 12px; border-radius: 12px;
-            color: var(--text-secondary); font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s;
-        }
-        .disp-btn:hover:not(:disabled) { color: white; border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); }
-        .disp-btn.success:hover:not(:disabled) { border-color: var(--accent-green); color: var(--accent-green); }
-        .disp-btn.warning:hover:not(:disabled) { border-color: #F59E0B; color: #F59E0B; }
+        .stage-status { font-size: 14px; font-weight: 600; color: var(--text-muted); }
+        
+        /* Disposition Grid */
+        .disposition-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 24px; }
+        .disp-btn { background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border); padding: 16px; border-radius: 12px; color: var(--text-muted); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .disp-btn:hover:not(:disabled) { background: var(--border); color: white; }
         .disp-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        .disp-btn.success:hover:not(:disabled) { border-color: var(--success); color: var(--success); }
+        .disp-btn.warning:hover:not(:disabled) { border-color: var(--warning); color: var(--warning); }
 
-        /* Listas e Métricas */
-        .metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
-        .metric-box { background: rgba(0,0,0,0.2); padding: 16px; border-radius: 16px; border: 1px solid var(--glass-border); text-align: center; }
-        .metric-value { font-size: 28px; font-weight: 700; color: white; }
-        .metric-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); margin-top: 4px; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; z-index: 100; }
+        .modal-content { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 16px; padding: 30px; width: 90%; max-width: 800px; max-height: 90vh; display: flex; flex-direction: column; }
         
-        .history-list { max-height: 250px; overflow-y: auto; padding-right: 5px; }
-        .history-list::-webkit-scrollbar { width: 4px; }
-        .history-list::-webkit-scrollbar-track { background: transparent; }
-        .history-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
-        .history-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--glass-border); font-size: 13px; }
-        .history-item:last-child { border-bottom: none; }
+        .table-wrap { overflow-y: auto; flex: 1; margin: 20px 0; border: 1px solid var(--border); border-radius: 10px; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+        th { background: var(--bg-dark); padding: 12px 16px; font-weight: 700; color: var(--text-muted); position: sticky; top: 0; }
+        td { padding: 12px 16px; border-top: 1px solid var(--border); }
+        .td-corrected { color: var(--warning); font-weight: 600; }
+        .td-invalid { color: var(--danger); font-weight: 600; }
 
-        /* Toasts (Notificações) */
-        .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
-        .toast {
-            background: rgba(20, 20, 25, 0.9); backdrop-filter: blur(10px); border: 1px solid var(--glass-border);
-            padding: 16px 20px; border-radius: 12px; color: white; font-size: 14px; font-weight: 500;
-            display: flex; align-items: center; gap: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            animation: slideIn 0.3s ease forwards;
-        }
+        .metrics-bar { display: flex; gap: 20px; background: var(--bg-dark); padding: 16px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 24px; }
+        .metric { display: flex; flex-direction: column; }
+        .metric span:first-child { font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; }
+        .metric span:last-child { font-size: 20px; font-weight: 800; }
+
+        .footer { text-align: center; padding: 20px; color: var(--text-muted); font-size: 12px; font-weight: 600; border-top: 1px solid var(--border); margin-top: auto; }
+        
+        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 1000; display: flex; flex-direction: column; gap: 10px; }
+        .toast { background: var(--bg-panel); border: 1px solid var(--border); padding: 16px 20px; border-radius: 10px; font-size: 14px; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,0.5); animation: slideIn 0.3s forwards; }
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        
-        /* Modal Validação */
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; z-index: 1000; }
-        .modal-content { width: 100%; max-width: 500px; }
-        .modal-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 20px 0; }
-        .modal-stats .metric-box { padding: 12px; }
-        .modal-stats .metric-value { font-size: 20px; }
-
-        .footer { text-align: center; margin-top: 40px; color: var(--text-secondary); font-size: 12px; letter-spacing: 1px; grid-column: 1 / -1; }
     </style>
 </head>
 <body>
 
-    <div class="app-layout">
-        
-        <!-- HEADER -->
-        <div class="header">
-            <div class="logo"><i class="ph-fill ph-planet"></i> Disca AI</div>
-            <div class="usb-status disconnected" id="usb-badge">
-                <i class="ph ph-usb"></i> <span id="usb-text">Sistema Offline</span>
+    <div class="header">
+        <h1>Disca <span>AI</span></h1>
+        <div class="usb-badge" id="usb-badge">
+            <span id="usb-status-text">CABO DESCONECTADO</span>
+        </div>
+    </div>
+
+    <div class="layout">
+        <div class="panel">
+            <div class="panel-title">1. Conexão e Hardware</div>
+            <button class="btn btn-primary" id="btn-conectar" onclick="conectarUSB()" style="margin-bottom: 24px;">Conectar Samsung (USB)</button>
+            
+            <div class="panel-title">2. Importar Contatos</div>
+            <div class="form-group">
+                <label class="form-label">Copiar e Colar (Nome, Cód e Telefone)</label>
+                <textarea id="paste-area" class="form-input" rows="5" placeholder="Ex:\nMaria Silva 12345 69999999999\n69888888888 João Santos 12346"></textarea>
             </div>
+            <div class="form-group">
+                <label class="form-label">Ou selecione um arquivo (Excel/CSV)</label>
+                <input type="file" id="file-upload" class="form-input" accept=".csv, .txt, .xlsx, .xls">
+            </div>
+            <button class="btn btn-outline" onclick="processarEntradas()" style="margin-bottom: 24px;">Analisar Dados</button>
+
+            <div class="panel-title">3. Configuração da Operação</div>
+            <div class="form-group">
+                <label class="form-label">Quantidade de ligações:</label>
+                <input type="number" id="cfg-limit" class="form-input" value="1500" min="1">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Tempo de espera (segundos):</label>
+                <input type="number" id="cfg-time" class="form-input" value="30" min="5">
+            </div>
+            <button class="btn btn-success" id="btn-start" onclick="iniciarCampanha()" disabled style="margin-top: 10px;">INICIAR OPERAÇÃO</button>
+            <button class="btn btn-outline" id="btn-pause" onclick="pausarCampanha()" style="display: none; margin-top: 10px; border-color: var(--warning); color: var(--warning);">Pausar Operação</button>
         </div>
 
-        <!-- COLUNA ESQUERDA: SETUP -->
-        <div class="glass-panel">
-            <div class="section-title">Conexão ADB</div>
-            <button class="btn btn-primary" id="btn-connect" onclick="uiConnectUSB()" style="margin-bottom: 30px;">
-                <i class="ph ph-plug"></i> Conectar Cabo USB
-            </button>
-
-            <div class="section-title">Modo Manual</div>
-            <div class="input-group">
-                <input type="text" id="manual-phone" class="modern-input" placeholder="Ex: 41999999999">
-            </div>
-            <button class="btn btn-ghost" id="btn-manual" onclick="startManualCall()" disabled>
-                <i class="ph ph-phone-outgoing"></i> Ligar Manualmente
-            </button>
-
-            <div style="height: 1px; background: var(--glass-border); margin: 30px 0;"></div>
-
-            <div class="section-title">Piloto Automático</div>
-            
-            <div class="input-group">
-                <label>Base de Dados (CSV/TXT)</label>
-                <input type="file" id="file-upload" class="modern-input" accept=".csv, .txt" style="padding: 10px;">
+        <div class="panel">
+            <div class="metrics-bar" style="border: none; padding: 0; background: transparent; margin-bottom: 10px;">
+                <div class="metric"><span>Contatos na Fila</span><span id="stat-pendentes" style="color: var(--accent);">0</span></div>
+                <div class="metric"><span>Concluídos</span><span id="stat-feitos">0</span></div>
             </div>
 
-            <div class="metric-grid" style="margin-bottom: 20px;">
-                <div class="input-group" style="margin: 0;">
-                    <label>Qtd. Ligações</label>
-                    <input type="number" id="cfg-limit" class="modern-input" value="1500" min="1">
-                </div>
-                <div class="input-group" style="margin: 0;">
-                    <label>Tempo (Seg)</label>
-                    <input type="number" id="cfg-time" class="modern-input" value="30" min="5">
+            <div class="stage">
+                <div class="stage-code" id="stage-code">STANDBY</div>
+                <div class="stage-name" id="stage-name">Aguardando Início</div>
+                <div class="stage-phone" id="stage-phone">---</div>
+                
+                <div class="timer-display" id="stage-timer">00</div>
+                <div class="stage-status" id="stage-status">Sistema pronto para importar e ligar.</div>
+                
+                <!-- Botões de Ação Imediata (Durante a ligação) -->
+                <div style="display: flex; gap: 16px; margin-top: 30px; width: 100%; max-width: 500px;">
+                    <button class="btn btn-success" id="btn-atendeu" onclick="marcarAtendido()" style="display: none; padding: 20px; font-size: 16px;">
+                        🗣️ ATENDEU (MANTER LIGAÇÃO)
+                    </button>
+                    <button class="btn btn-danger" id="btn-desligar" onclick="encerrarLigacaoManual()" style="display: none; padding: 20px; font-size: 16px;">
+                        🛑 ENCERRAR CHAMADA
+                    </button>
                 </div>
             </div>
 
-            <button class="btn btn-primary" id="btn-start-auto" onclick="startAutoDial()" disabled style="background: linear-gradient(135deg, var(--accent-green), #059669); box-shadow: 0 0 30px rgba(16,185,129,0.2);">
-                <i class="ph-fill ph-play-circle"></i> Iniciar Disparos
-            </button>
-            <button class="btn btn-ghost" id="btn-pause-auto" onclick="pauseAutoDial()" style="display: none; border-color: #F59E0B; color: #F59E0B;">
-                <i class="ph ph-pause-circle"></i> Pausar Operação
-            </button>
-        </div>
-
-        <!-- COLUNA CENTRAL: HERO (MESA DE OPERAÇÃO) -->
-        <div class="glass-panel hero-stage">
-            <div class="contact-label" id="stage-status">Standby</div>
-            <div class="contact-number" id="stage-phone">---</div>
-            
-            <div class="timer-ring" id="stage-timer">
-                00
-            </div>
-            
-            <div style="color: var(--text-secondary); font-size: 13px; margin-bottom: 30px;" id="stage-info">Aguardando início da operação.</div>
-
-            <!-- DISPOSITION / TABULAÇÃO -->
+            <!-- Botões de Avaliação Final -->
+            <div class="panel-title">Avaliação do Contato</div>
             <div class="disposition-grid">
-                <button class="disp-btn success" onclick="handleDisposition('Atendeu')" id="disp-atendeu" disabled>✅ Atendeu</button>
-                <button class="disp-btn warning" onclick="handleDisposition('Callback')" id="disp-callback" disabled>🔄 Callback</button>
-                <button class="disp-btn" onclick="handleDisposition('Caixa Postal')" id="disp-caixa" disabled>🎙️ Caixa Postal</button>
-                <button class="disp-btn" onclick="handleDisposition('Só Chama')" id="disp-chama" disabled>⏳ Só Chama</button>
-                <button class="disp-btn" onclick="handleDisposition('Desligou')" id="disp-desligou" disabled>❌ Desligou</button>
-                <button class="disp-btn" onclick="handleDisposition('Desconhece')" id="disp-desconhece" disabled>🤷 Desconhece</button>
-                <button class="disp-btn" onclick="handleDisposition('Cancelado')" id="disp-cancelado" disabled>🚫 Cancelado</button>
-                <button class="disp-btn" onclick="handleDisposition('Apenas Desligar')" id="disp-encerrar" disabled>🛑 Apenas Desligar</button>
+                <button class="disp-btn success" onclick="avaliar('Atendeu')" id="disp-atendeu" disabled>Atendeu</button>
+                <button class="disp-btn" onclick="avaliar('Não atendeu')" id="disp-naoatendeu" disabled>Não atendeu</button>
+                <button class="disp-btn" onclick="avaliar('Caixa postal')" id="disp-caixa" disabled>Caixa postal</button>
+                <button class="disp-btn warning" onclick="avaliar('Callback')" id="disp-callback" disabled>Callback (Retornar)</button>
+                <button class="disp-btn" onclick="avaliar('Número cancelado')" id="disp-cancelado" disabled>Número cancelado</button>
+                <button class="disp-btn" onclick="avaliar('Desconhece o titular')" id="disp-desconhece" disabled>Desconhece titular</button>
             </div>
-        </div>
-
-        <!-- COLUNA DIREITA: RELATÓRIOS -->
-        <div class="glass-panel">
-            <div class="section-title">Métricas da Sessão</div>
             
-            <div class="metric-grid">
-                <div class="metric-box">
-                    <div class="metric-value" id="stat-processed">0</div>
-                    <div class="metric-label">Processados</div>
-                </div>
-                <div class="metric-box">
-                    <div class="metric-value" id="stat-pending" style="color: var(--accent-blue);">0</div>
-                    <div class="metric-label">Pendentes</div>
-                </div>
-            </div>
-
-            <div class="section-title" style="margin-top: 30px;">Resumo (Tabulação)</div>
-            <div class="history-list" id="report-summary">
-                <div style="text-align: center; color: var(--text-secondary); padding: 20px; font-size: 13px;">Nenhuma ligação registrada.</div>
-            </div>
-
-            <button class="btn btn-ghost" onclick="exportReport()" style="margin-top: 24px;">
-                <i class="ph ph-download-simple"></i> Exportar CSV
-            </button>
+            <button class="btn btn-outline" onclick="exportarRelatorio()" style="margin-top: 30px;">Baixar Relatório Final (CSV)</button>
         </div>
-
-        <div class="footer">App criado por Maikon Nattan</div>
     </div>
 
-    <!-- TOAST CONTAINER -->
-    <div class="toast-container" id="toast-container"></div>
+    <div class="footer">App criado por Maikon Nattan</div>
 
-    <!-- MODAL DE VALIDAÇÃO (HIGIENIZAÇÃO) -->
-    <div class="modal-overlay" id="modal-validacao">
-        <div class="glass-panel modal-content">
-            <div class="section-title" style="color: white; font-size: 16px;"><i class="ph ph-shield-check" style="color: var(--accent-green);"></i> Análise da Base de Dados</div>
-            <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.5;">O motor de inteligência analisou e higienizou os contatos com base nas regras da Anatel (DDD + 9 dígitos).</p>
+    <div class="modal-overlay" id="modal-preview">
+        <div class="modal-content">
+            <h2 style="margin-bottom: 20px;">Conferência de Contatos</h2>
             
-            <div class="modal-stats">
-                <div class="metric-box">
-                    <div class="metric-value" id="val-total" style="color: white;">0</div>
-                    <div class="metric-label">Lidos</div>
-                </div>
-                <div class="metric-box" style="border-color: rgba(16,185,129,0.3);">
-                    <div class="metric-value" id="val-validos" style="color: var(--accent-green);">0</div>
-                    <div class="metric-label">Válidos</div>
-                </div>
-                <div class="metric-box" style="border-color: rgba(244,63,94,0.3);">
-                    <div class="metric-value" id="val-invalidos" style="color: var(--accent-red);">0</div>
-                    <div class="metric-label">Descartados</div>
-                </div>
+            <div class="metrics-bar">
+                <div class="metric"><span>Identificados</span><span id="prev-total">0</span></div>
+                <div class="metric"><span>Corrigidos (Faltava o 9)</span><span id="prev-corrigidos" style="color: var(--warning);">0</span></div>
+                <div class="metric"><span>Inválidos</span><span id="prev-invalidos" style="color: var(--danger);">0</span></div>
             </div>
 
-            <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 24px;">
-                <span style="color: var(--accent-blue);" id="val-corrigidos">0</span> números precisaram de inserção do dígito 9.<br>
-                <span style="color: var(--accent-red);" id="val-duplicados">0</span> números duplicados removidos.
+            <div class="table-wrap">
+                <table id="preview-table">
+                    <thead><tr><th>Cód Revendedora</th><th>Nome</th><th>Telefone Interpretado</th><th>Status</th></tr></thead>
+                    <tbody></tbody>
+                </table>
             </div>
 
-            <div style="display: flex; gap: 12px;">
-                <button class="btn btn-ghost" onclick="fecharModalValidacao()">Cancelar</button>
-                <button class="btn btn-primary" onclick="confirmarImportacao()" style="background: var(--accent-green); box-shadow: 0 0 20px rgba(16,185,129,0.2);">Confirmar Importação</button>
+            <div style="display: flex; gap: 16px; justify-content: flex-end;">
+                <button class="btn btn-outline" style="width: auto; padding: 12px 24px;" onclick="fecharModal()">Cancelar</button>
+                <button class="btn btn-primary" style="width: auto; padding: 12px 24px;" onclick="confirmarImportacao()">Aprovar e Enviar para Fila</button>
             </div>
         </div>
     </div>
 
-    <!-- ==========================================
-         LÓGICA DO SISTEMA E NÚCLEO WEBUSB/ADB
-         ========================================== -->
+    <div id="toast-container"></div>
+
     <script>
-        function showToast(message, type = 'info') {
+        function showToast(msg) {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             toast.className = 'toast';
-            
-            let icon = '<i class="ph-fill ph-info" style="color: var(--accent-blue); font-size: 20px;"></i>';
-            if (type === 'success') icon = '<i class="ph-fill ph-check-circle" style="color: var(--accent-green); font-size: 20px;"></i>';
-            if (type === 'error') icon = '<i class="ph-fill ph-warning-circle" style="color: var(--accent-red); font-size: 20px;"></i>';
-            if (type === 'wait') icon = '<i class="ph ph-spinner ph-spin" style="color: var(--accent-purple); font-size: 20px;"></i>';
-            
-            toast.innerHTML = `${icon} <span>${message}</span>`;
+            toast.innerText = msg;
             container.appendChild(toast);
-            
-            if(type !== 'wait') {
-                setTimeout(() => {
-                    toast.style.animation = 'slideIn 0.3s ease reverse forwards';
-                    setTimeout(() => toast.remove(), 300);
-                }, 4000);
-            }
-            return toast; // Retorna para poder remover o de 'wait'
+            setTimeout(() => {
+                toast.style.animation = 'slideIn 0.3s forwards reverse';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
         }
 
-        function validarTelefoneBR(rawStr) {
-            let digits = rawStr.replace(/\D/g, '');
-            let originalDigits = digits;
-
-            if (digits.startsWith('55') && (digits.length === 12 || digits.length === 13)) digits = digits.substring(2);
-            else if (digits.startsWith('0') && (digits.length === 11 || digits.length === 12)) digits = digits.substring(1);
-
-            if (digits.length === 11) return { phone: digits, status: 'valid', original: rawStr };
-            else if (digits.length === 10) {
-                let corrected = digits.substring(0, 2) + '9' + digits.substring(2);
-                return { phone: corrected, status: 'corrected', original: rawStr };
-            } else {
-                return { phone: originalDigits, status: 'invalid', original: rawStr };
-            }
-        }
-
-        let contatosTemp = [];
-        let contacts = [];
-
-        document.getElementById('file-upload').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if(!file) return;
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                const lines = evt.target.result.split('\n');
-                let stats = { total: 0, validos: 0, corrigidos: 0, invalidos: 0, duplicados: 0 };
-                let seen = new Set();
-                contatosTemp = [];
-
-                lines.forEach(line => {
-                    if(!line.trim()) return;
-                    stats.total++;
-                    let parts = line.split(/[;,]/);
-                    let rawPhone = parts[parts.length-1].trim();
-                    let name = parts.length > 1 ? parts.slice(0, parts.length-1).join(' ').trim() : "Contato";
-
-                    let validacao = validarTelefoneBR(rawPhone);
-                    if(validacao.status === 'invalid') { stats.invalidos++; return; }
-                    if(seen.has(validacao.phone)) { stats.duplicados++; stats.invalidos++; return; }
-                    
-                    seen.add(validacao.phone);
-                    if(validacao.status === 'corrected') stats.corrigidos++;
-                    else stats.validos++;
-
-                    contatosTemp.push({ name: name, phone: validacao.phone, status: 'Pendente', retries: 0 });
-                });
-
-                document.getElementById('val-total').innerText = stats.total;
-                document.getElementById('val-validos').innerText = stats.validos + stats.corrigidos;
-                document.getElementById('val-invalidos').innerText = stats.invalidos;
-                document.getElementById('val-corrigidos').innerText = stats.corrigidos;
-                document.getElementById('val-duplicados').innerText = stats.duplicados;
-
-                document.getElementById('modal-validacao').style.display = 'flex';
-                document.getElementById('file-upload').value = ''; 
-            };
-            reader.readAsText(file);
-        });
-
-        function fecharModalValidacao() { document.getElementById('modal-validacao').style.display = 'none'; contatosTemp = []; }
-        function confirmarImportacao() {
-            contacts = contatosTemp;
-            document.getElementById('stat-pending').innerText = contacts.length;
-            showToast(`${contacts.length} contatos prontos para operação.`, 'success');
-            fecharModalValidacao();
-            if (isAdbAuthorized) document.getElementById('btn-start-auto').disabled = false;
-        }
-
+        /* --- MOTOR ADB EMBARCADO (Mesmo do Diagnóstico) --- */
         let usbDevice = null;
-        let epIn = null, epOut = null;
-        let isAdbAuthorized = false;
+        let epIn = null;
+        let epOut = null;
+        let isAdbReady = false;
         let localIdCounter = 1;
-
-        const CMD = { CNXN: 0x4e584e43, AUTH: 0x48545541, OPEN: 0x4e45504f, OKAY: 0x59414b4f, CLSE: 0x45534c43, WRTE: 0x45545257 };
 
         async function getAdbKeyPair() {
             return await crypto.subtle.generateKey(
@@ -417,19 +227,16 @@
                 true, ["sign", "verify"]
             );
         }
-
         async function signAdbToken(keyPair, token) {
             const signature = await crypto.subtle.sign("RSASSA-PKCS1-v1_5", keyPair.privateKey, token);
             return new Uint8Array(signature);
         }
-
         async function getAdbPublicKeyPayload(keyPair) {
             const exported = await crypto.subtle.exportKey("jwk", keyPair.publicKey);
             const b64 = exported.n.replace(/-/g, '+').replace(/_/g, '/');
             const binaryStr = atob(b64);
             const modBytes = new Uint8Array(binaryStr.length);
             for (let i = 0; i < binaryStr.length; i++) modBytes[i] = binaryStr.charCodeAt(i);
-
             let n = 0n;
             for (let i = 0; i < modBytes.length; i++) n = (n << 8n) | BigInt(modBytes[i]);
             const r32 = 1n << 32n;
@@ -439,11 +246,9 @@
             const n0inv = Number((r32 - inv) % r32);
             const r2048 = 1n << 2048n;
             const rr = (r2048 * r2048) % n;
-
             const buffer = new ArrayBuffer(524);
             const view = new DataView(buffer);
             const bytes = new Uint8Array(buffer);
-
             view.setUint32(0, 64, true);
             view.setUint32(4, n0inv, true);
             let tempN = n;
@@ -451,7 +256,6 @@
             let tempRR = rr;
             for (let i = 0; i < 256; i++) { bytes[264 + i] = Number(tempRR & 0xffn); tempRR >>= 8n; }
             view.setUint32(520, 65537, true);
-
             const nameBytes = new TextEncoder().encode("DiscaAI\0");
             const fullPayload = new Uint8Array(buffer.byteLength + nameBytes.length);
             fullPayload.set(bytes, 0);
@@ -465,51 +269,36 @@
             const view = new DataView(header);
             let checksum = 0;
             for (let i = 0; i < data.length; i++) checksum += data[i];
-            
-            view.setUint32(0, cmd, true);
-            view.setUint32(4, arg0, true);
-            view.setUint32(8, arg1, true);
-            view.setUint32(12, data.length, true);
-            view.setUint32(16, checksum & 0xffffffff, true);
+            view.setUint32(0, cmd, true); view.setUint32(4, arg0, true); view.setUint32(8, arg1, true);
+            view.setUint32(12, data.length, true); view.setUint32(16, checksum & 0xffffffff, true);
             view.setUint32(20, (cmd ^ 0xffffffff) >>> 0, true);
-
             const buffer = new Uint8Array(24 + data.length);
-            buffer.set(new Uint8Array(header), 0);
-            buffer.set(data, 24);
+            buffer.set(new Uint8Array(header), 0); buffer.set(data, 24);
             await usbDevice.transferOut(epOut, buffer);
         }
 
-        async function readPacket(timeoutMs = 0) {
+        async function readPacket() {
             if (!usbDevice) return null;
-            const readPromise = async () => {
-                try {
-                    const headerRes = await usbDevice.transferIn(epIn, 24);
-                    if (!headerRes.data || headerRes.data.byteLength < 24) return null;
-                    const view = new DataView(headerRes.data.buffer);
-                    const cmd = view.getUint32(0, true);
-                    const arg0 = view.getUint32(4, true);
-                    const arg1 = view.getUint32(8, true);
-                    const len = view.getUint32(12, true);
-
-                    let payload = new Uint8Array(0);
-                    if (len > 0) {
-                        const dataRes = await usbDevice.transferIn(epIn, len);
-                        if (dataRes.data) payload = new Uint8Array(dataRes.data.buffer);
-                    }
-                    return { cmd, arg0, arg1, data: payload };
-                } catch (e) { return { error: true, msg: e.message }; }
-            };
-            if (timeoutMs <= 0) return await readPromise();
-            return Promise.race([ readPromise(), new Promise(resolve => setTimeout(() => resolve({ timeout: true }), timeoutMs)) ]);
+            try {
+                const headerRes = await usbDevice.transferIn(epIn, 24);
+                if (!headerRes.data || headerRes.data.byteLength < 24) return null;
+                const view = new DataView(headerRes.data.buffer);
+                const cmd = view.getUint32(0, true); const arg0 = view.getUint32(4, true); const arg1 = view.getUint32(8, true); const len = view.getUint32(12, true);
+                let payload = new Uint8Array(0);
+                if (len > 0) {
+                    const dataRes = await usbDevice.transferIn(epIn, len);
+                    if (dataRes.data) payload = new Uint8Array(dataRes.data.buffer);
+                }
+                return { cmd, arg0, arg1, data: payload };
+            } catch (e) { return { error: true, msg: e.message }; }
         }
 
-        async function uiConnectUSB() {
+        async function conectarUSB() {
             try {
-                showToast("Selecione o aparelho na janela do navegador...", "info");
                 usbDevice = await navigator.usb.requestDevice({ filters: [{ classCode: 255, subclassCode: 66, protocolCode: 1 }] });
                 await usbDevice.open();
                 if (usbDevice.configuration === null) await usbDevice.selectConfiguration(1);
-
+                
                 let intfNum = -1;
                 for (const conf of usbDevice.configurations) {
                     for (const intf of conf.interfaces) {
@@ -527,225 +316,379 @@
                 await usbDevice.claimInterface(intfNum);
 
                 // Handshake
-                let waitToast = showToast("Autenticando com o Samsung...", "wait");
-                await sendPacket(CMD.CNXN, 0x01000000, 4096, new TextEncoder().encode("host::DiscaAI\0"));
+                showToast("Negociando autorização com o celular...");
+                await sendPacket(0x4E584E43, 0x01000000, 4096, new TextEncoder().encode("host::DiscaAI\0"));
                 
-                const keyPair = await getAdbKeyPair();
-                let isAuth = false;
-
-                for(let i=0; i<3; i++) {
-                    let packet = await readPacket(5000);
-                    if (!packet || packet.error || packet.timeout) continue;
-                    
-                    if (packet.cmd === CMD.CNXN) { isAuth = true; break; }
-                    
-                    if (packet.cmd === CMD.AUTH && packet.arg0 === 1) {
-                        let sig = await signAdbToken(keyPair, packet.data);
-                        await sendPacket(CMD.AUTH, 2, 0, sig);
-                        
-                        let resp = await readPacket(2000);
-                        if (resp && resp.cmd === CMD.CNXN) { isAuth = true; break; }
-                        
+                let keyPair = await getAdbKeyPair();
+                
+                // Ler resposta (pode ser AUTH ou direto CNXN)
+                let resp1 = await readPacket();
+                if(resp1 && resp1.cmd === 0x4E584E43) {
+                    isAdbReady = true; // Já estava autorizado
+                } else if (resp1 && resp1.cmd === 0x48545541 && resp1.arg0 === 1) {
+                    // Pede chave. Manda assinatura.
+                    let sig = await signAdbToken(keyPair, resp1.data);
+                    await sendPacket(0x48545541, 2, 0, sig);
+                    let resp2 = await readPacket();
+                    if(resp2 && resp2.cmd === 0x4E584E43) {
+                        isAdbReady = true;
+                    } else {
+                        // Manda chave pública para forçar Pop-up
                         let pubKey = await getAdbPublicKeyPayload(keyPair);
-                        await sendPacket(CMD.AUTH, 3, 0, pubKey);
+                        await sendPacket(0x48545541, 3, 0, pubKey);
+                        showToast("🚨 Olhe para o celular e clique em PERMITIR!");
                         
-                        waitToast.remove();
-                        waitToast = showToast("🚨 OLHE PARA O CELULAR! Clique em 'Permitir'.", "wait");
-                        
-                        // Espera o humano clicar
-                        let finalResp = await readPacket(60000);
-                        if (finalResp && finalResp.cmd === CMD.CNXN) { isAuth = true; break; }
+                        // Fica aguardando a pessoa clicar na tela
+                        while(!isAdbReady) {
+                            let waitResp = await readPacket();
+                            if(waitResp && waitResp.error) break;
+                            if(waitResp && waitResp.cmd === 0x4E584E43) {
+                                isAdbReady = true;
+                            }
+                        }
                     }
                 }
 
-                waitToast.remove();
-
-                if (isAuth) {
-                    isAdbAuthorized = true;
-                    document.getElementById('usb-badge').className = "usb-status connected";
-                    document.getElementById('usb-text').innerText = "Sistema Conectado & Autorizado";
-                    document.getElementById('btn-connect').style.display = "none";
-                    document.getElementById('btn-manual').disabled = false;
-                    if(contacts.length > 0) document.getElementById('btn-start-auto').disabled = false;
-                    showToast("Conexão ADB estabelecida com sucesso!", "success");
+                if(isAdbReady) {
+                    let badge = document.getElementById('usb-badge');
+                    badge.classList.add('connected');
+                    document.getElementById('usb-status-text').innerText = "SISTEMA AUTORIZADO";
+                    document.getElementById('btn-conectar').style.display = 'none';
+                    if(contatosBase.length > 0) document.getElementById('btn-start').disabled = false;
+                    showToast("Conexão ADB estabelecida com sucesso!");
                 } else {
-                    throw new Error("Handshake falhou. Autorização não recebida no tempo limite.");
+                    showToast("Falha: Autorização não concluída.");
                 }
 
-            } catch (err) {
-                showToast("Erro: " + err.message, "error");
+            } catch(e) {
+                showToast("Erro: " + e.message);
             }
         }
 
-        async function executeAdbShell(commandStr) {
-            if (!usbDevice || !isAdbAuthorized) return false;
+        async function runAdbShell(command) {
+            if (!isAdbReady) return false;
             try {
                 const myId = localIdCounter++;
-                const payload = new TextEncoder().encode("shell:" + commandStr + "\0");
-                await sendPacket(CMD.OPEN, myId, 0, payload);
-
-                let success = false;
-                for(let i=0; i<5; i++) {
-                    const packet = await readPacket(3000);
-                    if (!packet || packet.error || packet.timeout) continue;
-                    
-                    if (packet.cmd === CMD.OKAY && packet.arg1 === myId) success = true; 
-                    else if (packet.cmd === CMD.WRTE && packet.arg1 === myId) await sendPacket(CMD.OKAY, myId, packet.arg0);
-                    else if (packet.cmd === CMD.CLSE && packet.arg1 === myId) {
-                        await sendPacket(CMD.CLSE, myId, packet.arg0);
-                        break;
-                    }
+                await sendPacket(0x4E45504F, myId, 0, new TextEncoder().encode("shell:" + command + "\0"));
+                let ok = false;
+                for(let i=0; i<3; i++) {
+                    let r = await readPacket();
+                    if(r && r.cmd === 0x59414B4F && r.arg1 === myId) { ok = true; }
+                    if(r && r.cmd === 0x45534C43) { await sendPacket(0x45534C43, myId, r.arg0); break; }
                 }
-                return success;
+                return true;
             } catch(e) { return false; }
         }
 
-        let reportStats = { executadas: 0, atendeu: 0, callback: 0, caixa: 0, desligou: 0, chama: 0, desconhece: 0, cancelado: 0, encerrar: 0 };
-        let currentIdx = 0;
-        let isAutoMode = false;
+        let contatosTemp = [];
+        let contatosBase = [];
+
+        function processarEntradas() {
+            contatosTemp = [];
+            let texto = document.getElementById('paste-area').value;
+            
+            // Tenta processar o arquivo primeiro, se houver
+            let fileInput = document.getElementById('file-upload');
+            if(fileInput.files.length > 0) {
+                let file = fileInput.files[0];
+                let reader = new FileReader();
+                reader.onload = function(e) {
+                    let data = e.target.result;
+                    // Tenta ler com SheetJS se disponível, senão como texto puro
+                    if(typeof XLSX !== 'undefined' && file.name.endsWith('.xlsx')) {
+                        let workbook = XLSX.read(data, {type: 'binary'});
+                        let firstSheet = workbook.SheetNames[0];
+                        let json = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheet], {header: 1});
+                        let extraText = json.map(row => row.join(' ')).join('\n');
+                        analisarTextoBruto(texto + "\n" + extraText);
+                    } else {
+                        analisarTextoBruto(texto + "\n" + data);
+                    }
+                };
+                if(file.name.endsWith('.xlsx')) reader.readAsBinaryString(file);
+                else reader.readAsText(file);
+            } else {
+                analisarTextoBruto(texto);
+            }
+        }
+
+        function analisarTextoBruto(rawText) {
+            let linhas = rawText.split('\n');
+            let stats = { total: 0, corrigidos: 0, invalidos: 0 };
+            
+            linhas.forEach(linha => {
+                let s = linha.trim();
+                if(!s) return;
+                
+                // 1. Limpa +55
+                s = s.replace(/\+?55\s?/, '');
+                
+                // 2. Extrai todos os blocos de números
+                let numBlocks = s.match(/\d+/g) || [];
+                let phone = "";
+                let code = "";
+                let status = "Válido";
+                let isCorrected = false;
+                
+                // Identifica o telefone (bloco longo) e o código (bloco curto)
+                for(let b of numBlocks) {
+                    if(b.length === 10 || b.length === 11) {
+                        phone = b;
+                    } else if (b.length >= 3 && b.length <= 7 && !code) {
+                        code = b;
+                    }
+                }
+
+                // Corrige o 9 se tiver 10 dígitos
+                if(phone.length === 10) {
+                    phone = phone.substring(0,2) + '9' + phone.substring(2);
+                    status = "Corrigido";
+                    isCorrected = true;
+                    stats.corrigidos++;
+                } else if (phone.length !== 11) {
+                    status = "Inválido";
+                    stats.invalidos++;
+                }
+
+                // Extrai o nome (o que sobrar de texto puro)
+                let name = s.replace(/\d/g, '').replace(/[^\w\sÀ-ÿ]/g, '').replace(/\s+/g, ' ').trim();
+                if(!name) name = "Contato Sem Nome";
+                if(!code) code = "---";
+
+                stats.total++;
+                contatosTemp.push({ name: name, code: code, phone: phone, status: status, original: linha });
+            });
+
+            mostrarPreview(stats);
+        }
+
+        function mostrarPreview(stats) {
+            document.getElementById('prev-total').innerText = stats.total;
+            document.getElementById('prev-corrigidos').innerText = stats.corrigidos;
+            document.getElementById('prev-invalidos').innerText = stats.invalidos;
+            
+            let tbody = document.querySelector('#preview-table tbody');
+            tbody.innerHTML = '';
+            
+            contatosTemp.forEach(c => {
+                let tr = document.createElement('tr');
+                let tdClass = c.status === 'Corrigido' ? 'td-corrected' : (c.status === 'Inválido' ? 'td-invalid' : '');
+                tr.innerHTML = `
+                    <td>${c.code}</td>
+                    <td>${c.name}</td>
+                    <td class="${tdClass}">${c.phone || 'Não encontrado'}</td>
+                    <td class="${tdClass}">${c.status}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('modal-preview').style.display = 'flex';
+        }
+
+        function fecharModal() { document.getElementById('modal-preview').style.display = 'none'; }
+        
+        function confirmarImportacao() {
+            // Adiciona à base, filtrando os inválidos mas MANTENDO as duplicatas como pedido
+            let validos = contatosTemp.filter(c => c.status !== 'Inválido').map(c => ({
+                ...c, tentativas: 0, statusChamada: 'Pendente'
+            }));
+            contatosBase = contatosBase.concat(validos);
+            
+            document.getElementById('stat-pendentes').innerText = contatosBase.filter(c => c.statusChamada === 'Pendente').length;
+            if(isAdbReady) document.getElementById('btn-start').disabled = false;
+            
+            document.getElementById('paste-area').value = '';
+            document.getElementById('file-upload').value = '';
+            fecharModal();
+            showToast(`${validos.length} contatos adicionados à fila!`);
+        }
+
+        let isCampaignActive = false;
         let isPaused = false;
+        let currentIndex = 0;
         let callTimer = null;
         let timeLeft = 0;
-        let callsMadeThisSession = 0;
-        let currentPhoneManual = "";
+        let callState = 'IDLE'; // IDLE, CALLING, TALKING
+        
+        // Histórico para relatório
+        let relatorio = { processados: 0, atendeu: 0, naoatendeu: 0, caixa: 0, cancelado: 0, desconhece: 0, callback: 0 };
 
-        function toggleActionButtons(enable) { document.querySelectorAll('.disp-btn').forEach(b => b.disabled = !enable); }
-
-        async function startManualCall() {
-            const raw = document.getElementById('manual-phone').value;
-            if(!raw) return showToast("Digite um número.", "error");
+        function iniciarCampanha() {
+            let limit = parseInt(document.getElementById('cfg-limit').value);
+            if(currentIndex >= contatosBase.length || currentIndex >= limit) return showToast("Fila finalizada ou limite atingido.");
             
-            const v = validarTelefoneBR(raw);
-            if(v.status === 'invalid') return showToast("Número Inválido.", "error");
-            currentPhoneManual = v.phone;
-
-            isAutoMode = false;
-            clearInterval(callTimer);
+            isCampaignActive = true; isPaused = false;
+            document.getElementById('btn-start').style.display = 'none';
+            document.getElementById('btn-pause').style.display = 'inline-block';
             
-            document.getElementById('stage-status').innerText = "Modo Manual";
-            document.getElementById('stage-phone').innerText = currentPhoneManual;
-            document.getElementById('stage-timer').innerText = "☎️";
-            document.getElementById('stage-timer').className = "timer-ring active";
-            document.getElementById('stage-info').innerText = "Chamada avulsa em andamento.";
-
-            await executeAdbShell(`am start -a android.intent.action.CALL -d tel:${currentPhoneManual}`);
-            toggleActionButtons(true);
+            processarProximo();
         }
 
-        async function startAutoDial() {
-            const limit = parseInt(document.getElementById('cfg-limit').value);
-            if (callsMadeThisSession >= limit) return showToast("Limite atingido.", "info");
-            if (currentIdx >= contacts.length) return showToast("Base finalizada.", "info");
-
-            isAutoMode = true; isPaused = false;
-            document.getElementById('btn-start-auto').style.display = 'none';
-            document.getElementById('btn-pause-auto').style.display = 'flex';
-            
-            processNextAuto();
-        }
-
-        function pauseAutoDial() {
+        function pausarCampanha() {
             isPaused = true;
-            document.getElementById('btn-start-auto').style.display = 'flex';
-            document.getElementById('btn-pause-auto').style.display = 'none';
-            document.getElementById('stage-status').innerText = "Em Pausa";
-            document.getElementById('stage-timer').className = "timer-ring";
+            document.getElementById('btn-start').style.display = 'inline-block';
+            document.getElementById('btn-pause').style.display = 'none';
+            document.getElementById('stage-status').innerText = "Operação Pausada.";
         }
 
-        async function processNextAuto() {
-            if (isPaused) return;
-            const limit = parseInt(document.getElementById('cfg-limit').value);
-            if (callsMadeThisSession >= limit || currentIdx >= contacts.length) { pauseAutoDial(); return; }
+        function toggleAvaliacoes(enable) {
+            document.querySelectorAll('.disp-btn').forEach(btn => btn.disabled = !enable);
+        }
 
-            let contact = contacts[currentIdx];
-            while (contact && (contact.status === 'Atendeu' || contact.retries >= 3)) {
-                currentIdx++; contact = contacts[currentIdx];
-            }
-            if (!contact) { pauseAutoDial(); return; }
-
-            document.getElementById('stage-status').innerText = `Discando (Tentativa ${contact.retries + 1}/3)`;
-            document.getElementById('stage-phone').innerText = contact.phone;
-            document.getElementById('stage-timer').className = "timer-ring active";
-            toggleActionButtons(true);
-
-            await executeAdbShell(`am start -a android.intent.action.CALL -d tel:${contact.phone}`);
+        async function processarProximo() {
+            if(isPaused) return;
             
-            callsMadeThisSession++;
-            document.getElementById('stat-processed').innerText = reportStats.executadas;
-            document.getElementById('stat-pending').innerText = contacts.length - currentIdx;
+            let limit = parseInt(document.getElementById('cfg-limit').value);
+            if(currentIndex >= contatosBase.length || currentIndex >= limit) {
+                pausarCampanha();
+                document.getElementById('stage-name').innerText = "Campanha Concluída";
+                return;
+            }
 
-            const maxTime = parseInt(document.getElementById('cfg-time').value) || 30;
+            let contato = contatosBase[currentIndex];
+            if(contato.statusChamada !== 'Pendente' && contato.statusChamada !== 'Retentativa') {
+                currentIndex++; processarProximo(); return;
+            }
+
+            // UI Updates
+            document.getElementById('stage-code').innerText = `CÓD: ${contato.code} | TENTATIVA ${contato.tentativas + 1}/3`;
+            document.getElementById('stage-name').innerText = contato.name;
+            document.getElementById('stage-phone').innerText = contato.phone;
+            document.getElementById('stage-status').innerText = "Chamando...";
+            
+            let stageTimer = document.getElementById('stage-timer');
+            stageTimer.className = "timer-display active";
+            
+            // Limpa botões
+            document.getElementById('btn-atendeu').style.display = 'inline-block';
+            document.getElementById('btn-desligar').style.display = 'inline-block';
+            toggleAvaliacoes(false); // Só pode avaliar depois que a ligação termina ou atende
+
+            // Envia Comando ADB
+            await runAdbShell(`am start -a android.intent.action.CALL -d tel:${contato.phone}`);
+            
+            // Inicia Cronômetro de Timeout
+            callState = 'CALLING';
+            let maxTime = parseInt(document.getElementById('cfg-time').value) || 30;
             timeLeft = maxTime;
-            document.getElementById('stage-timer').innerText = timeLeft;
-
+            stageTimer.innerText = timeLeft;
+            
             clearInterval(callTimer);
             callTimer = setInterval(async () => {
                 timeLeft--;
-                document.getElementById('stage-timer').innerText = timeLeft;
-                if (timeLeft <= 0) {
+                stageTimer.innerText = timeLeft;
+                if(timeLeft <= 0) {
                     clearInterval(callTimer);
-                    await handleDisposition("Caixa Postal / Timeout");
+                    await handleTimeout();
                 }
             }, 1000);
         }
 
-        async function handleDisposition(resultText) {
-            clearInterval(callTimer);
-            toggleActionButtons(false);
-            await executeAdbShell("input keyevent 6"); // Desliga
+        // Quando o atendente clica em "ATENDEU"
+        function marcarAtendido() {
+            if(callState !== 'CALLING') return;
             
-            document.getElementById('stage-timer').className = "timer-ring";
+            clearInterval(callTimer); // PARA O TEMPO, NÃO DESLIGA A LIGAÇÃO
+            callState = 'TALKING';
+            
+            let stageTimer = document.getElementById('stage-timer');
+            stageTimer.innerText = "EM CURSO";
+            stageTimer.className = "timer-display talking";
+            document.getElementById('stage-status').innerText = "Ligação ativa. Pode conversar.";
+            
+            document.getElementById('btn-atendeu').style.display = 'none'; // Esconde o botão de atendeu
+            toggleAvaliacoes(true); // Libera avaliação para ele classificar durante a chamada
+        }
+
+        // Quando o atendente clica no botão vermelho grande de desligar
+        async function encerrarLigacaoManual() {
+            clearInterval(callTimer);
+            callState = 'EVALUATING';
+            await runAdbShell("input keyevent 6"); // Manda desligar
+            
             document.getElementById('stage-timer').innerText = "00";
+            document.getElementById('stage-timer').className = "timer-display";
+            document.getElementById('stage-status').innerText = "Chamada encerrada. Selecione o resultado abaixo.";
+            
+            document.getElementById('btn-atendeu').style.display = 'none';
+            document.getElementById('btn-desligar').style.display = 'none';
+            toggleAvaliacoes(true);
+        }
 
-            reportStats.executadas++;
-            if(resultText === 'Atendeu') { reportStats.atendeu++; document.getElementById('stage-timer').className = "timer-ring success"; }
-            else if(resultText === 'Callback') reportStats.callback++;
-            else if(resultText.includes('Caixa')) reportStats.caixa++;
-            else if(resultText === 'Só Chama') reportStats.chama++;
-            else if(resultText === 'Desligou') reportStats.desligou++;
-            else if(resultText === 'Desconhece') reportStats.desconhece++;
-            else if(resultText === 'Cancelado') reportStats.cancelado++;
-            else reportStats.encerrar++;
+        // Timeout: O tempo acabou e ninguém atendeu
+        async function handleTimeout() {
+            callState = 'EVALUATING';
+            await runAdbShell("input keyevent 6"); // Desliga
+            await processarResultadoInterno('Não atendeu'); // Tabula como não atendeu
+        }
 
-            if (isAutoMode) {
-                let contact = contacts[currentIdx];
-                contact.retries++;
-                
-                if (resultText === 'Atendeu' || resultText === 'Callback' || resultText === 'Cancelado' || resultText === 'Desconhece') {
-                    contact.status = resultText; currentIdx++;
+        // Quando clica nos botões da grade (Atendeu, Caixa Postal, etc)
+        async function avaliar(resultado) {
+            if(callState === 'TALKING') {
+                // Se ainda estava falando e clicou num resultado, desliga primeiro
+                await runAdbShell("input keyevent 6"); 
+            }
+            clearInterval(callTimer);
+            await processarResultadoInterno(resultado);
+        }
+
+        // Lógica de Retentativa e Avanço
+        async function processarResultadoInterno(resultado) {
+            let contato = contatosBase[currentIndex];
+            contato.tentativas++;
+            
+            // Atualiza métricas
+            if(resultado === 'Atendeu') relatorio.atendeu++;
+            else if(resultado === 'Não atendeu') relatorio.naoatendeu++;
+            else if(resultado === 'Caixa postal') relatorio.caixa++;
+            else if(resultado === 'Callback') relatorio.callback++;
+            else if(resultado === 'Número cancelado') relatorio.cancelado++;
+            else if(resultado === 'Desconhece o titular') relatorio.desconhece++;
+            
+            let isFinal = true;
+            if(resultado === 'Não atendeu' || resultado === 'Caixa postal') {
+                if(contato.tentativas < 3) {
+                    isFinal = false;
+                    contato.statusChamada = 'Retentativa';
+                    showToast(`Tentativa ${contato.tentativas} falhou. Agendado para depois.`);
+                    // Opcional: move para o fim da fila para não ligar logo em seguida
+                    let temp = contatosBase.splice(currentIndex, 1)[0];
+                    contatosBase.push(temp);
+                    currentIndex--; // Ajusta index porque removemos o atual
                 } else {
-                    if (contact.retries >= 3) { contact.status = `Falha 3x (${resultText})`; currentIdx++; }
-                    else { contact.status = `Tentar Novamente`; currentIdx++; } // Avança a fila, volta depois se aplicar lógica de reciclo
+                    contato.statusChamada = `Falhou (3x ${resultado})`;
                 }
-                
-                updateReportUI();
-                if (!isPaused) setTimeout(processNextAuto, 2000);
             } else {
-                showToast(`Manual: Tabulado como ${resultText}`);
-                updateReportUI();
+                contato.statusChamada = resultado; // Sucesso, Cancelado, Callback, etc.
+            }
+
+            if(isFinal) {
+                relatorio.processados++;
+                document.getElementById('stat-feitos').innerText = relatorio.processados;
+            }
+            
+            document.getElementById('stat-pendentes').innerText = contatosBase.filter(c => c.statusChamada === 'Pendente' || c.statusChamada === 'Retentativa').length;
+            
+            toggleAvaliacoes(false);
+            document.getElementById('btn-atendeu').style.display = 'none';
+            document.getElementById('btn-desligar').style.display = 'none';
+            
+            currentIndex++;
+            if(!isPaused) {
+                document.getElementById('stage-status').innerText = "Avançando...";
+                setTimeout(processarProximo, 1500); // Pausa de respiro
             }
         }
 
-        function updateReportUI() {
-            document.getElementById('stat-processed').innerText = reportStats.executadas;
-            const container = document.getElementById('report-summary');
-            container.innerHTML = `
-                <div class="history-item"><span style="color:var(--text-secondary)">Atendeu (Sucesso)</span> <strong style="color:var(--accent-green)">${reportStats.atendeu}</strong></div>
-                <div class="history-item"><span style="color:var(--text-secondary)">Fila de Callback</span> <strong style="color:#F59E0B">${reportStats.callback}</strong></div>
-                <div class="history-item"><span style="color:var(--text-secondary)">Caixa Postal/Timeout</span> <strong>${reportStats.caixa}</strong></div>
-                <div class="history-item"><span style="color:var(--text-secondary)">Cliente Desligou</span> <strong>${reportStats.desligou}</strong></div>
-                <div class="history-item"><span style="color:var(--text-secondary)">Só Chama</span> <strong>${reportStats.chama}</strong></div>
-                <div class="history-item"><span style="color:var(--text-secondary)">Desconhece Titular</span> <strong>${reportStats.desconhece}</strong></div>
-                <div class="history-item"><span style="color:var(--text-secondary)">Cancelado/Inexistente</span> <strong>${reportStats.cancelado}</strong></div>
-            `;
-        }
-
-        function exportReport() {
-            if(reportStats.executadas === 0) return showToast("Nenhum dado para exportar.", "error");
-            let csv = "Nome,Telefone,Status Final,Tentativas\n";
-            contacts.forEach(c => { if(c.retries > 0 || c.status !== 'Pendente') csv += `${c.name},${c.phone},${c.status},${c.retries}\n`; });
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
+        function exportarRelatorio() {
+            if(contatosBase.length === 0) return showToast("Não há dados para exportar.");
+            let csv = "Código,Nome,Telefone,Status Final,Tentativas\n";
+            contatosBase.forEach(c => {
+                csv += `${c.code},${c.name},${c.phone},${c.statusChamada},${c.tentativas}\n`;
+            });
+            
+            let blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            let link = document.createElement("a");
             link.href = URL.createObjectURL(blob);
             link.download = "Relatorio_DiscaAI.csv";
             link.click();
