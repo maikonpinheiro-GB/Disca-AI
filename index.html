@@ -1,807 +1,468 @@
 <!DOCTYPE html>
-<html lang="pt-BR" class="h-full bg-slate-950 text-slate-100">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Disca AI - Central de Operação USB</title>
-
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <!-- SheetJS Excel Reader -->
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] } } }
-        }
-    </script>
-
+    <title>Disca AI - Diagnóstico de Engenharia</title>
     <style>
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #090d16; }
-        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #334155; }
-        
-        .glass-card {
-            background: rgba(15, 23, 42, 0.75);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        }
-
-        .btn-interact { transition: all 0.15s ease-in-out; }
-        .btn-interact:active { transform: scale(0.96); }
-        
-        .log-terminal {
-            font-family: 'Courier New', Courier, monospace;
-            background-color: #020617;
-        }
+        body { font-family: 'Consolas', 'Courier New', monospace; background: #0f172a; color: #e2e8f0; padding: 20px; margin: 0; }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { color: #38bdf8; border-bottom: 1px solid #334155; padding-bottom: 10px; }
+        .panel { background: #1e293b; border: 1px solid #334155; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .step-row { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px dashed #334155; }
+        .step-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .btn { background: #0284c7; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-family: inherit; font-weight: bold; width: 250px; text-align: left; }
+        .btn:hover { background: #0369a1; }
+        .btn:disabled { background: #475569; color: #94a3b8; cursor: not-allowed; }
+        .btn-green { background: #16a34a; }
+        .btn-green:hover { background: #15803d; }
+        .input-text { background: #0f172a; color: white; border: 1px solid #475569; padding: 9px; border-radius: 4px; font-family: inherit; width: 150px; }
+        .status-indicator { font-weight: bold; }
+        .terminal { background: #000; border: 1px solid #334155; border-radius: 8px; padding: 15px; height: 400px; overflow-y: auto; font-size: 13px; line-height: 1.5; }
+        .log-info { color: #94a3b8; }
+        .log-success { color: #22c55e; font-weight: bold; }
+        .log-warn { color: #eab308; }
+        .log-error { color: #ef4444; font-weight: bold; }
+        .log-tx { color: #38bdf8; }
+        .log-rx { color: #a855f7; }
     </style>
 </head>
-<body class="h-full flex flex-col font-sans antialiased overflow-x-hidden selection:bg-emerald-600 selection:text-white">
+<body>
 
-    <header class="bg-slate-900/90 border-b border-slate-800 sticky top-0 z-40 backdrop-blur-md px-6 py-4">
-        <div class="max-w-7xl mx-auto flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="bg-gradient-to-tr from-emerald-500 to-teal-400 w-10 h-10 rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.3)] flex items-center justify-center text-slate-950 font-black text-xl">
-                    <i class="fa-solid fa-headset"></i>
-                </div>
-                <div>
-                    <h1 class="font-black text-xl tracking-tight text-white flex items-center gap-2">
-                        Disca <span class="text-emerald-500">AI</span>
-                    </h1>
-                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Central de Operação USB</p>
-                </div>
-            </div>
+<div class="container">
+    <h1>Disca AI - Diagnóstico de Comunicação ADB</h1>
+    <p style="color: #94a3b8; margin-top: -10px;">Execute os passos em ordem. Se ocorrer um erro, leia o terminal para descobrir a causa exata.</p>
 
-            <div class="flex items-center gap-4">
-                <button id="btnConnectUSB" onclick="connectUSBDevice()" class="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all shadow-lg shadow-blue-600/20 btn-interact">
-                    <i class="fa-brands fa-usb text-base"></i> Conectar Samsung (ADB)
-                </button>
-                
-                <div id="statusBadge" class="flex items-center gap-2 bg-rose-950/60 border border-rose-500/40 px-4 py-2 rounded-xl">
-                    <div id="statusDot" class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></div>
-                    <span id="statusBadgeText" class="text-xs font-bold text-rose-300">USB Desconectado</span>
-                </div>
-            </div>
+    <div class="panel">
+        <div class="step-row">
+            <button class="btn" id="btn-step1" onclick="executarPasso1()">Passo 1: Reivindicar USB</button>
+            <span class="status-indicator" id="status-step1">Aguardando...</span>
         </div>
-    </header>
-
-    <main class="flex-1 max-w-7xl w-full mx-auto p-6 flex flex-col gap-6">
-
-        <div class="glass-card p-4 rounded-2xl border border-slate-800">
-            <div class="flex items-center justify-between mb-2">
-                <span class="text-xs font-extrabold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-                    <i class="fa-solid fa-terminal text-emerald-400"></i> Console de Diagnóstico em Tempo Real
-                </span>
-                <span id="diagnosticTag" class="text-[10px] font-bold bg-slate-800 text-slate-400 px-2.5 py-1 rounded-md border border-slate-700">
-                    Aguardando Inicialização
-                </span>
-            </div>
-            <div id="terminalLog" class="log-terminal text-xs p-3 rounded-xl border border-slate-800 text-slate-300 h-24 overflow-y-auto space-y-1">
-                <div class="text-slate-500">[Disca AI] Conecte o celular Samsung via cabo USB para iniciar.</div>
-            </div>
+        
+        <div class="step-row">
+            <button class="btn" id="btn-step2" onclick="executarPasso2()" disabled>Passo 2: Autenticar ADB (RSA)</button>
+            <span class="status-indicator" id="status-step2">Requer Passo 1</span>
+        </div>
+        
+        <div class="step-row">
+            <button class="btn" id="btn-step3" onclick="executarPasso3()" disabled>Passo 3: Testar Shell (Ping)</button>
+            <span class="status-indicator" id="status-step3">Requer Passo 2</span>
         </div>
 
-        <div class="grid grid-cols-4 gap-4">
-            <div class="glass-card p-4 rounded-2xl border-t-4 border-t-blue-500">
-                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total na Base</span>
-                <div class="text-2xl font-black text-white mt-1" id="kpiTotal">0</div>
-            </div>
-            <div class="glass-card p-4 rounded-2xl border-t-4 border-t-amber-500">
-                <span class="text-[10px] font-bold text-amber-400 uppercase tracking-wider">Pendentes</span>
-                <div class="text-2xl font-black text-amber-400 mt-1" id="kpiPending">0</div>
-            </div>
-            <div class="glass-card p-4 rounded-2xl border-t-4 border-t-emerald-500">
-                <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Atendidos</span>
-                <div class="text-2xl font-black text-emerald-400 mt-1" id="kpiSuccess">0</div>
-            </div>
-            <div class="glass-card p-4 rounded-2xl border-t-4 border-t-rose-500">
-                <span class="text-[10px] font-bold text-rose-400 uppercase tracking-wider">Falhas (Max 3x)</span>
-                <div class="text-2xl font-black text-rose-400 mt-1" id="kpiFailed">0</div>
-            </div>
+        <div class="step-row">
+            <button class="btn btn-green" id="btn-step4" onclick="executarPasso4()" disabled>Passo 4: Comando de Ligação</button>
+            <input type="text" id="input-phone" class="input-text" placeholder="DDD+Número" value="11999999999">
+            <span class="status-indicator" id="status-step4">Requer Passo 3</span>
         </div>
+    </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
-            <!-- MESA DE OPERAÇÃO CENTRAL -->
-            <div class="lg:col-span-2 glass-card p-6 rounded-3xl border border-slate-800 flex flex-col justify-between">
-                <div>
-                    <div class="flex justify-between items-center border-b border-slate-800 pb-3 mb-6">
-                        <span class="text-xs font-black uppercase tracking-wider text-slate-400">Mesa de Operação</span>
-                        <div class="flex items-center gap-2">
-                            <span class="text-xs text-slate-400 font-bold">Auto-Desligar em:</span>
-                            <input type="number" id="timeoutSec" value="25" class="bg-slate-900 border border-slate-700 rounded-lg w-16 px-2 py-1 text-center text-xs font-bold text-white outline-none">
-                            <span class="text-xs text-slate-500">seg</span>
-                        </div>
-                    </div>
-
-                    <div class="text-center py-8 bg-slate-900/60 rounded-2xl border border-slate-800/80 mb-6">
-                        <span class="text-[11px] font-extrabold text-emerald-400 uppercase tracking-widest block mb-2" id="dispTitle">MESA OCIOSA</span>
-                        <h2 id="dispName" class="text-3xl font-black text-white mb-2">---</h2>
-                        <p id="dispPhone" class="text-2xl font-mono text-slate-300 font-bold tracking-wider">---</p>
-                        
-                        <div class="mt-4 flex justify-center gap-4 text-xs font-bold">
-                            <span id="dispAttempt" class="bg-slate-800 text-slate-400 px-3 py-1 rounded-lg border border-slate-700">Tentativa: 0/3</span>
-                            <span id="dispTimer" class="bg-slate-800 text-amber-400 px-3 py-1 rounded-lg border border-slate-700">Timer: --</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <button id="btnAnswered" onclick="registerAnswer()" disabled class="btn-interact bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 text-white font-extrabold text-sm uppercase py-4 rounded-xl shadow-lg flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-headset text-lg"></i> Cliente Atendeu
-                    </button>
-                    <button id="btnHangup" onclick="hangupAndNext(true)" disabled class="btn-interact bg-rose-600 hover:bg-rose-500 disabled:opacity-40 text-white font-extrabold text-sm uppercase py-4 rounded-xl shadow-lg flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-phone-slash text-lg"></i> Desligar / Próximo
-                    </button>
-                </div>
-
-                <div class="flex gap-3 mt-4 pt-4 border-t border-slate-800">
-                    <button id="btnStartAuto" onclick="startCampaign()" disabled class="btn-interact w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white font-bold text-xs uppercase py-3.5 rounded-xl flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-play"></i> Iniciar Piloto Automático
-                    </button>
-                    <button id="btnPauseAuto" onclick="pauseCampaign()" class="hidden btn-interact w-full bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/40 font-bold text-xs uppercase py-3.5 rounded-xl flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-pause"></i> Pausar Operação
-                    </button>
-                </div>
-            </div>
-
-            <!-- CONTROLES LATERAIS & MANUAL -->
-            <div class="flex flex-col gap-6">
-                
-                <!-- LIGAÇÃO MANUAL AVULSA -->
-                <div class="glass-card p-5 rounded-3xl border border-slate-800">
-                    <h3 class="text-xs font-black uppercase tracking-wider text-slate-300 mb-4 flex items-center gap-2">
-                        <i class="fa-solid fa-square-phone text-blue-500"></i> Ligação Manual
-                    </h3>
-                    <div class="space-y-3">
-                        <div>
-                            <label class="text-[10px] font-bold uppercase text-slate-400 block mb-1">Nome do Contato</label>
-                            <input type="text" id="manualName" placeholder="Ex: Cliente VIP" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-blue-500">
-                        </div>
-                        <div>
-                            <label class="text-[10px] font-bold uppercase text-slate-400 block mb-1">DDD + Telefone</label>
-                            <input type="text" id="manualPhone" placeholder="Ex: 11999999999" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-blue-500">
-                        </div>
-                        <button id="btnManualDial" onclick="dialManual()" disabled class="btn-interact w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white font-bold text-xs uppercase py-3 rounded-xl flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-paper-plane"></i> Ligar Agora
-                        </button>
-                    </div>
-                </div>
-
-                <!-- IMPORTAÇÃO DE BASE -->
-                <div class="glass-card p-5 rounded-3xl border border-slate-800">
-                    <h3 class="text-xs font-black uppercase tracking-wider text-slate-300 mb-4 flex items-center gap-2">
-                        <i class="fa-solid fa-file-csv text-emerald-500"></i> Importar Base de Contatos
-                    </h3>
-                    <input type="file" id="fileInput" accept=".xlsx, .xls, .csv, .txt" class="hidden" onchange="handleImport(event)">
-                    <button onclick="document.getElementById('fileInput').click()" class="btn-interact w-full bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 font-bold text-xs py-3 rounded-xl flex items-center justify-center gap-2 mb-2">
-                        <i class="fa-solid fa-file-import"></i> Buscar Planilha Excel / CSV
-                    </button>
-                    <p class="text-[10px] text-slate-500 text-center">Suporta mais de 1.500 contatos. Limpa formatação sozinho.</p>
-                </div>
-
-            </div>
-        </div>
-
-        <div class="glass-card rounded-3xl border border-slate-800 overflow-hidden">
-            <div class="p-4 border-b border-slate-800 bg-slate-900/60 flex justify-between items-center">
-                <span class="text-xs font-extrabold uppercase tracking-wider text-slate-300">Fila de Disparo</span>
-                <button onclick="clearQueue()" class="text-rose-400 hover:text-rose-300 text-xs font-bold">Limpar Fila</button>
-            </div>
-            <div class="overflow-x-auto max-h-60">
-                <table class="w-full text-left text-xs">
-                    <thead class="sticky top-0 bg-slate-950 text-slate-400 font-bold uppercase text-[10px] border-b border-slate-800">
-                        <tr>
-                            <th class="py-3 px-4">Nome</th>
-                            <th class="py-3 px-4">Telefone</th>
-                            <th class="py-3 px-4">Tentativas</th>
-                            <th class="py-3 px-4">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="queueBody" class="divide-y divide-slate-800/50">
-                        <tr><td colspan="4" class="py-6 text-center text-slate-500">Nenhum contato importado.</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-    </main>
-
-    <!-- FOOTER OBRIGATÓRIO -->
-    <footer class="bg-slate-950 border-t border-slate-900 py-4 mt-auto text-center text-xs text-slate-500 font-medium">
+    <h2>Terminal de Diagnóstico (Logs Brutos)</h2>
+    <div class="terminal" id="terminal-log">
+        <div class="log-info">Iniciando ferramenta de diagnóstico...</div>
+        <div class="log-info">Navegador com suporte a WebUSB: <span id="webusb-support">Verificando...</span></div>
+    </div>
+    
+    <div style="margin-top: 20px; text-align: center; color: #475569; font-size: 12px;">
         App criado por Maikon Nattan
-    </footer>
+    </div>
+</div>
 
-    <script>
-        /* ====================================================================
-           MOTOR EMBUDIDO WEBADB COM CRIPTOGRAFIA RSA NATIVA (WEBCRYPTO API)
-           ==================================================================== */
-        (function(global) {
-            'use strict';
+<script>
+    // === CONSTANTES DO PROTOCOLO ADB ===
+    const A_SYNC = 0x434e5953;
+    const A_CNXN = 0x4e584e43;
+    const A_OPEN = 0x4e45504f;
+    const A_OKAY = 0x59414b4f;
+    const A_CLSE = 0x45534c43;
+    const A_WRTE = 0x45545257;
+    const A_AUTH = 0x48545541;
 
-            const A_CNXN = 0x4e584e43;
-            const A_OPEN = 0x4e45504f;
-            const A_OKAY = 0x59414b4f;
-            const A_AUTH = 0x48545541;
+    const ADB_VERSION = 0x01000000;
+    const MAX_PAYLOAD = 4096;
 
-            const ADB_AUTH_TOKEN = 1;
-            const ADB_AUTH_SIGNATURE = 2;
-            const ADB_AUTH_RSAKEY = 3;
+    // === VARIÁVEIS GLOBAIS ===
+    let usbDevice = null;
+    let epIn = null;
+    let epOut = null;
+    let localIdCounter = 1;
+    let cryptoKey = null;
 
-            const ADB_VERSION = 0x01000000;
-            const MAX_PAYLOAD = 4096;
+    // Funções de Interface
+    function printLog(msg, type = 'info') {
+        const terminal = document.getElementById('terminal-log');
+        const div = document.createElement('div');
+        const time = new Date().toISOString().split('T')[1].slice(0, 12);
+        div.className = `log-${type}`;
+        div.innerText = `[${time}] ${msg}`;
+        terminal.appendChild(div);
+        terminal.scrollTop = terminal.scrollHeight;
+    }
 
-            class AdbCryptoHelper {
-                constructor() {
-                    this.keyPair = null;
-                }
+    function setStatus(step, text, color) {
+        const el = document.getElementById(`status-step${step}`);
+        el.innerText = text;
+        el.style.color = color;
+    }
 
-                async generateKeyPair() {
-                    if (this.keyPair) return this.keyPair;
-                    this.keyPair = await crypto.subtle.generateKey(
-                        {
-                            name: "RSASSA-PKCS1-v1_5",
-                            modulusLength: 2048,
-                            publicExponent: new Uint8Array([1, 0, 1]),
-                            hash: "SHA-256"
-                        },
-                        true,
-                        ["sign", "verify"]
-                    );
-                    return this.keyPair;
-                }
+    // Verifica Suporte Inicial
+    if (navigator.usb) {
+        document.getElementById('webusb-support').innerText = "SIM";
+        document.getElementById('webusb-support').style.color = "#22c55e";
+    } else {
+        document.getElementById('webusb-support').innerText = "NÃO (Use Chrome no PC)";
+        document.getElementById('webusb-support').style.color = "#ef4444";
+    }
 
-                async signToken(token) {
-                    await this.generateKeyPair();
-                    const signature = await crypto.subtle.sign(
-                        "RSASSA-PKCS1-v1_5",
-                        this.keyPair.privateKey,
-                        token
-                    );
-                    return new Uint8Array(signature);
-                }
+    async function generateRSAKey() {
+        if (cryptoKey) return cryptoKey;
+        printLog("Gerando par de chaves RSA-2048 locais...", "info");
+        cryptoKey = await crypto.subtle.generateKey(
+            { name: "RSASSA-PKCS1-v1_5", modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: "SHA-256" },
+            true, ["sign", "verify"]
+        );
+        return cryptoKey;
+    }
 
-                async getAdbPublicKeyFormat() {
-                    await this.generateKeyPair();
-                    const exported = await crypto.subtle.exportKey("jwk", this.keyPair.publicKey);
-                    
-                    const b64 = exported.n.replace(/-/g, '+').replace(/_/g, '/');
-                    const binaryStr = atob(b64);
-                    const modBytes = new Uint8Array(binaryStr.length);
-                    for (let i = 0; i < binaryStr.length; i++) {
-                        modBytes[i] = binaryStr.charCodeAt(i);
-                    }
+    async function signAdbToken(token) {
+        const key = await generateRSAKey();
+        printLog("Assinando token recebido do Android...", "info");
+        const signature = await crypto.subtle.sign("RSASSA-PKCS1-v1_5", key.privateKey, token);
+        return new Uint8Array(signature);
+    }
 
-                    let n = 0n;
-                    for (let i = 0; i < modBytes.length; i++) {
-                        n = (n << 8n) | BigInt(modBytes[i]);
-                    }
+    async function getAdbPublicKeyPayload() {
+        const key = await generateRSAKey();
+        printLog("Convertendo chave pública para formato proprietário do Android...", "info");
+        const exported = await crypto.subtle.exportKey("jwk", key.publicKey);
+        
+        const b64 = exported.n.replace(/-/g, '+').replace(/_/g, '/');
+        const binaryStr = atob(b64);
+        const modBytes = new Uint8Array(binaryStr.length);
+        for (let i = 0; i < binaryStr.length; i++) modBytes[i] = binaryStr.charCodeAt(i);
 
-                    const r32 = 1n << 32n;
-                    const n0 = n % r32;
-                    let inv = 1n;
-                    for (let i = 0; i < 32; i++) {
-                        inv = (inv * (2n - n0 * inv)) % r32;
-                    }
-                    const n0inv = Number((r32 - inv) % r32);
+        let n = 0n;
+        for (let i = 0; i < modBytes.length; i++) n = (n << 8n) | BigInt(modBytes[i]);
 
-                    const r2048 = 1n << 2048n;
-                    const rr = (r2048 * r2048) % n;
+        const r32 = 1n << 32n;
+        const n0 = n % r32;
+        let inv = 1n;
+        for (let i = 0; i < 32; i++) inv = (inv * (2n - n0 * inv)) % r32;
+        const n0inv = Number((r32 - inv) % r32);
 
-                    const buffer = new ArrayBuffer(524);
-                    const view = new DataView(buffer);
-                    const bytes = new Uint8Array(buffer);
+        const r2048 = 1n << 2048n;
+        const rr = (r2048 * r2048) % n;
 
-                    view.setUint32(0, 64, true);
-                    view.setUint32(4, n0inv, true);
+        const buffer = new ArrayBuffer(524);
+        const view = new DataView(buffer);
+        const bytes = new Uint8Array(buffer);
 
-                    let tempN = n;
-                    for (let i = 0; i < 256; i++) {
-                        bytes[8 + i] = Number(tempN & 0xffn);
-                        tempN >>= 8n;
-                    }
+        view.setUint32(0, 64, true);
+        view.setUint32(4, n0inv, true);
 
-                    let tempRR = rr;
-                    for (let i = 0; i < 256; i++) {
-                        bytes[264 + i] = Number(tempRR & 0xffn);
-                        tempRR >>= 8n;
-                    }
+        let tempN = n;
+        for (let i = 0; i < 256; i++) { bytes[8 + i] = Number(tempN & 0xffn); tempN >>= 8n; }
+        
+        let tempRR = rr;
+        for (let i = 0; i < 256; i++) { bytes[264 + i] = Number(tempRR & 0xffn); tempRR >>= 8n; }
 
-                    view.setUint32(520, 65537, true);
+        view.setUint32(520, 65537, true);
 
-                    const nameBytes = new TextEncoder().encode("DiscaAI\0");
-                    const fullPayload = new Uint8Array(buffer.byteLength + nameBytes.length);
-                    fullPayload.set(bytes, 0);
-                    fullPayload.set(nameBytes, buffer.byteLength);
+        const nameBytes = new TextEncoder().encode("DiscaAI_Diagnostic\0");
+        const fullPayload = new Uint8Array(buffer.byteLength + nameBytes.length);
+        fullPayload.set(bytes, 0);
+        fullPayload.set(nameBytes, buffer.byteLength);
 
-                    return fullPayload;
-                }
+        return fullPayload;
+    }
+
+    async function sendPacket(cmd, arg0, arg1, data = new Uint8Array(0)) {
+        if (!usbDevice || !epOut) throw new Error("USB não configurado.");
+        
+        const header = new ArrayBuffer(24);
+        const view = new DataView(header);
+
+        let checksum = 0;
+        for (let i = 0; i < data.length; i++) checksum += data[i];
+        checksum = checksum & 0xffffffff;
+
+        view.setUint32(0, cmd, true);
+        view.setUint32(4, arg0, true);
+        view.setUint32(8, arg1, true);
+        view.setUint32(12, data.length, true);
+        view.setUint32(16, checksum, true);
+        view.setUint32(20, (cmd ^ 0xffffffff) >>> 0, true);
+
+        const buffer = new Uint8Array(24 + data.length);
+        buffer.set(new Uint8Array(header), 0);
+        buffer.set(data, 24);
+
+        printLog(`TX: Comando 0x${cmd.toString(16).toUpperCase()} (Tamanho: ${buffer.length} bytes)`, "log-tx");
+        
+        try {
+            await usbDevice.transferOut(epOut, buffer);
+        } catch (e) {
+            printLog(`ERRO CRÍTICO no envio (transferOut): ${e.message}`, "log-error");
+            throw e;
+        }
+    }
+
+    async function readPacket() {
+        if (!usbDevice || !epIn) throw new Error("USB não configurado.");
+        
+        printLog(`RX: Aguardando pacote do Android...`, "info");
+        try {
+            // Lê o cabeçalho de 24 bytes
+            const headerRes = await usbDevice.transferIn(epIn, 24);
+            if (!headerRes.data || headerRes.data.byteLength < 24) {
+                printLog(`RX ERRO: Pacote incompleto recebido.`, "log-error");
+                return null;
             }
 
-            class WebAdbDriver {
-                constructor() {
-                    this.device = null;
-                    this.epIn = null;
-                    this.epOut = null;
-                    this.interfaceNumber = 0;
-                    this.crypto = new AdbCryptoHelper();
-                    this.localId = 1;
-                    this.isAuthorized = false;
-                    this.onLogCallback = null;
-                }
+            const view = new DataView(headerRes.data.buffer);
+            const cmd = view.getUint32(0, true);
+            const arg0 = view.getUint32(4, true);
+            const arg1 = view.getUint32(8, true);
+            const len = view.getUint32(12, true);
 
-                log(msg, type = 'info') {
-                    console.log(`[Disca AI ADB] ${msg}`);
-                    if (this.onLogCallback) this.onLogCallback(msg, type);
-                }
+            printLog(`RX: Recebido 0x${cmd.toString(16).toUpperCase()} (Carga útil: ${len} bytes)`, "log-rx");
 
-                async open(logger) {
-                    if (logger) this.onLogCallback = logger;
-
-                    if (!navigator.usb) {
-                        this.log("Seu navegador não possui suporte ao WebUSB. Use o Google Chrome.", "error");
-                        throw new Error("WebUSB não suportado neste navegador.");
-                    }
-
-                    this.log("Solicitando seleção de dispositivo USB...", "info");
-                    try {
-                        this.device = await navigator.usb.requestDevice({
-                            filters: [
-                                { classCode: 255, subclassCode: 66, protocolCode: 1 },
-                                { vendorId: 0x04e8 } // Samsung Vendor ID
-                            ]
-                        });
-                    } catch (e) {
-                        this.log("Filtro específico não retornou aparelhos. Tentando seleção geral de USB...", "warning");
-                        this.device = await navigator.usb.requestDevice({ filters: [] });
-                    }
-
-                    if (!this.device) {
-                        this.log("Nenhum celular foi selecionado no menu do navegador.", "error");
-                        throw new Error("Dispositivo USB não selecionado.");
-                    }
-
-                    this.log(`USB Conectado: ${this.device.productName || 'Aparelho Samsung'}`, "success");
-
-                    await this.device.open();
-                    if (this.device.configuration === null) {
-                        await this.device.selectConfiguration(1);
-                    }
-
-                    let adbIntf = null;
-                    for (const conf of this.device.configurations) {
-                        for (const intf of conf.interfaces) {
-                            for (const alt of intf.alternates) {
-                                if (alt.interfaceClass === 255 && alt.interfaceSubclass === 66 && alt.interfaceProtocol === 1) {
-                                    adbIntf = intf;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-
-                    if (!adbIntf && this.device.configuration.interfaces.length > 0) {
-                        adbIntf = this.device.configuration.interfaces[0];
-                    }
-
-                    if (!adbIntf) {
-                        this.log("Interface ADB não encontrada. Certifique-se de ativar a Depuração USB no celular.", "error");
-                        throw new Error("Interface ADB ausente.");
-                    }
-
-                    this.interfaceNumber = adbIntf.interfaceNumber;
-                    try {
-                        await this.device.claimInterface(this.interfaceNumber);
-                    } catch (err) { }
-
-                    const endpoints = adbIntf.alternates[0].endpoints;
-                    for (const ep of endpoints) {
-                        if (ep.direction === 'in') this.epIn = ep.endpointNumber;
-                        if (ep.direction === 'out') this.epOut = ep.endpointNumber;
-                    }
-
-                    return this;
-                }
-
-                async sendPacket(cmd, arg0, arg1, data = new Uint8Array(0)) {
-                    const header = new ArrayBuffer(24);
-                    const view = new DataView(header);
-
-                    let checksum = 0;
-                    for (let i = 0; i < data.length; i++) checksum += data[i];
-                    checksum = checksum & 0xffffffff;
-
-                    view.setUint32(0, cmd, true);
-                    view.setUint32(4, arg0, true);
-                    view.setUint32(8, arg1, true);
-                    view.setUint32(12, data.length, true);
-                    view.setUint32(16, checksum, true);
-                    view.setUint32(20, (cmd ^ 0xffffffff) >>> 0, true);
-
-                    const buffer = new Uint8Array(24 + data.length);
-                    buffer.set(new Uint8Array(header), 0);
-                    buffer.set(data, 24);
-
-                    await this.device.transferOut(this.epOut, buffer);
-                }
-
-                async readPacket() {
-                    const res = await this.device.transferIn(this.epIn, 24);
-                    if (!res.data || res.data.byteLength < 24) {
-                        return { cmd: 0, arg0: 0, arg1: 0, data: new Uint8Array(0) };
-                    }
-                    const view = new DataView(res.data.buffer);
-                    const cmd = view.getUint32(0, true);
-                    const arg0 = view.getUint32(4, true);
-                    const arg1 = view.getUint32(8, true);
-                    const len = view.getUint32(12, true);
-
-                    let payload = new Uint8Array(0);
-                    if (len > 0) {
-                        const dataRes = await this.device.transferIn(this.epIn, len);
-                        if (dataRes.data) {
-                            payload = new Uint8Array(dataRes.data.buffer);
-                        }
-                    }
-                    return { cmd, arg0, arg1, data: payload };
-                }
-
-                async authenticate() {
-                    this.log("Iniciando Handshake ADB e autenticação RSA...", "info");
-                    
-                    const bannerPayload = new TextEncoder().encode("host::DiscaAI\0");
-                    await this.sendPacket(A_CNXN, ADB_VERSION, MAX_PAYLOAD, bannerPayload);
-
-                    let attempts = 0;
-                    while (attempts < 5) {
-                        attempts++;
-                        const packet = await this.readPacket();
-
-                        if (packet.cmd === A_AUTH) {
-                            if (packet.arg0 === ADB_AUTH_TOKEN) {
-                                this.log("Aguardando confirmação de autorização na tela do Samsung (RSA enviado)...", "warning");
-                                
-                                const signature = await this.crypto.signToken(packet.data);
-                                await this.sendPacket(A_AUTH, ADB_AUTH_SIGNATURE, 0, signature);
-
-                                const pubKeyData = await this.crypto.getAdbPublicKeyFormat();
-                                await this.sendPacket(A_AUTH, ADB_AUTH_RSAKEY, 0, pubKeyData);
-                            }
-                        } else if (packet.cmd === A_CNXN) {
-                            this.isAuthorized = true;
-                            this.log("ADB Autorizado com Sucesso!", "success");
-                            return true;
-                        }
-                    }
-
-                    if (!this.isAuthorized) {
-                        this.log("ADB Não Autorizado. Confirme na tela do seu celular e tente novamente.", "error");
-                        throw new Error("ADB Não Autorizado pelo usuário.");
-                    }
-                    return true;
-                }
-
-                async sendShellCommand(commandStr) {
-                    if (!this.isAuthorized) {
-                        this.log("Falha ao enviar comando: O celular não está com ADB Autorizado.", "error");
-                        return false;
-                    }
-
-                    try {
-                        const myLocalId = this.localId++;
-                        const payload = new TextEncoder().encode("shell:" + commandStr + "\0");
-                        
-                        this.log(`Enviando comando para o Samsung: [${commandStr}]`, "info");
-                        await this.sendPacket(A_OPEN, myLocalId, 0, payload);
-
-                        const response = await this.readPacket();
-                        if (response.cmd === A_OKAY) {
-                            this.log("Comando enviado e executado com sucesso no Samsung!", "success");
-                            return true;
-                        } else {
-                            this.log(`Aviso do Samsung ao executar comando. Código: ${response.cmd}`, "warning");
-                            return true;
-                        }
-                    } catch (err) {
-                        this.log(`Falha ao enviar comando: ${err.message}`, "error");
-                        return false;
-                    }
+            let payload = new Uint8Array(0);
+            if (len > 0) {
+                // Lê o restante do pacote (carga útil)
+                const dataRes = await usbDevice.transferIn(epIn, len);
+                if (dataRes.data) {
+                    payload = new Uint8Array(dataRes.data.buffer);
                 }
             }
-
-            global.DiscaAdbEngine = {
-                connect: async function(logger) {
-                    const driver = new WebAdbDriver();
-                    await driver.open(logger);
-                    await driver.authenticate();
-                    return driver;
-                }
-            };
-
-        })(typeof window !== 'undefined' ? window : this);
-
-
-        let adbEngine = null;
-        let contacts = [];
-        let currentIndex = -1;
-        let isCampaignRunning = false;
-        let isManualCall = false;
-
-        let callTimer = null;
-        let timeLeft = 0;
-        const MAX_RETRIES = 3;
-
-        function appendLog(msg, type = 'info') {
-            const terminal = document.getElementById('terminalLog');
-            const item = document.createElement('div');
+            return { cmd, arg0, arg1, data: payload };
             
-            let color = 'text-slate-300';
-            if (type === 'success') color = 'text-emerald-400 font-bold';
-            if (type === 'error') color = 'text-rose-400 font-bold';
-            if (type === 'warning') color = 'text-amber-400 font-bold';
-
-            const time = new Date().toLocaleTimeString('pt-BR');
-            item.className = color;
-            item.innerText = `[${time}] ${msg}`;
+        } catch (e) {
+            printLog(`ERRO CRÍTICO na leitura (transferIn): ${e.message}`, "log-error");
+            printLog("Causa Comum: O celular reiniciou a porta USB após você clicar em 'Permitir'. Revogue as autorizações USB no celular, tire o cabo, recarregue a página e tente de novo.", "log-warn");
             
-            terminal.appendChild(item);
-            terminal.scrollTop = terminal.scrollHeight;
-
-            document.getElementById('diagnosticTag').innerText = msg;
+            // Tenta limpar o bloqueio da porta para não travar o navegador
+            try { await usbDevice.clearHalt('in', epIn); } catch (err) {}
+            
+            throw e;
         }
+    }
 
-        async function connectUSBDevice() {
-            try {
-                appendLog("Iniciando processo de conexão USB...", "info");
-                
-                adbEngine = await DiscaAdbEngine.connect((msg, type) => {
-                    appendLog(msg, type);
-                });
+    async function executarPasso1() {
+        setStatus(1, "Iniciando...", "#eab308");
+        printLog("--- INICIANDO PASSO 1: CONEXÃO USB ---", "info");
 
-                document.getElementById('statusBadge').className = "flex items-center gap-2 bg-emerald-950/60 border border-emerald-500/40 px-4 py-2 rounded-xl";
-                document.getElementById('statusDot').className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
-                document.getElementById('statusBadgeText').innerText = "ADB Autorizado";
+        try {
+            usbDevice = await navigator.usb.requestDevice({ filters: [{ classCode: 255, subclassCode: 66, protocolCode: 1 }] });
+            printLog(`Aparelho Selecionado: ${usbDevice.manufacturerName} ${usbDevice.productName}`, "log-success");
 
-                document.getElementById('btnConnectUSB').disabled = true;
-                document.getElementById('btnConnectUSB').innerText = "Conexão Ativa";
-                document.getElementById('btnManualDial').disabled = false;
+            await usbDevice.open();
+            printLog("Dispositivo USB Aberto com sucesso.", "info");
 
-                if (contacts.length > 0) document.getElementById('btnStartAuto').disabled = false;
-
-            } catch (err) {
-                appendLog(`Falha na conexão: ${err.message}`, "error");
-                document.getElementById('statusBadgeText').innerText = "Falha USB / Não Autorizado";
+            if (usbDevice.configuration === null) {
+                printLog("Selecionando configuração 1...", "info");
+                await usbDevice.selectConfiguration(1);
             }
-        }
 
-        async function dialManual() {
-            const phone = document.getElementById('manualPhone').value.replace(/\D/g, '');
-            const name = document.getElementById('manualName').value || "LIGAÇÃO MANUAL";
-
-            if (!phone || phone.length < 8) return appendLog("Digite um número de telefone válido.", "error");
-            if (!adbEngine) return appendLog("ADB não autorizado. Conecte o USB primeiro.", "error");
-
-            if (isCampaignRunning) pauseCampaign();
-
-            isManualCall = true;
-            document.getElementById('dispTitle').innerText = "LIGAÇÃO MANUAL";
-            document.getElementById('dispName').innerText = name;
-            document.getElementById('dispPhone').innerText = phone;
-            document.getElementById('dispAttempt').innerText = "-";
-            document.getElementById('dispTimer').innerText = "EM CURSO";
-
-            document.getElementById('btnAnswered').disabled = false;
-            document.getElementById('btnHangup').disabled = false;
-
-            const success = await adbEngine.sendShellCommand(`am start -a android.intent.action.CALL -d tel:${phone}`);
-            if (success) {
-                appendLog(`Comando enviado! O Samsung está ligando para ${phone}.`, "success");
-            } else {
-                appendLog("Falha ao enviar comando de discagem para o Samsung.", "error");
-            }
-        }
-
-        function handleImport(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, {type: 'array'});
-                    const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], {header: 1});
-
-                    contacts = [];
-                    json.forEach((row) => {
-                        if (!row || row.length === 0) return;
-                        const rowStr = row.join(' ');
-                        const phoneMatches = rowStr.match(/(?:\+?55\s?)?(?:\(?\d{2}\)?\s?)?(?:9\d{4}[-\s]?\d{4}|\d{4}[-\s]?\d{4})/g);
-
-                        if (phoneMatches) {
-                            phoneMatches.forEach(match => {
-                                const cleanPhone = match.replace(/\D/g, '');
-                                if (cleanPhone.length >= 8) {
-                                    let contactName = row.find(v => typeof v === 'string' && v.length > 2 && !/\d{4}/.test(v)) || `Contato ${contacts.length + 1}`;
-                                    if (!contacts.some(c => c.phone === cleanPhone)) {
-                                        contacts.push({ id: contacts.length, name: contactName.trim(), phone: cleanPhone, attempts: 0, status: 'Pendente' });
-                                    }
-                                }
-                            });
+            let adbInterface = null;
+            let interfaceNum = -1;
+            
+            // Procura a interface exata do ADB (255, 66, 1)
+            for (const conf of usbDevice.configurations) {
+                for (const intf of conf.interfaces) {
+                    for (const alt of intf.alternates) {
+                        if (alt.interfaceClass === 255 && alt.interfaceSubclass === 66 && alt.interfaceProtocol === 1) {
+                            adbInterface = alt;
+                            interfaceNum = intf.interfaceNumber;
+                            break;
                         }
-                    });
-
-                    updateKPIs();
-                    renderTable();
-                    if (adbEngine) document.getElementById('btnStartAuto').disabled = false;
-                    appendLog(`${contacts.length} contatos carregados com sucesso!`, "success");
-                } catch (err) {
-                    appendLog("Erro ao ler planilha. Tente salvar como CSV.", "error");
+                    }
                 }
-            };
-            reader.readAsArrayBuffer(file);
-        }
-
-        function startCampaign() {
-            if (contacts.length === 0) return appendLog("Fila de contatos está vazia.", "warning");
-            isCampaignRunning = true;
-            isManualCall = false;
-
-            document.getElementById('btnStartAuto').classList.add('hidden');
-            document.getElementById('btnPauseAuto').classList.remove('hidden');
-
-            processNextContact();
-        }
-
-        function pauseCampaign() {
-            isCampaignRunning = false;
-            clearInterval(callTimer);
-
-            document.getElementById('btnStartAuto').classList.remove('hidden');
-            document.getElementById('btnPauseAuto').classList.add('hidden');
-
-            appendLog("Piloto Automático Pausado.", "info");
-        }
-
-        function getNextPendingIndex() {
-            return contacts.findIndex(c => c.status !== 'Atendido' && c.attempts < MAX_RETRIES);
-        }
-
-        async function processNextContact() {
-            if (!isCampaignRunning) return;
-
-            currentIndex = getNextPendingIndex();
-
-            if (currentIndex === -1) {
-                pauseCampaign();
-                document.getElementById('dispTitle').innerText = "FILA CONCLUÍDA";
-                document.getElementById('dispName').innerText = "Fim da Base";
-                document.getElementById('dispPhone').innerText = "---";
-                appendLog("Todos os contatos da base foram processados!", "success");
-                return;
             }
 
-            const contact = contacts[currentIndex];
-            contact.attempts++;
+            if (interfaceNum === -1) {
+                throw new Error("Interface ADB não encontrada. A Depuração USB está ativada no menu de desenvolvedor?");
+            }
 
-            document.getElementById('dispTitle').innerText = "PILOTO AUTOMÁTICO";
-            document.getElementById('dispName').innerText = contact.name;
-            document.getElementById('dispPhone').innerText = contact.phone;
-            document.getElementById('dispAttempt').innerText = `Tentativa: ${contact.attempts}/${MAX_RETRIES}`;
+            printLog(`Reivindicando Interface ${interfaceNum}...`, "info");
+            await usbDevice.claimInterface(interfaceNum);
 
-            document.getElementById('btnAnswered').disabled = false;
-            document.getElementById('btnHangup').disabled = false;
+            // Mapeia Endpoints In e Out
+            epIn = null;
+            epOut = null;
+            for (const ep of adbInterface.endpoints) {
+                if (ep.direction === 'in') epIn = ep.endpointNumber;
+                if (ep.direction === 'out') epOut = ep.endpointNumber;
+            }
 
-            renderTable();
+            printLog(`Endpoints Mapeados -> IN: ${epIn}, OUT: ${epOut}`, "info");
 
-            const success = await adbEngine.sendShellCommand(`am start -a android.intent.action.CALL -d tel:${contact.phone}`);
-            if (success) {
-                startCallTimer();
+            if (!epIn || !epOut) throw new Error("Falha ao mapear Endpoints USB.");
+
+            setStatus(1, "SUCESSO", "#22c55e");
+            document.getElementById('btn-step2').disabled = false;
+            document.getElementById('btn-step1').disabled = true;
+
+        } catch (e) {
+            printLog(`Falha no Passo 1: ${e.message}`, "log-error");
+            setStatus(1, "FALHOU", "#ef4444");
+        }
+    }
+
+    async function executarPasso2() {
+        setStatus(2, "Negociando...", "#eab308");
+        printLog("--- INICIANDO PASSO 2: HANDSHAKE ADB ---", "info");
+
+        try {
+            const banner = new TextEncoder().encode("host::DiscaAI_Diag\0");
+            await sendPacket(A_CNXN, ADB_VERSION, MAX_PAYLOAD, banner);
+
+            let autorizado = false;
+            let timeout = 10; // Tenta ler 10 pacotes
+
+            while (timeout > 0 && !autorizado) {
+                timeout--;
+                const packet = await readPacket();
+                if (!packet) continue;
+
+                if (packet.cmd === A_AUTH) {
+                    if (packet.arg0 === 1) { // 1 = TOKEN
+                        printLog("Celular pediu Assinatura (Token 1). Enviando Assinatura RSA...", "info");
+                        const signature = await signAdbToken(packet.data);
+                        await sendPacket(A_AUTH, 2, 0, signature); // 2 = SIGNATURE
+                    } 
+                    // Lê o próximo pacote
+                    const nextPacket = await readPacket();
+                    
+                    if (nextPacket && nextPacket.cmd === A_AUTH) {
+                        printLog("Assinatura recusada (normal no primeiro uso). Enviando Chave Pública para forçar o pop-up na tela do celular...", "log-warn");
+                        const pubKey = await getAdbPublicKeyPayload();
+                        await sendPacket(A_AUTH, 3, 0, pubKey); // 3 = RSAPUBLICKEY
+                        printLog("🚨 OLHE PARA A TELA DO CELULAR AGORA E CLIQUE EM 'PERMITIR'!", "log-warn");
+                    } else if (nextPacket && nextPacket.cmd === A_CNXN) {
+                        autorizado = true;
+                    }
+
+                } else if (packet.cmd === A_CNXN) {
+                    printLog("Handshake CNXN recebido do Android!", "log-success");
+                    autorizado = true;
+                }
+            }
+
+            if (autorizado) {
+                printLog("CELULAR AUTORIZADO E CONECTADO AO PROTOCOLO ADB!", "log-success");
+                setStatus(2, "AUTORIZADO", "#22c55e");
+                document.getElementById('btn-step3').disabled = false;
+                document.getElementById('btn-step2').disabled = true;
             } else {
-                appendLog(`Falha ao discar para ${contact.name}. Tentando novamente...`, "error");
+                throw new Error("Timeout aguardando CNXN. Se você demorou para clicar no celular, clique neste botão Passo 2 novamente.");
             }
+
+        } catch (e) {
+            printLog(`Falha no Passo 2: ${e.message}`, "log-error");
+            setStatus(2, "FALHOU", "#ef4444");
         }
+    }
 
-        function startCallTimer() {
-            clearInterval(callTimer);
-            timeLeft = parseInt(document.getElementById('timeoutSec').value) || 25;
+    async function executarPasso3() {
+        setStatus(3, "Testando...", "#eab308");
+        printLog("--- INICIANDO PASSO 3: TESTE DE SHELL (PING) ---", "info");
 
-            document.getElementById('dispTimer').innerText = `${timeLeft}s`;
+        try {
+            const myId = localIdCounter++;
+            const payload = new TextEncoder().encode("shell:echo 'PONG_DIAGNOSTICO_OK'\0");
+            
+            printLog(`Abrindo stream de shell (Local ID: ${myId})...`, "info");
+            await sendPacket(A_OPEN, myId, 0, payload);
 
-            callTimer = setInterval(async () => {
-                timeLeft--;
-                document.getElementById('dispTimer').innerText = `${timeLeft}s`;
+            let okayReceived = false;
+            let outputReceived = false;
 
-                if (timeLeft <= 0) {
-                    clearInterval(callTimer);
-                    appendLog("Tempo esgotado. Ninguém atendeu.", "warning");
-                    await hangupAndNext(false);
+            // Espera até 5 pacotes para ver a resposta
+            for (let i = 0; i < 5; i++) {
+                const packet = await readPacket();
+                if (!packet) continue;
+
+                if (packet.cmd === A_OKAY && packet.arg1 === myId) {
+                    printLog("O celular aceitou abrir o tubo de comando (OKAY).", "log-success");
+                    okayReceived = true;
+                } else if (packet.cmd === A_WRTE && packet.arg1 === myId) {
+                    const textOutput = new TextDecoder().decode(packet.data);
+                    printLog(`RESPOSTA DO CELULAR: "${textOutput.trim()}"`, "log-success");
+                    outputReceived = true;
+                    
+                    // Devemos responder OKAY ao WRTE
+                    await sendPacket(A_OKAY, myId, packet.arg0);
+                } else if (packet.cmd === A_CLSE && packet.arg1 === myId) {
+                    printLog("O celular fechou o tubo de comando normalmente (CLSE).", "info");
+                    // Devemos responder CLSE
+                    await sendPacket(A_CLSE, myId, packet.arg0);
+                    break;
                 }
-            }, 1000);
-        }
-
-        function registerAnswer() {
-            clearInterval(callTimer);
-            document.getElementById('dispTimer').innerText = "EM ATENDIMENTO";
-            appendLog("Atendimento confirmado pelo operador.", "success");
-
-            if (!isManualCall && currentIndex !== -1) {
-                contacts[currentIndex].status = 'Atendido';
-                updateKPIs();
-                renderTable();
-            }
-        }
-
-        async function hangupAndNext() {
-            clearInterval(callTimer);
-
-            if (adbEngine) {
-                await adbEngine.sendShellCommand("input keyevent 6");
             }
 
-            document.getElementById('btnAnswered').disabled = true;
-            document.getElementById('btnHangup').disabled = true;
-
-            if (isManualCall) {
-                document.getElementById('dispTitle').innerText = "MESA OCIOSA";
-                document.getElementById('dispName').innerText = "---";
-                document.getElementById('dispPhone').innerText = "---";
-                document.getElementById('dispTimer').innerText = "--";
-                return;
+            if (okayReceived && outputReceived) {
+                setStatus(3, "SHELL OK", "#22c55e");
+                document.getElementById('btn-step4').disabled = false;
+                document.getElementById('btn-step3').disabled = true;
+            } else {
+                throw new Error("O comando foi enviado, mas não obtivemos a resposta 'PONG' esperada.");
             }
 
-            const contact = contacts[currentIndex];
-            if (contact.status !== 'Atendido') {
-                contact.status = (contact.attempts >= MAX_RETRIES) ? 'Falha (3x)' : 'Retentar';
+        } catch (e) {
+            printLog(`Falha no Passo 3: ${e.message}`, "log-error");
+            setStatus(3, "FALHOU", "#ef4444");
+        }
+    }
+
+    async function executarPasso4() {
+        const phone = document.getElementById('input-phone').value.replace(/\D/g, '');
+        if (phone.length < 8) {
+            printLog("Número de telefone inválido.", "log-error");
+            return;
+        }
+
+        setStatus(4, "Ligando...", "#eab308");
+        printLog(`--- INICIANDO PASSO 4: DISCAGEM PARA ${phone} ---`, "info");
+
+        try {
+            const myId = localIdCounter++;
+            const command = `shell:am start -a android.intent.action.CALL -d tel:${phone}\0`;
+            const payload = new TextEncoder().encode(command);
+            
+            printLog(`Enviando Intent Android de Chamada...`, "info");
+            await sendPacket(A_OPEN, myId, 0, payload);
+
+            let okayReceived = false;
+
+            // Espera resposta
+            for (let i = 0; i < 5; i++) {
+                const packet = await readPacket();
+                if (!packet) continue;
+
+                if (packet.cmd === A_OKAY && packet.arg1 === myId) {
+                    printLog("COMANDO DE LIGAÇÃO ACEITO E EXECUTADO PELO CELULAR!", "log-success");
+                    okayReceived = true;
+                } else if (packet.cmd === A_WRTE && packet.arg1 === myId) {
+                    await sendPacket(A_OKAY, myId, packet.arg0);
+                } else if (packet.cmd === A_CLSE && packet.arg1 === myId) {
+                    await sendPacket(A_CLSE, myId, packet.arg0);
+                    break;
+                }
             }
 
-            updateKPIs();
-            renderTable();
-
-            if (isCampaignRunning) {
-                setTimeout(() => { processNextContact(); }, 2000);
-            }
-        }
-
-        function updateKPIs() {
-            document.getElementById('kpiTotal').innerText = contacts.length;
-            document.getElementById('kpiPending').innerText = contacts.filter(c => c.status !== 'Atendido' && c.attempts < MAX_RETRIES).length;
-            document.getElementById('kpiSuccess').innerText = contacts.filter(c => c.status === 'Atendido').length;
-            document.getElementById('kpiFailed').innerText = contacts.filter(c => c.status === 'Falha (3x)').length;
-        }
-
-        function renderTable() {
-            const tbody = document.getElementById('queueBody');
-            if (contacts.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="py-6 text-center text-slate-500">Nenhum contato importado.</td></tr>';
-                return;
+            if (okayReceived) {
+                setStatus(4, "ENVIADO", "#22c55e");
+                printLog("Olhe para a tela do celular. Ele deve estar ligando agora.", "log-warn");
+            } else {
+                throw new Error("Falta de confirmação (OKAY) do comando de ligação.");
             }
 
-            tbody.innerHTML = contacts.slice(0, 100).map((c, i) => `
-                <tr class="${i === currentIndex && isCampaignRunning ? 'bg-blue-950/40 font-bold' : ''}">
-                    <td class="py-2.5 px-4 text-slate-200">${c.name}</td>
-                    <td class="py-2.5 px-4 font-mono text-emerald-400">${c.phone}</td>
-                    <td class="py-2.5 px-4 text-slate-400">${c.attempts}/${MAX_RETRIES}</td>
-                    <td class="py-2.5 px-4">
-                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${c.status === 'Atendido' ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' : c.status.includes('Falha') ? 'bg-rose-950 text-rose-400 border border-rose-800' : 'bg-slate-800 text-slate-400'}">${c.status}</span>
-                    </td>
-                </tr>
-            `).join('');
+        } catch (e) {
+            printLog(`Falha no Passo 4: ${e.message}`, "log-error");
+            setStatus(4, "FALHOU", "#ef4444");
         }
+    }
+</script>
 
-        function clearQueue() {
-            contacts = [];
-            pauseCampaign();
-            updateKPIs();
-            renderTable();
-        }
-    </script>
 </body>
 </html>
