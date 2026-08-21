@@ -135,7 +135,7 @@
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-400 mb-2">Tentativas Máximas</label>
-                        <input type="number" id="cfg-retries" value="1" min="1" class="w-full bg-black/50 border border-white/10 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500 text-center font-bold" title="Defina quantas vezes ligar para o mesmo número">
+                        <input type="number" id="cfg-retries" value="1" min="1" class="w-full bg-black/50 border border-white/10 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500 text-center font-bold" title="Defina quantas vezes ligar para o mesmo número antes de ir pro próximo">
                     </div>
                 </div>
             </div>
@@ -179,10 +179,11 @@
                 </div>
             </div>
 
+            <!-- Botões de Tabulação/Avaliação -->
             <div class="glass-panel rounded-2xl p-6">
                 <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Resultado da Chamada</h3>
                 <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-                    <button onclick="avaliarChamada('Atendeu')" class="disp-btn btn-luxury bg-white/5 hover:bg-emerald-500/20 text-gray-300 hover:text-emerald-400 border border-white/10 hover:border-emerald-500/50 p-4 rounded-xl text-sm font-bold transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>Atendeu</button>
+                    <button onclick="avaliarChamada('Atendeu')" class="disp-btn btn-luxury bg-white/5 hover:bg-emerald-500/20 text-gray-300 hover:text-emerald-400 border border-white/10 hover:border-emerald-500/50 p-4 rounded-xl text-sm font-bold transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>Atendeu (Venda/Sucesso)</button>
                     <button onclick="avaliarChamada('Callback')" class="disp-btn btn-luxury bg-white/5 hover:bg-amber-500/20 text-gray-300 hover:text-amber-400 border border-white/10 hover:border-amber-500/50 p-4 rounded-xl text-sm font-bold transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>Callback (Retornar)</button>
                     <button onclick="avaliarChamada('Caixa Postal')" class="disp-btn btn-luxury bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 p-4 rounded-xl text-sm font-bold transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>Caixa Postal</button>
                     <button onclick="avaliarChamada('Não Atendeu')" class="disp-btn btn-luxury bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 p-4 rounded-xl text-sm font-bold transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>Não Atendeu / Só Chama</button>
@@ -204,6 +205,7 @@
         <p class="text-xs font-semibold text-gray-500 tracking-wider">APP CRIADO POR MAIKON NATTAN</p>
     </footer>
 
+    <!-- Modal Preview Importação -->
     <div id="modal-preview" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
         <div class="glass-panel rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden border border-white/10 shadow-2xl">
             <div class="p-6 border-b border-white/10 flex justify-between items-center bg-black/40">
@@ -233,6 +235,7 @@
         </div>
     </div>
 
+    <!-- Container Alertas (Toasts) -->
     <div id="toast-container" class="fixed bottom-6 right-6 z-[200] flex flex-col gap-3 pointer-events-none"></div>
 
     <script>
@@ -271,8 +274,9 @@
             contatosTemp = [];
             let stats = { total: 0, corrigidos: 0, invalidos: 0 };
 
+            // Expressão regular robusta: quebra por linhas e processa
             rawText.split('\n').forEach(linha => {
-                let s = linha.trim().replace(/(?:\b|\+)(?:55|0055)\s?/g, '');
+                let s = linha.trim().replace(/(?:\b|\+)(?:55|0055)\s?/g, ''); // Remove DDI +55
                 if (!s) return;
                 
                 let phone = "", code = "", nameParts = [];
@@ -289,6 +293,7 @@
                 let status = "Válido";
                 let originalPhone = phone;
 
+                // Regra de Correção do "9" Brasileiro
                 if (phone.length === 10) {
                     phone = phone.substring(0, 2) + '9' + phone.substring(2);
                     status = "Corrigido";
@@ -335,12 +340,12 @@
 
         function confirmarImportacao() {
             const validos = contatosTemp.filter(c => c.status !== 'Inválido').map(c => ({...c, tentativas: 0, statusChamada: 'Pendente'}));
-            contatosBase = contatosBase.concat(validos); // Agora aceita contatos repetidos normalmente
+            contatosBase = contatosBase.concat(validos);
             atualizarMetricas();
             document.getElementById('paste-area').value = '';
             if (isAdbReady) document.getElementById('btn-start').disabled = false;
             fecharModal();
-            showToast(`${validos.length} contatos aprovados e inseridos na fila.`, 'success');
+            showToast(`${validos.length} contatos inseridos na fila de discagem.`, 'success');
         }
 
         function atualizarMetricas() {
@@ -353,8 +358,8 @@
         let isProcessingEval = false; 
 
         async function iniciarCampanha() {
-            if (currentIndex >= contatosBase.length) { showToast("Fila finalizada.", "info"); return; }
-            if (!isAdbReady) { showToast("Conecte o USB primeiro.", "error"); return; }
+            if (currentIndex >= contatosBase.length) { showToast("Sua fila acabou.", "info"); return; }
+            if (!isAdbReady) { showToast("Conecte o celular no USB primeiro.", "error"); return; }
             
             isCampaignActive = true;
             document.getElementById('btn-start').style.display = 'none';
@@ -400,12 +405,10 @@
             callState = 'CALLING';
             isProcessingEval = false;
 
-            // ACORDA A TELA ANTES DE TODA LIGAÇÃO PARA GARANTIR
+            // Envia Comando de Ligação e acorda tela
             await runAdbShell("input keyevent 224");
-
-            // Envia Comando de Ligação
             const success = await runAdbShell(`am start -a android.intent.action.CALL -d tel:${contato.phone}`);
-            if(!success) { showToast("Falha USB ao discar.", "error"); return; }
+            if(!success) { showToast("Falha USB ao enviar ordem de ligar.", "error"); return; }
 
             // Inicia Cronômetro
             const maxTime = parseInt(document.getElementById('cfg-time').value) || 15;
@@ -420,78 +423,75 @@
                 if (callState !== 'CALLING') return;
                 timeLeft--;
                 timerEl.innerText = timeLeft;
+                
+                // Se o relógio zerar, manda classificar automaticamente como "Não Atendeu"
                 if (timeLeft <= 0) {
                     clearInterval(autoHangupTimer);
-                    // O tempo acabou, vamos mandar avaliar automaticamente como "Não Atendeu"
                     await avaliarChamada('Não Atendeu');
                 }
             }, 1000);
         }
 
+        // Se a revendedora disser alô, o agente clica aqui. O cronômetro congela e a ligação NÃO CAI!
         function marcarAtendido() {
             if (callState !== 'CALLING') return;
-            clearInterval(autoHangupTimer); // PARA O RELÓGIO (Não desliga o celular)
+            clearInterval(autoHangupTimer); // PARALISA O RELÓGIO
             callState = 'TALKING';
             
             const timerEl = document.getElementById('stage-timer');
             timerEl.innerText = "EM CURSO";
             timerEl.className = "text-5xl font-black tracking-tighter transition-colors duration-300 timer-talking";
-            document.getElementById('timer-label').innerText = "Ligação ativa. Pode conversar.";
+            document.getElementById('timer-label').innerText = "Ligação ativa. Pode conversar pelo Headset.";
             
             document.getElementById('btn-atendeu').style.display = 'none';
             toggleAvaliacoes(true);
         }
 
         async function avaliarChamada(resultado) {
-            // Trava de segurança para impedir cliques duplos ou colisão
+            // Trava de segurança contra cliques duplos
             if (isProcessingEval) return; 
             isProcessingEval = true;
-
             clearInterval(autoHangupTimer);
             
-            // Se estava chamando ou falando, precisamos mandar o celular desligar a linha física
+            // Manda o celular apertar o botão vermelho para desligar a linha física
             if (callState === 'CALLING' || callState === 'TALKING') {
-                await runAdbShell("input keyevent 6"); // Botão Desligar
-                await sleep(500); // Dá tempo para o Android processar o fim da chamada
+                await runAdbShell("input keyevent 6"); 
+                await sleep(500); 
             }
             
             callState = 'EVALUATING';
             let contato = contatosBase[currentIndex];
             contato.tentativas++;
             
-            document.getElementById('timer-label').innerText = "Avaliando chamada...";
+            document.getElementById('timer-label').innerText = "Processando encerramento...";
             toggleAvaliacoes(false);
 
-            // 1. LÓGICA DO SMS (Qualquer resultado que não seja Atendeu)
             const sendSms = document.getElementById('cfg-sms-ativo').checked;
             const smsText = document.getElementById('cfg-sms-texto').value.trim();
             const isFailure = resultado !== 'Atendeu'; 
 
             if (sendSms && smsText && isFailure) {
-                document.getElementById('stage-badge').innerText = "ENVIANDO SMS AUTOMÁTICO...";
-                showToast(`Despachando SMS para ${contato.name}...`, 'warning');
+                document.getElementById('stage-badge').innerText = "DESPACHANDO SMS AUTOMÁTICO...";
+                showToast(`Enviando SMS de retenção para ${contato.name}...`, 'warning');
                 await dispararSMS_ADB(contato.phone, smsText);
             }
 
-            // 2. LÓGICA DE RETENTATIVAS
+            // Controle de Retentativas
             const maxRetries = parseInt(document.getElementById('cfg-retries').value) || 1;
             let isFinal = true;
             
-            // Só faz retentativa se for um erro comum e ainda tiver tentativas sobrando
             if (isFailure && resultado !== 'Número Cancelado' && resultado !== 'Desconhece Titular') {
                 if (contato.tentativas < maxRetries) {
                     isFinal = false;
                     contato.statusChamada = 'Retentativa';
-                    // Remove da posição atual e joga pro final da fila
                     let c = contatosBase.splice(currentIndex, 1)[0];
                     contatosBase.push(c);
-                    currentIndex--; // Ajusta o index porque removemos 1 da frente
-                    showToast(`Marcado para Retentativa (${contato.tentativas}/${maxRetries}).`);
+                    currentIndex--; 
+                    showToast(`Marcado para tentar novamente depois. (${contato.tentativas}/${maxRetries}).`);
                 } else {
-                    contato.statusChamada = `Falha Final (${resultado})`;
+                    contato.statusChamada = `Falhou (${resultado})`;
                 }
             } else {
-                // Se atendeu ou for cancelado, é definitivo
                 contato.statusChamada = resultado;
             }
 
@@ -503,49 +503,50 @@
             atualizarMetricas();
             resetTimerUI();
             
-            currentIndex++; // Avança sempre
+            currentIndex++;
             
             if (isCampaignActive) {
-                document.getElementById('stage-badge').innerText = "AVANÇANDO...";
-                document.getElementById('timer-label').innerText = "Preparando próximo contato...";
-                await sleep(1500); // Respiro humano entre chamadas
+                document.getElementById('stage-badge').innerText = "PREPARANDO PRÓXIMO...";
+                document.getElementById('timer-label').innerText = "Aguarde...";
+                await sleep(1500);
                 processarProximo();
             }
         }
 
+        // Função de SMS Antibug - Formata texto e usa teclado corretamente
         async function dispararSMS_ADB(phone, text) {
             try {
                 // 1. Acorda e Desbloqueia Tela
                 await runAdbShell("input keyevent 224");
                 await sleep(500);
-                await runAdbShell("input keyevent 82"); // Menu/Unlock
+                await runAdbShell("input keyevent 82");
                 await sleep(500);
 
-                // 2. Prepara e abre o SMS
-                let msgEncoded = text.replace(/'/g, "\\'");
-                await runAdbShell(`am start -a android.intent.action.SENDTO -d sms:${phone} --es sms_body '${msgEncoded}'`);
-                
-                // Dá tempo para o app de mensagens do celular carregar a tela e o teclado subir
-                await sleep(2500);
-                
-                // 3. Fecha o teclado para o cursor não se perder! Isso previne o celular clicar em 'Voltar'
-                await runAdbShell("input keyevent 111"); // Escape/Back (fecha o teclado virtual)
-                await sleep(500);
+                // 2. Limpeza profunda do texto para não bugar o comando do Android no fundo (remove Enters)
+                let cleanText = text.replace(/\r?\n|\r/g, ' ').replace(/"/g, '\\"').replace(/'/g, "");
 
-                // 4. Simula teclas de Envio focadas no botão Send
-                await runAdbShell("input keyevent 61"); // Tab (Sai do campo de texto e vai pro botão enviar)
-                await sleep(300);
-                await runAdbShell("input keyevent 66"); // Enter (Aperta Enviar)
-                await sleep(500);
+                // 3. Abre o app de mensagem direto na conversa com o texto já colado
+                await runAdbShell(`am start -a android.intent.action.SENDTO -d smsto:${phone} --es sms_body "${cleanText}"`);
                 
-                // Fallback de Segurança (Caso o Tab não tenha sido suficiente em alguns apps como Mensagens do Google)
-                await runAdbShell("input keyevent 22"); // Seta para Direita
+                // Aguarda o app de mensagens do celular carregar e abrir o teclado (Isso pode demorar em celulares mais lentos)
+                await sleep(3000);
+                
+                // 4. Mágica do ADB: Sem fechar o teclado, nós navegamos até o botão Enviar (Tab ou Seta pra Direita)
+                await runAdbShell("input keyevent 61"); // Tab
                 await sleep(300);
                 await runAdbShell("input keyevent 66"); // Enter
                 
-                await sleep(1000);
-                await runAdbShell("input keyevent 3"); // Botão Home (Limpa a tela e fecha o app de mensagem)
-                showToast("SMS disparado com sucesso!", "success");
+                // Fallback de segurança para celulares Samsung que precisam da Seta pra direita
+                await sleep(300);
+                await runAdbShell("input keyevent 22"); // Seta Direita
+                await sleep(300);
+                await runAdbShell("input keyevent 66"); // Enter
+                
+                await sleep(1500);
+                
+                // Volta pra tela de início para não deixar o app aberto na cara do usuário
+                await runAdbShell("input keyevent 3"); 
+                showToast("SMS enviado! Retomando as ligações...", "success");
             } catch (e) {
                 console.error("Falha na rotina SMS", e);
             }
@@ -558,12 +559,12 @@
         }
 
         function exportarRelatorio() {
-            if (contatosBase.length === 0) { showToast("Não há dados para exportar.", "error"); return; }
+            if (contatosBase.length === 0) { showToast("Não há dados na mesa para exportar.", "error"); return; }
             let csv = "Código,Nome,Telefone,Status Final,Tentativas\n";
             contatosBase.forEach(c => { csv += `${c.code},${c.name},${c.phone},${c.statusChamada},${c.tentativas}\n`; });
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a"); link.href = URL.createObjectURL(blob);
-            link.download = "Relatorio_DiscaAI.csv"; link.click();
+            link.download = "Relatorio_CallCenter_DiscaAI.csv"; link.click();
         }
 
         let usbDevice = null, epIn = null, epOut = null, isAdbReady = false, localIdCounter = 1;
@@ -638,12 +639,12 @@
                     document.getElementById('usb-status').classList.remove('hidden'); document.getElementById('usb-status').classList.add('flex');
                     document.getElementById('btn-start').disabled = false;
                     
-                    // FORÇA A TELA A NUNCA DESLIGAR ENQUANTO NO CABO E MUDA O TEMPO LIMITE PARA 24 DIAS
+                    // Comandos para manter a tela do celular acesa SEMPRE durante a operação
                     await runAdbShell("settings put global stay_on_while_plugged_in 3");
                     await runAdbShell("settings put system screen_off_timeout 2147483647"); 
-                    await runAdbShell("input keyevent 224"); // Acorda a tela agora mesmo
+                    await runAdbShell("input keyevent 224"); 
                     
-                    showToast("Autorizado! Tela do celular configurada para não apagar.", "success");
+                    showToast("Sucesso! O celular foi blindado e a tela não vai mais apagar.", "success");
                 }
             } catch (e) { showToast("Erro USB: " + e.message, "error"); }
         }
