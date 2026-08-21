@@ -129,20 +129,20 @@
                 <label class="form-label">Tempo de espera (segundos):</label>
                 <input type="number" id="cfg-time" class="form-input" value="30" min="5">
             </div>
-            <button class="btn btn-success" id="btn-start" onclick="iniciarCampanha()" disabled style="margin-top: 10px;">INICIAR OPERAÇÃO</button>
-            <button class="btn btn-outline" id="btn-pause" onclick="pausarCampanha()" style="display: none; margin-top: 10px; border-color: var(--warning); color: var(--warning);">Pausar Operação</button>
-        </div>
-
-        <div class="panel">
-            <div class="metrics-bar" style="border: none; padding: 0; background: transparent; margin-bottom: 10px;">
-                <div class="metric"><span>Contatos na Fila</span><span id="stat-pendentes" style="color: var(--accent);">0</span></div>
-                <div class="metric"><span>Concluídos</span><span id="stat-feitos">0</span></div>
+            
+            <div class="form-group" style="background: rgba(59, 130, 246, 0.1); padding: 15px; border-radius: 10px; border: 1px dashed rgba(59, 130, 246, 0.4); margin-top: 10px;">
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; color: var(--text-main); font-weight: 600; font-size: 13px;">
+                    <input type="checkbox" id="cfg-sms-ativo" onchange="toggleSmsBox()" style="width: 16px; height: 16px; accent-color: var(--accent);">
+                    Enviar SMS se não atender
+                </label>
+                <div id="box-sms" style="display: none; margin-top: 12px;">
+                    <label class="form-label" style="font-size: 11px;">Mensagem do SMS:</label>
+                    <textarea id="cfg-sms-texto" class="form-input" rows="3" placeholder="Ex: Olá! Tentei te ligar agora pouco, assim que puder me retorne."></textarea>
+                    <span style="font-size: 11px; color: var(--text-muted); margin-top: 5px; display: block;">*O SMS será disparado para Caixa Postal, Timeout e afins.</span>
+                </div>
             </div>
 
-            <div class="stage">
-                <div class="stage-code" id="stage-code">STANDBY</div>
-                <div class="stage-name" id="stage-name">Aguardando Início</div>
-                <div class="stage-phone" id="stage-phone">---</div>
+            <button class="btn btn-success" id="btn-start" onclick="iniciarCampanha()" disabled style="margin-top: 15px;">INICIAR OPERAÇÃO</button>
                 
                 <div class="timer-display" id="stage-timer">00</div>
                 <div class="stage-status" id="stage-status">Sistema pronto para importar e ligar.</div>
@@ -487,6 +487,11 @@
 
         function fecharModal() { document.getElementById('modal-preview').style.display = 'none'; }
         
+        function toggleSmsBox() {
+            let ativo = document.getElementById('cfg-sms-ativo').checked;
+            document.getElementById('box-sms').style.display = ativo ? 'block' : 'none';
+        }
+
         function confirmarImportacao() {
             // Adiciona à base, filtrando os inválidos mas MANTENDO as duplicatas como pedido
             let validos = contatosTemp.filter(c => c.status !== 'Inválido').map(c => ({
@@ -645,6 +650,30 @@
             else if(resultado === 'Número cancelado') relatorio.cancelado++;
             else if(resultado === 'Desconhece o titular') relatorio.desconhece++;
             
+            // DISPARO DE SMS AUTOMÁTICO
+            let smsAtivo = document.getElementById('cfg-sms-ativo').checked;
+            let smsTexto = document.getElementById('cfg-sms-texto').value.trim();
+            
+            // Se o SMS está ativado, tem texto, e o resultado não foi "Atendeu"
+            if (smsAtivo && smsTexto && resultado !== 'Atendeu') {
+                showToast(`Enviando SMS automático para ${contato.phone}...`);
+                try {
+                    // Prepara a mensagem escapando aspas duplas
+                    let msgEncoded = smsTexto.replace(/"/g, '\\"');
+                    
+                    // Abre o aplicativo de mensagens no Android já preenchido
+                    await runAdbShell(`am start -a android.intent.action.SENDTO -d sms:${contato.phone} --es sms_body "${msgEncoded}"`);
+                    
+                    // Aguarda 1.5s para a tela do SMS abrir e tenta apertar ENTER automaticamente
+                    setTimeout(async () => {
+                        await runAdbShell("input keyevent 22"); // Seta para a direita (focar no botão enviar)
+                        await runAdbShell("input keyevent 66"); // Pressionar Enter
+                    }, 1500);
+                } catch (e) {
+                    console.error("Falha ao enviar SMS:", e);
+                }
+            }
+
             let isFinal = true;
             if(resultado === 'Não atendeu' || resultado === 'Caixa postal') {
                 if(contato.tentativas < 3) {
