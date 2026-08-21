@@ -502,51 +502,53 @@
             
             atualizarMetricas();
             resetTimerUI();
-            
-            currentIndex++;
-            
-            if (isCampaignActive) {
-                document.getElementById('stage-badge').innerText = "PREPARANDO PRÓXIMO...";
-                document.getElementById('timer-label').innerText = "Aguarde...";
-                await sleep(1500);
-                processarProximo();
-            }
         }
 
-        // Função de SMS Antibug - Formata texto e usa teclado corretamente
+        // Função de SMS Antibug - Foco Espacial
         async function dispararSMS_ADB(phone, text) {
             try {
-                // 1. Acorda e Desbloqueia Tela
+                // Acorda e Desbloqueia Tela
                 await runAdbShell("input keyevent 224");
                 await sleep(500);
-                await runAdbShell("input keyevent 82");
-                await sleep(500);
 
-                // 2. Limpeza profunda do texto para não bugar o comando do Android no fundo (remove Enters)
+                // Limpeza profunda do texto
                 let cleanText = text.replace(/\r?\n|\r/g, ' ').replace(/"/g, '\\"').replace(/'/g, "");
 
-                // 3. Abre o app de mensagem direto na conversa com o texto já colado
+                // Abre o app de mensagem direto na conversa
                 await runAdbShell(`am start -a android.intent.action.SENDTO -d smsto:${phone} --es sms_body "${cleanText}"`);
                 
-                // Aguarda o app de mensagens do celular carregar e abrir o teclado (Isso pode demorar em celulares mais lentos)
-                await sleep(3000);
+                // Espera o app do Samsung carregar completamente
+                await sleep(3500);
                 
-                // 4. Mágica do ADB: Sem fechar o teclado, nós navegamos até o botão Enviar (Tab ou Seta pra Direita)
-                await runAdbShell("input keyevent 61"); // Tab
+                // SOLUÇÃO DA MIRA: A mira nasce na Seta de Voltar (Topo Esquerdo).
+                // Apertamos a Seta para Baixo (20) três vezes para forçar a mira a descer até a caixa de texto.
+                await runAdbShell("input keyevent 20"); // Desce da barra do topo
                 await sleep(300);
-                await runAdbShell("input keyevent 66"); // Enter
+                await runAdbShell("input keyevent 20"); // Desce pelo corpo da mensagem
+                await sleep(300);
+                await runAdbShell("input keyevent 20"); // Chega na caixa de texto lá embaixo
+                await sleep(400);
+
+                // Agora que a mira está lá embaixo, navegamos para o botão Enviar (Tab ou Seta)
+                await runAdbShell("input keyevent 61"); // Tab (Pula pro botão do lado)
+                await sleep(300);
+                await runAdbShell("input keyevent 66"); // Enter (Clica)
+                await sleep(300);
                 
-                // Fallback de segurança para celulares Samsung que precisam da Seta pra direita
+                await runAdbShell("input keyevent 61"); // Tab (Garante o próximo botão)
                 await sleep(300);
-                await runAdbShell("input keyevent 22"); // Seta Direita
+                await runAdbShell("input keyevent 66"); // Enter (Clica)
                 await sleep(300);
-                await runAdbShell("input keyevent 66"); // Enter
-                
+
+                // Fallback de segurança com a Seta para a Direita (padrão Google Messages)
+                await runAdbShell("input keyevent 22"); 
+                await sleep(300);
+                await runAdbShell("input keyevent 66"); 
                 await sleep(1500);
                 
-                // Volta pra tela de início para não deixar o app aberto na cara do usuário
+                // Aperta o botão Início (Home) do Android para fechar o SMS e limpar a tela
                 await runAdbShell("input keyevent 3"); 
-                showToast("SMS enviado! Retomando as ligações...", "success");
+                showToast("SMS disparado com sucesso!", "success");
             } catch (e) {
                 console.error("Falha na rotina SMS", e);
             }
