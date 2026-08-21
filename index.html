@@ -45,18 +45,10 @@
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
         }
 
-        .btn-luxury {
-            transition: all 0.3s ease;
-        }
-        .btn-luxury:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-        }
-        .btn-luxury:active:not(:disabled) {
-            transform: translateY(0);
-        }
+        .btn-luxury { transition: all 0.3s ease; }
+        .btn-luxury:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4); }
+        .btn-luxury:active:not(:disabled) { transform: translateY(0); }
 
-        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
@@ -89,10 +81,10 @@
         <div class="flex items-center gap-4">
             <div id="usb-status" class="hidden items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20">
                 <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                <span class="text-xs font-semibold text-emerald-400">Celular Conectado</span>
+                <span class="text-xs font-semibold text-emerald-400">Samsung Conectado (Tela Forçada)</span>
             </div>
             <button id="btn-conectar" onclick="conectarUSB()" class="btn-luxury bg-blue-600 hover:bg-blue-500 text-white px-6 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 shadow-lg shadow-blue-600/20">
-                <i class="fa-brands fa-usb"></i> Conectar Samsung
+                <i class="fa-brands fa-usb"></i> Conectar USB
             </button>
         </div>
     </header>
@@ -102,16 +94,11 @@
         <!-- COLUNA ESQUERDA: Importação e Configurações -->
         <div class="xl:col-span-4 flex flex-col gap-6">
             
-            <!-- Painel de Importação -->
             <div class="glass-panel rounded-2xl p-6">
                 <h2 class="text-sm font-bold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
                     <i class="fa-solid fa-file-import text-blue-500"></i> Importar Contatos
                 </h2>
-                
-                <p class="text-xs text-gray-400 mb-3">Cole os dados copiados de planilhas ou textos (Nome, Código e Telefone). O sistema identificará automaticamente.</p>
-                
-                <textarea id="paste-area" rows="6" class="w-full bg-black/50 border border-white/10 rounded-xl p-4 text-sm text-gray-200 focus:outline-none focus:border-blue-500 transition-colors placeholder-gray-600 resize-none mb-4" placeholder="Exemplo:&#10;Maria Silva 12345 69999999999&#10;João Santos 69888888888 12346"></textarea>
-                
+                <textarea id="paste-area" rows="6" class="w-full bg-black/50 border border-white/10 rounded-xl p-4 text-sm text-gray-200 focus:outline-none focus:border-blue-500 transition-colors placeholder-gray-600 resize-none mb-4" placeholder="Cole contatos de planilhas ou textos aqui..."></textarea>
                 <button onclick="processarEntradas()" class="w-full btn-luxury bg-white/5 hover:bg-white/10 text-white border border-white/10 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2">
                     <i class="fa-solid fa-wand-magic-sparkles"></i> Analisar e Validar Contatos
                 </button>
@@ -134,7 +121,6 @@
 
                 <div id="box-sms" class="hidden">
                     <textarea id="cfg-sms-texto" rows="3" class="w-full bg-black/50 border border-white/10 rounded-xl p-3 text-sm text-gray-200 focus:outline-none focus:border-blue-500 transition-colors resize-none" placeholder="Ex: Olá! Tentei te ligar agora, assim que puder me retorne."></textarea>
-                    <p class="text-[10px] text-gray-500 mt-2"><i class="fa-solid fa-circle-info mr-1"></i> O SMS será enviado silenciosamente caso a ligação seja dada como "Não atendeu", "Caixa Postal", etc.</p>
                 </div>
             </div>
             
@@ -144,12 +130,12 @@
                 </h2>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-semibold text-gray-400 mb-2">Tempo por ligação (s)</label>
-                        <input type="number" id="cfg-time" value="30" class="w-full bg-black/50 border border-white/10 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500 text-center font-bold">
+                        <label class="block text-xs font-semibold text-gray-400 mb-2">Segundos p/ Desligar</label>
+                        <input type="number" id="cfg-time" value="10" class="w-full bg-black/50 border border-white/10 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500 text-center font-bold">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-gray-400 mb-2">Limite de Contatos</label>
-                        <input type="number" id="cfg-limit" value="1500" class="w-full bg-black/50 border border-white/10 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500 text-center font-bold">
+                        <label class="block text-xs font-semibold text-gray-400 mb-2">Tentativas Máximas</label>
+                        <input type="number" id="cfg-retries" value="1" class="w-full bg-black/50 border border-white/10 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500 text-center font-bold" min="1" title="Defina quantas vezes ligar para o mesmo número caso ele não atenda">
                     </div>
                 </div>
             </div>
@@ -159,7 +145,6 @@
             
             <!-- Palco de Ligação (Hero) -->
             <div class="glass-panel rounded-3xl p-10 flex flex-col items-center justify-center relative min-h-[400px] border border-white/5 overflow-hidden">
-                <!-- Efeito visual de fundo -->
                 <div class="absolute inset-0 bg-gradient-to-b from-blue-500/5 to-transparent pointer-events-none"></div>
 
                 <div class="text-center relative z-10 w-full max-w-lg">
@@ -172,7 +157,7 @@
                     <h2 id="stage-name" class="text-4xl md:text-5xl font-extrabold text-white mb-2 tracking-tight">---</h2>
                     <p id="stage-phone" class="text-2xl font-mono text-gray-400 mb-8 font-medium">---</p>
 
-                    <!-- Cronômetro Grande -->
+                    <!-- Cronômetro -->
                     <div id="timer-container" class="hidden flex-col items-center justify-center mb-8">
                         <div id="stage-timer" class="text-7xl font-black tabular-nums tracking-tighter text-gray-600 transition-colors duration-300">00</div>
                         <p id="timer-label" class="text-xs font-bold text-gray-500 uppercase tracking-widest mt-2">Segundos Restantes</p>
@@ -189,59 +174,32 @@
                             <i class="fa-solid fa-headset text-2xl"></i> CLIENTE ATENDEU (MANTER LIGAÇÃO)
                         </button>
                         <button id="btn-desligar" onclick="encerrarLigacaoForcada()" class="btn-luxury w-full bg-red-900/40 hover:bg-red-600 text-red-400 hover:text-white border border-red-500/30 font-bold text-sm py-4 rounded-xl flex items-center justify-center gap-2 transition-colors">
-                            <i class="fa-solid fa-phone-slash"></i> Desligar Imediatamente
+                            <i class="fa-solid fa-phone-slash"></i> Encerrar Imediatamente
                         </button>
                     </div>
                 </div>
             </div>
 
+            <!-- Tabulação Simplificada -->
             <div class="glass-panel rounded-2xl p-6">
                 <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Resultado da Chamada</h3>
-                
                 <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-                    <button onclick="avaliar('Atendeu / Sucesso')" class="disp-btn btn-luxury bg-white/5 hover:bg-emerald-500/20 text-gray-300 hover:text-emerald-400 border border-white/10 hover:border-emerald-500/50 p-4 rounded-xl text-sm font-bold transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>
-                        Atendeu / Venda
-                    </button>
-                    <button onclick="avaliar('Callback')" class="disp-btn btn-luxury bg-white/5 hover:bg-amber-500/20 text-gray-300 hover:text-amber-400 border border-white/10 hover:border-amber-500/50 p-4 rounded-xl text-sm font-bold transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>
-                        Callback (Retornar)
-                    </button>
-                    <button onclick="avaliar('Desligou')" class="disp-btn btn-luxury bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 p-4 rounded-xl text-sm font-bold transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>
-                        Desligou na Cara
-                    </button>
-                    <button onclick="avaliar('Não atendeu')" class="disp-btn btn-luxury bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 p-4 rounded-xl text-sm font-bold transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>
-                        Só Chama
-                    </button>
-                    <button onclick="avaliar('Caixa postal')" class="disp-btn btn-luxury bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 p-4 rounded-xl text-sm font-bold transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>
-                        Caixa Postal
-                    </button>
-                    <button onclick="avaliar('Número cancelado')" class="disp-btn btn-luxury bg-white/5 hover:bg-red-500/20 text-gray-300 hover:text-red-400 border border-white/10 hover:border-red-500/50 p-4 rounded-xl text-sm font-bold transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>
-                        Número Cancelado
-                    </button>
-                    <button onclick="avaliar('Desconhece o titular')" class="disp-btn btn-luxury bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 p-4 rounded-xl text-sm font-bold transition-all disabled:opacity-30 disabled:cursor-not-allowed md:col-span-3" disabled>
-                        Desconhece o Titular
-                    </button>
+                    <button onclick="avaliar('Atendeu')" class="disp-btn btn-luxury bg-white/5 hover:bg-emerald-500/20 text-gray-300 hover:text-emerald-400 border border-white/10 hover:border-emerald-500/50 p-4 rounded-xl text-sm font-bold transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>Atendeu</button>
+                    <button onclick="avaliar('Callback')" class="disp-btn btn-luxury bg-white/5 hover:bg-amber-500/20 text-gray-300 hover:text-amber-400 border border-white/10 hover:border-amber-500/50 p-4 rounded-xl text-sm font-bold transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>Callback (Retornar)</button>
+                    <button onclick="avaliar('Caixa Postal')" class="disp-btn btn-luxury bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 p-4 rounded-xl text-sm font-bold transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>Caixa Postal</button>
+                    <button onclick="avaliar('Não Atendeu')" class="disp-btn btn-luxury bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 p-4 rounded-xl text-sm font-bold transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>Não Atendeu / Só Chama</button>
+                    <button onclick="avaliar('Número Cancelado')" class="disp-btn btn-luxury bg-white/5 hover:bg-red-500/20 text-gray-300 hover:text-red-400 border border-white/10 hover:border-red-500/50 p-4 rounded-xl text-sm font-bold transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>Número Cancelado</button>
+                    <button onclick="avaliar('Desconhece Titular')" class="disp-btn btn-luxury bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 p-4 rounded-xl text-sm font-bold transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>Desconhece Titular</button>
                 </div>
             </div>
 
+            <!-- Métricas -->
             <div class="grid grid-cols-4 gap-4">
-                <div class="glass-panel p-4 rounded-2xl border-l-2 border-blue-500 text-center">
-                    <p class="text-[10px] text-gray-400 uppercase font-bold mb-1">Base Total</p>
-                    <p id="stat-total" class="text-2xl font-black text-white">0</p>
-                </div>
-                <div class="glass-panel p-4 rounded-2xl border-l-2 border-amber-500 text-center">
-                    <p class="text-[10px] text-gray-400 uppercase font-bold mb-1">Pendentes</p>
-                    <p id="stat-pendentes" class="text-2xl font-black text-white">0</p>
-                </div>
-                <div class="glass-panel p-4 rounded-2xl border-l-2 border-emerald-500 text-center">
-                    <p class="text-[10px] text-gray-400 uppercase font-bold mb-1">Concluídos</p>
-                    <p id="stat-feitos" class="text-2xl font-black text-white">0</p>
-                </div>
-                <div class="glass-panel p-4 rounded-2xl border-l-2 border-purple-500 text-center cursor-pointer hover:bg-white/5 transition-colors" onclick="exportarRelatorio()">
-                    <p class="text-[10px] text-gray-400 uppercase font-bold mb-1">Ação</p>
-                    <p class="text-sm mt-2 font-bold text-purple-400"><i class="fa-solid fa-download"></i> Relatório</p>
-                </div>
+                <div class="glass-panel p-4 rounded-2xl border-l-2 border-blue-500 text-center"><p class="text-[10px] text-gray-400 uppercase font-bold mb-1">Total</p><p id="stat-total" class="text-2xl font-black text-white">0</p></div>
+                <div class="glass-panel p-4 rounded-2xl border-l-2 border-amber-500 text-center"><p class="text-[10px] text-gray-400 uppercase font-bold mb-1">Pendentes</p><p id="stat-pendentes" class="text-2xl font-black text-white">0</p></div>
+                <div class="glass-panel p-4 rounded-2xl border-l-2 border-emerald-500 text-center"><p class="text-[10px] text-gray-400 uppercase font-bold mb-1">Concluídos</p><p id="stat-feitos" class="text-2xl font-black text-white">0</p></div>
+                <div class="glass-panel p-4 rounded-2xl border-l-2 border-purple-500 text-center cursor-pointer hover:bg-white/5 transition-colors" onclick="exportarRelatorio()"><p class="text-[10px] text-gray-400 uppercase font-bold mb-1">Ação</p><p class="text-sm mt-2 font-bold text-purple-400"><i class="fa-solid fa-download"></i> Relatório</p></div>
             </div>
-
         </div>
     </main>
 
@@ -249,6 +207,7 @@
         <p class="text-xs font-semibold text-gray-500 tracking-wider">APP CRIADO POR MAIKON NATTAN</p>
     </footer>
 
+    <!-- Modal Preview de Contatos -->
     <div id="modal-preview" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
         <div class="glass-panel rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden border border-white/10 shadow-2xl">
             <div class="p-6 border-b border-white/10 flex justify-between items-center bg-black/40">
@@ -265,16 +224,9 @@
             <div class="flex-1 overflow-y-auto p-6">
                 <table class="w-full text-left text-sm">
                     <thead class="text-xs uppercase text-gray-500 font-bold">
-                        <tr>
-                            <th class="pb-3 border-b border-white/10">Nome</th>
-                            <th class="pb-3 border-b border-white/10">Cód</th>
-                            <th class="pb-3 border-b border-white/10">Telefone</th>
-                            <th class="pb-3 border-b border-white/10">Status</th>
-                        </tr>
+                        <tr><th class="pb-3 border-b border-white/10">Nome</th><th class="pb-3 border-b border-white/10">Cód</th><th class="pb-3 border-b border-white/10">Telefone</th><th class="pb-3 border-b border-white/10">Status</th></tr>
                     </thead>
-                    <tbody id="preview-table-body" class="divide-y divide-white/5 text-gray-300">
-                        <!-- Preenchido via JS -->
-                    </tbody>
+                    <tbody id="preview-table-body" class="divide-y divide-white/5 text-gray-300"></tbody>
                 </table>
             </div>
 
@@ -289,14 +241,19 @@
     <div id="toast-container" class="fixed bottom-6 right-6 z-[200] flex flex-col gap-3 pointer-events-none"></div>
 
     <script>
+        // Função Utilitária para Pausar a Execução (Sleep)
+        const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+
         /* --- UTILITÁRIOS UI --- */
         function showToast(msg, type = 'info') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             const bgColor = type === 'error' ? 'bg-red-500/10 border-red-500/20 text-red-200' : 
-                            (type === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-200' : 'bg-blue-500/10 border-blue-500/20 text-blue-200');
+                            (type === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-200' : 
+                            (type === 'warning' ? 'bg-amber-500/10 border-amber-500/20 text-amber-200' : 'bg-blue-500/10 border-blue-500/20 text-blue-200'));
             const icon = type === 'error' ? 'fa-circle-exclamation text-red-400' : 
-                         (type === 'success' ? 'fa-circle-check text-emerald-400' : 'fa-info-circle text-blue-400');
+                         (type === 'success' ? 'fa-circle-check text-emerald-400' : 
+                         (type === 'warning' ? 'fa-triangle-exclamation text-amber-400' : 'fa-info-circle text-blue-400'));
             
             toast.className = `glass-panel ${bgColor} px-5 py-4 rounded-2xl flex items-center gap-3 transform transition-all duration-300 translate-y-10 opacity-0 pointer-events-auto`;
             toast.innerHTML = `<i class="fa-solid ${icon} text-lg"></i><span class="text-sm font-semibold">${msg}</span>`;
@@ -304,22 +261,12 @@
             container.appendChild(toast);
             requestAnimationFrame(() => { toast.classList.remove('translate-y-10', 'opacity-0'); });
             
-            setTimeout(() => {
-                toast.classList.add('translate-y-10', 'opacity-0');
-                setTimeout(() => toast.remove(), 300);
-            }, 4000);
+            setTimeout(() => { toast.classList.add('translate-y-10', 'opacity-0'); setTimeout(() => toast.remove(), 300); }, 5000);
         }
 
         function toggleSmsBox() {
             const isChecked = document.getElementById('cfg-sms-ativo').checked;
-            const box = document.getElementById('box-sms');
-            if (isChecked) {
-                box.classList.remove('hidden');
-                box.classList.add('block');
-            } else {
-                box.classList.add('hidden');
-                box.classList.remove('block');
-            }
+            document.getElementById('box-sms').style.display = isChecked ? 'block' : 'none';
         }
 
         /* --- MOTOR DE IMPORTAÇÃO E HIGIENIZAÇÃO --- */
@@ -328,53 +275,28 @@
 
         function processarEntradas() {
             const rawText = document.getElementById('paste-area').value;
-            if(!rawText.trim()) {
-                showToast("Cole algum conteúdo primeiro.", "error");
-                return;
-            }
-
+            if(!rawText.trim()) { showToast("Cole algum conteúdo primeiro.", "error"); return; }
             contatosTemp = [];
-            const linhas = rawText.split('\n');
-            
             let stats = { total: 0, corrigidos: 0, invalidos: 0 };
 
-            linhas.forEach(linha => {
-                let s = linha.trim();
+            rawText.split('\n').forEach(linha => {
+                let s = linha.trim().replace(/(?:\b|\+)(?:55|0055)\s?/g, '');
                 if (!s) return;
-
-                // Remove +55 ou 0055 se presente no início de números
-                s = s.replace(/(?:\b|\+)(?:55|0055)\s?/g, '');
                 
-                let phone = "";
-                let code = "";
-                let nameParts = [];
-                
-                // Quebra a linha por espaços
+                let phone = "", code = "", nameParts = [];
                 let words = s.split(/\s+/);
                 
                 for (let word of words) {
-                    let cleanWord = word.replace(/\D/g, ''); // Mantém só números
-                    
-                    // Identifica telefone (maior que 9 e menor que 12 digitos)
-                    if (cleanWord.length >= 10 && cleanWord.length <= 11 && !phone) {
-                        phone = cleanWord;
-                    } 
-                    // Identifica código da revendedora (curto)
-                    else if (cleanWord.length >= 2 && cleanWord.length <= 8 && !code) {
-                        code = cleanWord;
-                    } 
-                    // O resto é nome
-                    else {
-                        nameParts.push(word);
-                    }
+                    let cleanWord = word.replace(/\D/g, ''); 
+                    if (cleanWord.length >= 10 && cleanWord.length <= 11 && !phone) { phone = cleanWord; } 
+                    else if (cleanWord.length >= 2 && cleanWord.length <= 8 && !code) { code = cleanWord; } 
+                    else { nameParts.push(word); }
                 }
 
-                if (!phone) return; // Se não achou telefone, ignora a linha
-
+                if (!phone) return;
                 let status = "Válido";
                 let originalPhone = phone;
 
-                // REGRA DA ANATEL: Se tem 10 dígitos, insere o 9.
                 if (phone.length === 10) {
                     phone = phone.substring(0, 2) + '9' + phone.substring(2);
                     status = "Corrigido";
@@ -384,23 +306,16 @@
                     stats.invalidos++;
                 }
 
-                let name = nameParts.join(' ').replace(/[^\w\sÀ-ÿ]/g, '').trim();
-                if (!name) name = "Contato Sem Nome";
-                if (!code) code = "N/A";
-
+                let name = nameParts.join(' ').replace(/[^\w\sÀ-ÿ]/g, '').trim() || "Contato Sem Nome";
+                code = code || "N/A";
                 stats.total++;
                 contatosTemp.push({ name, code, phone, originalPhone, status });
             });
 
-            if (stats.total === 0) {
-                showToast("Nenhum contato válido encontrado no texto.", "error");
-                return;
-            }
-
+            if (stats.total === 0) { showToast("Nenhum contato válido encontrado.", "error"); return; }
             mostrarPreview(stats);
         }
 
-        /* --- STREAMING_CHUNK: Lógica de Interface do Preview --- */
         function mostrarPreview(stats) {
             document.getElementById('prev-total').innerText = stats.total;
             document.getElementById('prev-corrigidos').innerText = stats.corrigidos;
@@ -412,16 +327,8 @@
             contatosTemp.forEach(c => {
                 let tr = document.createElement('tr');
                 let statusClass = c.status === 'Válido' ? 'text-emerald-400' : (c.status === 'Corrigido' ? 'text-amber-400' : 'text-red-400');
-                
-                let phoneDisplay = c.phone;
-                if (c.status === 'Corrigido') phoneDisplay = `<span class="line-through text-gray-500 text-xs mr-2">${c.originalPhone}</span>${c.phone}`;
-                
-                tr.innerHTML = `
-                    <td class="py-3 font-semibold">${c.name}</td>
-                    <td class="py-3 font-mono text-gray-400">${c.code}</td>
-                    <td class="py-3 font-mono">${phoneDisplay}</td>
-                    <td class="py-3 font-bold ${statusClass}">${c.status}</td>
-                `;
+                let phoneDisplay = c.status === 'Corrigido' ? `<span class="line-through text-gray-500 text-xs mr-2">${c.originalPhone}</span>${c.phone}` : c.phone;
+                tr.innerHTML = `<td class="py-3 font-semibold">${c.name}</td><td class="py-3 font-mono text-gray-400">${c.code}</td><td class="py-3 font-mono">${phoneDisplay}</td><td class="py-3 font-bold ${statusClass}">${c.status}</td>`;
                 tbody.appendChild(tr);
             });
 
@@ -435,55 +342,30 @@
         }
 
         function confirmarImportacao() {
-            // Pega apenas válidos e corrigidos. MANTÉM duplicatas como solicitado.
-            const validos = contatosTemp.filter(c => c.status !== 'Inválido').map(c => ({
-                ...c, tentativas: 0, statusChamada: 'Pendente'
-            }));
-            
+            const validos = contatosTemp.filter(c => c.status !== 'Inválido').map(c => ({...c, tentativas: 0, statusChamada: 'Pendente'}));
             contatosBase = contatosBase.concat(validos);
-            
             atualizarMetricas();
             document.getElementById('paste-area').value = '';
-            
-            if (isAdbReady) {
-                document.getElementById('btn-start').disabled = false;
-            }
-            
+            if (isAdbReady) document.getElementById('btn-start').disabled = false;
             fecharModal();
-            showToast(`${validos.length} contatos adicionados à fila com sucesso!`, 'success');
+            showToast(`${validos.length} contatos aprovados.`, 'success');
         }
 
         function atualizarMetricas() {
             document.getElementById('stat-total').innerText = contatosBase.length;
-            const pendentes = contatosBase.filter(c => c.statusChamada === 'Pendente' || c.statusChamada === 'Retentativa').length;
-            document.getElementById('stat-pendentes').innerText = pendentes;
+            document.getElementById('stat-pendentes').innerText = contatosBase.filter(c => c.statusChamada === 'Pendente' || c.statusChamada === 'Retentativa').length;
         }
 
-        /* --- STREAMING_CHUNK: Máquina de Estados da Operação --- */
-        let isCampaignActive = false;
-        let currentIndex = 0;
-        let callTimer = null;
-        let timeLeft = 0;
-        let callState = 'IDLE'; // IDLE, CALLING, TALKING
-        
-        let relatorio = { processados: 0 };
+        /* --- MÁQUINA DE ESTADOS DA CHAMADA --- */
+        let isCampaignActive = false, currentIndex = 0, callTimer = null, timeLeft = 0, callState = 'IDLE', processados = 0;
 
         async function iniciarCampanha() {
-            const limit = parseInt(document.getElementById('cfg-limit').value) || 1500;
-            if (currentIndex >= contatosBase.length || currentIndex >= limit) {
-                showToast("Fila finalizada ou limite atingido.", "info");
-                return;
-            }
-            if (!isAdbReady) {
-                showToast("Conecte o USB primeiro.", "error");
-                return;
-            }
-            
+            if (currentIndex >= contatosBase.length) { showToast("Fila finalizada.", "info"); return; }
+            if (!isAdbReady) { showToast("Conecte o USB primeiro.", "error"); return; }
             isCampaignActive = true;
             document.getElementById('btn-start').style.display = 'none';
             document.getElementById('action-buttons').classList.remove('hidden');
             document.getElementById('action-buttons').classList.add('flex');
-            
             processarProximo();
         }
 
@@ -494,8 +376,7 @@
         async function processarProximo() {
             if (!isCampaignActive) return;
             
-            const limit = parseInt(document.getElementById('cfg-limit').value) || 1500;
-            if (currentIndex >= contatosBase.length || currentIndex >= limit) {
+            if (currentIndex >= contatosBase.length) {
                 isCampaignActive = false;
                 document.getElementById('stage-badge').innerText = "OPERAÇÃO CONCLUÍDA";
                 document.getElementById('stage-name').innerText = "Fim da Fila";
@@ -511,31 +392,23 @@
                 return;
             }
 
-            // Atualiza UI
-            document.getElementById('stage-badge').innerText = `TENTATIVA ${contato.tentativas + 1}/3 | CÓD: ${contato.code}`;
+            const maxRetries = parseInt(document.getElementById('cfg-retries').value) || 1;
+            document.getElementById('stage-badge').innerText = `TENTATIVA ${contato.tentativas + 1}/${maxRetries} | CÓD: ${contato.code}`;
             document.getElementById('stage-name').innerText = contato.name;
-            document.getElementById('stage-phone').innerText = formatPhoneUI(contato.phone);
+            let p = contato.phone;
+            document.getElementById('stage-phone').innerText = p.length === 11 ? `(${p.substring(0,2)}) ${p.substring(2,7)}-${p.substring(7)}` : p;
             
             document.getElementById('timer-container').classList.remove('hidden');
             document.getElementById('timer-container').classList.add('flex');
-            
             document.getElementById('btn-atendeu').style.display = 'flex';
-            toggleAvaliacoes(false); // Bloqueia botões de tabulação
+            toggleAvaliacoes(false);
 
-            // Envia Comando ADB para Ligar
             callState = 'CALLING';
-            const callCmd = `am start -a android.intent.action.CALL -d tel:${contato.phone}`;
-            const success = await runAdbShell(callCmd);
-            
-            if(!success) {
-                showToast("Falha ao enviar comando para o celular.", "error");
-                return;
-            }
+            const success = await runAdbShell(`am start -a android.intent.action.CALL -d tel:${contato.phone}`);
+            if(!success) { showToast("Falha USB ao discar.", "error"); return; }
 
-            // Inicia Cronômetro
-            const maxTime = parseInt(document.getElementById('cfg-time').value) || 30;
+            const maxTime = parseInt(document.getElementById('cfg-time').value) || 10;
             timeLeft = maxTime;
-            
             const timerEl = document.getElementById('stage-timer');
             timerEl.innerText = timeLeft;
             timerEl.className = "text-7xl font-black tabular-nums tracking-tighter transition-colors duration-300 timer-active calling-pulse";
@@ -543,11 +416,9 @@
             
             clearInterval(callTimer);
             callTimer = setInterval(async () => {
-                if (callState !== 'CALLING') return; // Segurança
-                
+                if (callState !== 'CALLING') return;
                 timeLeft--;
                 timerEl.innerText = timeLeft;
-                
                 if (timeLeft <= 0) {
                     clearInterval(callTimer);
                     await handleTimeout();
@@ -555,16 +426,10 @@
             }, 1000);
         }
 
-        /* --- STREAMING_CHUNK: Ações da Chamada (Atendeu, Desligou, Timeout) --- */
-        function formatPhoneUI(p) {
-            if(p.length === 11) return `(${p.substring(0,2)}) ${p.substring(2,7)}-${p.substring(7)}`;
-            return p;
-        }
-
+        // SE O USUÁRIO CLICAR EM "ATENDEU" ANTES DO TEMPO ACABAR
         function marcarAtendido() {
             if (callState !== 'CALLING') return;
-            
-            clearInterval(callTimer); // PARA O TEMPO! Não desliga o celular.
+            clearInterval(callTimer); // PARA O RELÓGIO (Não desliga o celular)
             callState = 'TALKING';
             
             const timerEl = document.getElementById('stage-timer');
@@ -572,115 +437,113 @@
             timerEl.className = "text-5xl font-black tracking-tighter transition-colors duration-300 timer-talking";
             document.getElementById('timer-label').innerText = "Ligação ativa. Pode conversar.";
             
-            document.getElementById('btn-atendeu').style.display = 'none'; // Esconde botão de atender
-            toggleAvaliacoes(true); // Libera botões de resultado
+            document.getElementById('btn-atendeu').style.display = 'none';
+            toggleAvaliacoes(true);
         }
 
         async function encerrarLigacaoForcada() {
             clearInterval(callTimer);
             callState = 'EVALUATING';
-            await runAdbShell("input keyevent 6"); // Desliga fisicamente
-            
+            await runAdbShell("input keyevent 6"); // Força desligar
             resetTimerUI();
-            document.getElementById('timer-label').innerText = "Chamada encerrada. Selecione o resultado.";
-            
+            document.getElementById('timer-label').innerText = "Chamada encerrada. Tabule a ligação abaixo.";
             document.getElementById('btn-atendeu').style.display = 'none';
             toggleAvaliacoes(true);
         }
 
+        // SE O TEMPO ACABAR E NINGUÉM ATENDER
         async function handleTimeout() {
             callState = 'EVALUATING';
             await runAdbShell("input keyevent 6"); // Desliga
-            await tabularChamada('Não atendeu'); // Auto tabula
+            await tabularChamada('Não Atendeu'); // Inicia a tabulação + SMS + Pulo Automático
         }
 
+        // SE O USUÁRIO CLICAR NOS BOTÕES DE TABULAÇÃO
         async function avaliar(resultado) {
-            if (callState === 'TALKING') {
-                await runAdbShell("input keyevent 6"); // Se tava falando, desliga primeiro
-            }
+            if (callState === 'TALKING') await runAdbShell("input keyevent 6");
             clearInterval(callTimer);
             await tabularChamada(resultado);
         }
 
-        /* --- STREAMING_CHUNK: Tabulação e Automação de SMS --- */
+        /* --- TABULAÇÃO E SMS SÍNCRONO --- */
         async function tabularChamada(resultado) {
             let contato = contatosBase[currentIndex];
             contato.tentativas++;
             
-            // Verifica se manda SMS (Só se não foi sucesso/atendeu)
             const sendSms = document.getElementById('cfg-sms-ativo').checked;
             const smsText = document.getElementById('cfg-sms-texto').value.trim();
-            const isFailure = !resultado.toLowerCase().includes('atendeu') && !resultado.toLowerCase().includes('venda');
+            const isFailure = !resultado.toLowerCase().includes('atendeu'); // Se for sucesso, não manda SMS
 
+            document.getElementById('timer-label').innerText = "Processando resultado...";
+            toggleAvaliacoes(false);
+            
+            // ENVIO DE SMS SÍNCRONO (Espera terminar 100% antes de ir pro próximo)
             if (sendSms && smsText && isFailure) {
-                showToast(`Preparando SMS automático (Mantenha a tela desbloqueada)...`, 'warning');
+                showToast(`Enviando SMS automático para ${contato.name}... (Aguarde)`, 'warning');
                 try {
-                    // Acorda a tela caso esteja apagada
-                    await runAdbShell("input keyevent 224"); // KEYCODE_WAKEUP
-                    
-                    // Prepara o texto usando aspas simples para proteger contra erros no terminal
+                    // Acorda e Desbloqueia Tela
+                    await runAdbShell("input keyevent 224");
+                    await sleep(500);
+                    await runAdbShell("input keyevent 82"); // Menu/Unlock
+                    await sleep(500);
+
+                    // Prepara e abre o SMS
                     let msgEncoded = smsText.replace(/'/g, "\\'");
-                    
-                    // Abre o aplicativo nativo de SMS já com o texto preenchido
                     await runAdbShell(`am start -a android.intent.action.SENDTO -d sms:${contato.phone} --es sms_body '${msgEncoded}'`);
                     
-                    // Aguarda 2.5 segundos para garantir que o app abriu e carregou o botão de Enviar
-                    setTimeout(async () => {
-                        showToast("Simulando dedo fantasma para enviar SMS...", "info");
-                        
-                        // Tentativa 1 (Padrão Samsung): Foco para Direita + Enter
-                        await runAdbShell("input keyevent 22");
-                        await runAdbShell("input keyevent 66");
-                        
-                        // Tentativa 2 (Padrão Google Messages): Tab + Enter
-                        setTimeout(async () => {
-                            await runAdbShell("input keyevent 61");
-                            await runAdbShell("input keyevent 66");
-                            
-                            // Aguarda 1 segundo e volta para a tela inicial (Home) para limpar a tela
-                            setTimeout(async () => {
-                                await runAdbShell("input keyevent 3");
-                            }, 1000);
-                        }, 500);
-                        
-                    }, 2500);
+                    // Dá tempo para o app de mensagens do celular carregar a tela
+                    await sleep(2500);
+                    
+                    // Simula teclas de Envio (Dedo Fantasma)
+                    await runAdbShell("input keyevent 22"); // Direita
+                    await runAdbShell("input keyevent 66"); // Enter
+                    await sleep(500);
+                    await runAdbShell("input keyevent 61"); // Tab (Se falhar a primeira)
+                    await runAdbShell("input keyevent 66"); // Enter
+                    
+                    await sleep(1000);
+                    await runAdbShell("input keyevent 3"); // Botão Home (Limpa a tela)
+                    showToast("SMS enviado com sucesso!", "success");
                 } catch (e) {
                     console.error("Falha no SMS", e);
                 }
             }
 
-            // Lógica de retentativa
+            // LÓGICA DE RETENTATIVA COM BASE NO CAMPO DO USUÁRIO
+            const maxRetries = parseInt(document.getElementById('cfg-retries').value) || 1;
             let isFinal = true;
-            if (resultado === 'Não atendeu' || resultado === 'Caixa postal') {
-                if (contato.tentativas < 3) {
+            
+            if (resultado === 'Não Atendeu' || resultado === 'Caixa Postal') {
+                if (contato.tentativas < maxRetries) {
                     isFinal = false;
                     contato.statusChamada = 'Retentativa';
                     // Move pro final da fila
                     let temp = contatosBase.splice(currentIndex, 1)[0];
                     contatosBase.push(temp);
-                    currentIndex--; // Ajusta index
-                    showToast(`Falhou. Agendado para retentativa (Tentativa ${contato.tentativas}/3).`);
+                    currentIndex--; // Ajusta o index porque removemos 1
+                    showToast(`Marcado para Retentativa (${contato.tentativas}/${maxRetries}).`);
                 } else {
-                    contato.statusChamada = `Falha (3x ${resultado})`;
+                    contato.statusChamada = `Falha Final (${resultado})`;
                 }
             } else {
                 contato.statusChamada = resultado;
             }
 
             if (isFinal) {
-                relatorio.processados++;
-                document.getElementById('stat-feitos').innerText = relatorio.processados;
+                processados++;
+                document.getElementById('stat-feitos').innerText = processados;
             }
             
             atualizarMetricas();
-            toggleAvaliacoes(false);
             resetTimerUI();
-            
             currentIndex++;
+            
+            // SOMENTE APÓS TUDO ISSO, AVANÇA PARA O PRÓXIMO CONTATO (Se tiver em modo auto)
             if (isCampaignActive) {
                 document.getElementById('stage-badge').innerText = "Avançando...";
                 document.getElementById('timer-label').innerText = "Preparando próximo contato...";
-                setTimeout(processarProximo, 2000); // Respiro de 2 segundos
+                await sleep(1500); // Respiro
+                processarProximo();
             }
         }
 
@@ -694,203 +557,100 @@
             if (contatosBase.length === 0) { showToast("Não há dados para exportar.", "error"); return; }
             let csv = "Código,Nome,Telefone,Status Final,Tentativas\n";
             contatosBase.forEach(c => { csv += `${c.code},${c.name},${c.phone},${c.statusChamada},${c.tentativas}\n`; });
-            
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = "Relatorio_DiscaAI.csv";
-            link.click();
+            const link = document.createElement("a"); link.href = URL.createObjectURL(blob);
+            link.download = "Relatorio_DiscaAI.csv"; link.click();
         }
 
-        /* --- STREAMING_CHUNK: Motor WebUSB ADB Nativo e Criptografia RSA --- */
-        let usbDevice = null;
-        let epIn = null;
-        let epOut = null;
-        let isAdbReady = false;
-        let localIdCounter = 1;
-
-        async function getAdbKeyPair() {
-            return await crypto.subtle.generateKey(
-                { name: "RSASSA-PKCS1-v1_5", modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: "SHA-256" },
-                true, ["sign", "verify"]
-            );
-        }
-
-        async function signAdbToken(keyPair, token) {
-            const signature = await crypto.subtle.sign("RSASSA-PKCS1-v1_5", keyPair.privateKey, token);
-            return new Uint8Array(signature);
-        }
-
+        /* --- MOTOR WEB-USB ADB (RSA NATIVO) --- */
+        let usbDevice = null, epIn = null, epOut = null, isAdbReady = false, localIdCounter = 1;
+        async function getAdbKeyPair() { return await crypto.subtle.generateKey({ name: "RSASSA-PKCS1-v1_5", modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: "SHA-256" }, true, ["sign", "verify"]); }
+        async function signAdbToken(keyPair, token) { const signature = await crypto.subtle.sign("RSASSA-PKCS1-v1_5", keyPair.privateKey, token); return new Uint8Array(signature); }
         async function getAdbPublicKeyPayload(keyPair) {
             const exported = await crypto.subtle.exportKey("jwk", keyPair.publicKey);
-            const b64 = exported.n.replace(/-/g, '+').replace(/_/g, '/');
-            const binaryStr = atob(b64);
+            const binaryStr = atob(exported.n.replace(/-/g, '+').replace(/_/g, '/'));
             const modBytes = new Uint8Array(binaryStr.length);
             for (let i = 0; i < binaryStr.length; i++) modBytes[i] = binaryStr.charCodeAt(i);
-            
-            let n = 0n;
-            for (let i = 0; i < modBytes.length; i++) n = (n << 8n) | BigInt(modBytes[i]);
-            
-            const r32 = 1n << 32n;
-            const n0 = n % r32;
-            let inv = 1n;
-            for (let i = 0; i < 32; i++) inv = (inv * (2n - n0 * inv)) % r32;
-            const n0inv = Number((r32 - inv) % r32);
-            
-            const r2048 = 1n << 2048n;
-            const rr = (r2048 * r2048) % n;
-            
-            const buffer = new ArrayBuffer(524);
-            const view = new DataView(buffer);
-            const bytes = new Uint8Array(buffer);
-            
-            view.setUint32(0, 64, true);
-            view.setUint32(4, n0inv, true);
-            
-            let tempN = n;
-            for (let i = 0; i < 256; i++) { bytes[8 + i] = Number(tempN & 0xffn); tempN >>= 8n; }
-            let tempRR = rr;
-            for (let i = 0; i < 256; i++) { bytes[264 + i] = Number(tempRR & 0xffn); tempRR >>= 8n; }
+            let n = 0n; for (let i = 0; i < modBytes.length; i++) n = (n << 8n) | BigInt(modBytes[i]);
+            const r32 = 1n << 32n, n0 = n % r32;
+            let inv = 1n; for (let i = 0; i < 32; i++) inv = (inv * (2n - n0 * inv)) % r32;
+            const buffer = new ArrayBuffer(524), view = new DataView(buffer), bytes = new Uint8Array(buffer);
+            view.setUint32(0, 64, true); view.setUint32(4, Number((r32 - inv) % r32), true);
+            let tempN = n; for (let i = 0; i < 256; i++) { bytes[8 + i] = Number(tempN & 0xffn); tempN >>= 8n; }
+            let tempRR = ((1n << 2048n) * (1n << 2048n)) % n; for (let i = 0; i < 256; i++) { bytes[264 + i] = Number(tempRR & 0xffn); tempRR >>= 8n; }
             view.setUint32(520, 65537, true);
-            
-            const nameBytes = new TextEncoder().encode("DiscaAI_Premium\0");
-            const fullPayload = new Uint8Array(buffer.byteLength + nameBytes.length);
-            fullPayload.set(bytes, 0);
-            fullPayload.set(nameBytes, buffer.byteLength);
-            
-            return fullPayload;
+            const nameBytes = new TextEncoder().encode("DiscaAI_Premium\0"), fullPayload = new Uint8Array(buffer.byteLength + nameBytes.length);
+            fullPayload.set(bytes, 0); fullPayload.set(nameBytes, buffer.byteLength); return fullPayload;
         }
-
         async function sendPacket(cmd, arg0, arg1, data = new Uint8Array(0)) {
             if (!usbDevice || !epOut) return;
-            const header = new ArrayBuffer(24);
-            const view = new DataView(header);
-            let checksum = 0;
-            for (let i = 0; i < data.length; i++) checksum = (checksum + data[i]) & 0xffffffff;
-            
+            const header = new ArrayBuffer(24), view = new DataView(header);
+            let checksum = 0; for (let i = 0; i < data.length; i++) checksum = (checksum + data[i]) & 0xffffffff;
             view.setUint32(0, cmd, true); view.setUint32(4, arg0, true); view.setUint32(8, arg1, true);
-            view.setUint32(12, data.length, true); view.setUint32(16, checksum, true);
-            view.setUint32(20, (cmd ^ 0xffffffff) >>> 0, true);
-            
-            const buffer = new Uint8Array(24 + data.length);
-            buffer.set(new Uint8Array(header), 0); buffer.set(data, 24);
+            view.setUint32(12, data.length, true); view.setUint32(16, checksum, true); view.setUint32(20, (cmd ^ 0xffffffff) >>> 0, true);
+            const buffer = new Uint8Array(24 + data.length); buffer.set(new Uint8Array(header), 0); buffer.set(data, 24);
             await usbDevice.transferOut(epOut, buffer);
         }
-
         async function readPacket() {
             if (!usbDevice || !epIn) return null;
             try {
                 const headerRes = await usbDevice.transferIn(epIn, 24);
                 if (!headerRes.data || headerRes.data.byteLength < 24) return null;
                 const view = new DataView(headerRes.data.buffer);
-                const cmd = view.getUint32(0, true); const arg0 = view.getUint32(4, true); const arg1 = view.getUint32(8, true); const len = view.getUint32(12, true);
-                
+                const cmd = view.getUint32(0, true), arg0 = view.getUint32(4, true), arg1 = view.getUint32(8, true), len = view.getUint32(12, true);
                 let payload = new Uint8Array(0);
-                if (len > 0) {
-                    const dataRes = await usbDevice.transferIn(epIn, len);
-                    if (dataRes.data) payload = new Uint8Array(dataRes.data.buffer);
-                }
+                if (len > 0) { const dataRes = await usbDevice.transferIn(epIn, len); if (dataRes.data) payload = new Uint8Array(dataRes.data.buffer); }
                 return { cmd, arg0, arg1, data: payload };
-            } catch (e) {
-                return { error: true, msg: e.message };
-            }
+            } catch (e) { return { error: true, msg: e.message }; }
         }
-
         async function conectarUSB() {
             try {
-                if (!navigator.usb) throw new Error("WebUSB não suportado neste navegador.");
-                
                 usbDevice = await navigator.usb.requestDevice({ filters: [{ classCode: 255, subclassCode: 66, protocolCode: 1 }] });
                 await usbDevice.open();
                 if (usbDevice.configuration === null) await usbDevice.selectConfiguration(1);
-                
                 let intfNum = -1;
-                for (const conf of usbDevice.configurations) {
-                    for (const intf of conf.interfaces) {
-                        for (const alt of intf.alternates) {
-                            if (alt.interfaceClass === 255 && alt.interfaceSubclass === 66 && alt.interfaceProtocol === 1) {
-                                intfNum = intf.interfaceNumber;
-                                epIn = alt.endpoints.find(e => e.direction === 'in').endpointNumber;
-                                epOut = alt.endpoints.find(e => e.direction === 'out').endpointNumber;
-                                break;
-                            }
-                        }
-                    }
-                }
-                if (intfNum === -1) throw new Error("Interface ADB não encontrada.");
+                for (const conf of usbDevice.configurations) { for (const intf of conf.interfaces) { for (const alt of intf.alternates) {
+                    if (alt.interfaceClass === 255 && alt.interfaceSubclass === 66 && alt.interfaceProtocol === 1) {
+                        intfNum = intf.interfaceNumber; epIn = alt.endpoints.find(e => e.direction === 'in').endpointNumber; epOut = alt.endpoints.find(e => e.direction === 'out').endpointNumber; break;
+                    } } } }
                 await usbDevice.claimInterface(intfNum);
-
-                showToast("Negociando autorização com o celular...", "info");
-                
-                // Envia A_CNXN (0x4E584E43)
                 await sendPacket(0x4E584E43, 0x01000000, 4096, new TextEncoder().encode("host::DiscaAI\0"));
-                let keyPair = await getAdbKeyPair();
-                
-                // Aguarda resposta
-                let resp = await readPacket();
-                if (resp && resp.cmd === 0x4E584E43) {
-                    isAdbReady = true; // Já estava autorizado
-                } else if (resp && resp.cmd === 0x48545541 && resp.arg0 === 1) { // Pede chave A_AUTH
-                    let sig = await signAdbToken(keyPair, resp.data);
-                    await sendPacket(0x48545541, 2, 0, sig); // Envia assinatura
+                let keyPair = await getAdbKeyPair(), resp = await readPacket();
+                if (resp && resp.cmd === 0x4E584E43) isAdbReady = true;
+                else if (resp && resp.cmd === 0x48545541 && resp.arg0 === 1) {
+                    await sendPacket(0x48545541, 2, 0, await signAdbToken(keyPair, resp.data));
                     let resp2 = await readPacket();
-                    
-                    if (resp2 && resp2.cmd === 0x4E584E43) {
-                        isAdbReady = true;
-                    } else {
-                        // Envia chave pública (Tipo 3) para forçar Pop-up
-                        let pubKey = await getAdbPublicKeyPayload(keyPair);
-                        await sendPacket(0x48545541, 3, 0, pubKey);
-                        showToast("🚨 Olhe para o celular e clique em PERMITIR DEPURAÇÃO USB!", "info");
-                        
-                        // Fica esperando a permissão humana
-                        while(!isAdbReady) {
-                            let waitResp = await readPacket();
-                            if(waitResp && waitResp.error) {
-                                showToast("Celular reiniciou a porta. Clique em conectar novamente.", "error");
-                                return;
-                            }
-                            if(waitResp && waitResp.cmd === 0x4E584E43) {
-                                isAdbReady = true;
-                            }
-                        }
+                    if (resp2 && resp2.cmd === 0x4E584E43) isAdbReady = true;
+                    else {
+                        await sendPacket(0x48545541, 3, 0, await getAdbPublicKeyPayload(keyPair));
+                        showToast("🚨 Olhe para o celular e clique em PERMITIR!", "warning");
+                        while(!isAdbReady) { let waitResp = await readPacket(); if(waitResp && waitResp.error) return showToast("Celular negou. Reconecte.", "error"); if(waitResp && waitResp.cmd === 0x4E584E43) isAdbReady = true; }
                     }
                 }
-
                 if (isAdbReady) {
                     document.getElementById('btn-conectar').style.display = 'none';
-                    const badge = document.getElementById('usb-status');
-                    badge.classList.remove('hidden');
-                    badge.classList.add('flex');
+                    document.getElementById('usb-status').classList.remove('hidden'); document.getElementById('usb-status').classList.add('flex');
                     document.getElementById('btn-start').disabled = false;
-                    showToast("Samsung Conectado e Autorizado!", "success");
+                    
+                    // FORÇA A TELA A NUNCA DESLIGAR ENQUANTO NO CABO (stay_on_while_plugged_in 3)
+                    await runAdbShell("settings put global stay_on_while_plugged_in 3");
+                    showToast("Autorizado! Tela do celular configurada para não apagar.", "success");
                 }
-
-            } catch (e) {
-                showToast("Erro USB: " + e.message, "error");
-            }
+            } catch (e) { showToast("Erro USB: " + e.message, "error"); }
         }
-
         async function runAdbShell(command) {
             if (!isAdbReady) return false;
             try {
                 const myId = localIdCounter++;
-                await sendPacket(0x4E45504F, myId, 0, new TextEncoder().encode("shell:" + command + "\0")); // A_OPEN
-                
+                await sendPacket(0x4E45504F, myId, 0, new TextEncoder().encode("shell:" + command + "\0"));
                 let ok = false;
                 for(let i=0; i<4; i++) {
-                    let r = await readPacket();
-                    if(r && r.error) continue;
-                    if(r && r.cmd === 0x59414B4F && r.arg1 === myId) { ok = true; } // A_OKAY
-                    if(r && r.cmd === 0x45534C43) { // A_CLSE
-                        await sendPacket(0x45534C43, myId, r.arg0);
-                        break; 
-                    }
+                    let r = await readPacket(); if(r && r.error) continue;
+                    if(r && r.cmd === 0x59414B4F && r.arg1 === myId) ok = true;
+                    if(r && r.cmd === 0x45534C43) { await sendPacket(0x45534C43, myId, r.arg0); break; }
                 }
                 return true;
-            } catch(e) {
-                return false;
-            }
+            } catch(e) { return false; }
         }
     </script>
 </body>
