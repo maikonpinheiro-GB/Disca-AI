@@ -502,6 +502,16 @@
             
             atualizarMetricas();
             resetTimerUI();
+            
+            // CORREÇÃO: LIBERA A TRAVA E CONTINUA O LOOP AUTOMÁTICO
+            isProcessingEval = false; 
+            
+            if (isCampaignActive) {
+                currentIndex++;
+                setTimeout(() => {
+                    processarProximo(); // Puxa a próxima ligação da fila sozinho!
+                }, 1500); // Pausa de 1.5s antes de puxar a próxima ligação
+            }
         }
 
         // Função de SMS Antibug - Foco Espacial
@@ -513,9 +523,17 @@
 
                 // Limpeza profunda do texto
                 let cleanText = text.replace(/\r?\n|\r/g, ' ').replace(/"/g, '\\"').replace(/'/g, "");
+                
+                // CORREÇÃO DO ERRO VERMELHO: Formata o telefone com +55 (Padrão Internacional)
+                let smsPhone = phone;
+                if (!phone.startsWith('55')) {
+                    smsPhone = '+55' + phone;
+                } else if (!phone.startsWith('+')) {
+                    smsPhone = '+' + phone;
+                }
 
                 // Abre o app de mensagem direto na conversa
-                await runAdbShell(`am start -a android.intent.action.SENDTO -d smsto:${phone} --es sms_body "${cleanText}"`);
+                await runAdbShell(`am start -a android.intent.action.SENDTO -d smsto:${smsPhone} --es sms_body "${cleanText}"`);
                 
                 // Espera o app do Samsung carregar completamente
                 await sleep(3500);
