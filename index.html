@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Disca AI - Operação Premium</title>
+    <title>Disca AI - Central Premium</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -131,11 +131,11 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-semibold text-gray-400 mb-2">Segundos p/ Desligar</label>
-                        <input type="number" id="cfg-time" value="10" class="w-full bg-black/50 border border-white/10 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500 text-center font-bold">
+                        <input type="number" id="cfg-time" value="15" class="w-full bg-black/50 border border-white/10 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500 text-center font-bold">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-400 mb-2">Tentativas Máximas</label>
-                        <input type="number" id="cfg-retries" value="1" class="w-full bg-black/50 border border-white/10 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500 text-center font-bold" min="1" title="Defina quantas vezes ligar para o mesmo número caso ele não atenda">
+                        <input type="number" id="cfg-retries" value="1" min="1" class="w-full bg-black/50 border border-white/10 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500 text-center font-bold" title="Defina quantas vezes ligar para o mesmo número">
                     </div>
                 </div>
             </div>
@@ -143,7 +143,6 @@
 
         <div class="xl:col-span-8 flex flex-col gap-6">
             
-            <!-- Palco de Ligação (Hero) -->
             <div class="glass-panel rounded-3xl p-10 flex flex-col items-center justify-center relative min-h-[400px] border border-white/5 overflow-hidden">
                 <div class="absolute inset-0 bg-gradient-to-b from-blue-500/5 to-transparent pointer-events-none"></div>
 
@@ -173,27 +172,25 @@
                         <button id="btn-atendeu" onclick="marcarAtendido()" class="btn-luxury w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xl py-6 rounded-2xl shadow-[0_0_30px_rgba(16,185,129,0.4)] flex items-center justify-center gap-3 border-2 border-emerald-400">
                             <i class="fa-solid fa-headset text-2xl"></i> CLIENTE ATENDEU (MANTER LIGAÇÃO)
                         </button>
-                        <button id="btn-desligar" onclick="encerrarLigacaoForcada()" class="btn-luxury w-full bg-red-900/40 hover:bg-red-600 text-red-400 hover:text-white border border-red-500/30 font-bold text-sm py-4 rounded-xl flex items-center justify-center gap-2 transition-colors">
+                        <button id="btn-desligar" onclick="avaliarChamada('Desligado Manualmente')" class="btn-luxury w-full bg-red-900/40 hover:bg-red-600 text-red-400 hover:text-white border border-red-500/30 font-bold text-sm py-4 rounded-xl flex items-center justify-center gap-2 transition-colors">
                             <i class="fa-solid fa-phone-slash"></i> Encerrar Imediatamente
                         </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Tabulação Simplificada -->
             <div class="glass-panel rounded-2xl p-6">
                 <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Resultado da Chamada</h3>
                 <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-                    <button onclick="avaliar('Atendeu')" class="disp-btn btn-luxury bg-white/5 hover:bg-emerald-500/20 text-gray-300 hover:text-emerald-400 border border-white/10 hover:border-emerald-500/50 p-4 rounded-xl text-sm font-bold transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>Atendeu</button>
-                    <button onclick="avaliar('Callback')" class="disp-btn btn-luxury bg-white/5 hover:bg-amber-500/20 text-gray-300 hover:text-amber-400 border border-white/10 hover:border-amber-500/50 p-4 rounded-xl text-sm font-bold transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>Callback (Retornar)</button>
-                    <button onclick="avaliar('Caixa Postal')" class="disp-btn btn-luxury bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 p-4 rounded-xl text-sm font-bold transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>Caixa Postal</button>
-                    <button onclick="avaliar('Não Atendeu')" class="disp-btn btn-luxury bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 p-4 rounded-xl text-sm font-bold transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>Não Atendeu / Só Chama</button>
-                    <button onclick="avaliar('Número Cancelado')" class="disp-btn btn-luxury bg-white/5 hover:bg-red-500/20 text-gray-300 hover:text-red-400 border border-white/10 hover:border-red-500/50 p-4 rounded-xl text-sm font-bold transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>Número Cancelado</button>
-                    <button onclick="avaliar('Desconhece Titular')" class="disp-btn btn-luxury bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 p-4 rounded-xl text-sm font-bold transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>Desconhece Titular</button>
+                    <button onclick="avaliarChamada('Atendeu')" class="disp-btn btn-luxury bg-white/5 hover:bg-emerald-500/20 text-gray-300 hover:text-emerald-400 border border-white/10 hover:border-emerald-500/50 p-4 rounded-xl text-sm font-bold transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>Atendeu</button>
+                    <button onclick="avaliarChamada('Callback')" class="disp-btn btn-luxury bg-white/5 hover:bg-amber-500/20 text-gray-300 hover:text-amber-400 border border-white/10 hover:border-amber-500/50 p-4 rounded-xl text-sm font-bold transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>Callback (Retornar)</button>
+                    <button onclick="avaliarChamada('Caixa Postal')" class="disp-btn btn-luxury bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 p-4 rounded-xl text-sm font-bold transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>Caixa Postal</button>
+                    <button onclick="avaliarChamada('Não Atendeu')" class="disp-btn btn-luxury bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 p-4 rounded-xl text-sm font-bold transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>Não Atendeu / Só Chama</button>
+                    <button onclick="avaliarChamada('Número Cancelado')" class="disp-btn btn-luxury bg-white/5 hover:bg-red-500/20 text-gray-300 hover:text-red-400 border border-white/10 hover:border-red-500/50 p-4 rounded-xl text-sm font-bold transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>Número Cancelado</button>
+                    <button onclick="avaliarChamada('Desconhece Titular')" class="disp-btn btn-luxury bg-white/5 hover:bg-white/10 text-gray-300 border border-white/10 p-4 rounded-xl text-sm font-bold transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>Desconhece Titular</button>
                 </div>
             </div>
 
-            <!-- Métricas -->
             <div class="grid grid-cols-4 gap-4">
                 <div class="glass-panel p-4 rounded-2xl border-l-2 border-blue-500 text-center"><p class="text-[10px] text-gray-400 uppercase font-bold mb-1">Total</p><p id="stat-total" class="text-2xl font-black text-white">0</p></div>
                 <div class="glass-panel p-4 rounded-2xl border-l-2 border-amber-500 text-center"><p class="text-[10px] text-gray-400 uppercase font-bold mb-1">Pendentes</p><p id="stat-pendentes" class="text-2xl font-black text-white">0</p></div>
@@ -207,7 +204,6 @@
         <p class="text-xs font-semibold text-gray-500 tracking-wider">APP CRIADO POR MAIKON NATTAN</p>
     </footer>
 
-    <!-- Modal Preview de Contatos -->
     <div id="modal-preview" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
         <div class="glass-panel rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden border border-white/10 shadow-2xl">
             <div class="p-6 border-b border-white/10 flex justify-between items-center bg-black/40">
@@ -237,14 +233,11 @@
         </div>
     </div>
 
-    <!-- Container de Notificações -->
     <div id="toast-container" class="fixed bottom-6 right-6 z-[200] flex flex-col gap-3 pointer-events-none"></div>
 
     <script>
-        // Função Utilitária para Pausar a Execução (Sleep)
         const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-        /* --- UTILITÁRIOS UI --- */
         function showToast(msg, type = 'info') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -269,7 +262,6 @@
             document.getElementById('box-sms').style.display = isChecked ? 'block' : 'none';
         }
 
-        /* --- MOTOR DE IMPORTAÇÃO E HIGIENIZAÇÃO --- */
         let contatosTemp = [];
         let contatosBase = [];
 
@@ -343,12 +335,12 @@
 
         function confirmarImportacao() {
             const validos = contatosTemp.filter(c => c.status !== 'Inválido').map(c => ({...c, tentativas: 0, statusChamada: 'Pendente'}));
-            contatosBase = contatosBase.concat(validos);
+            contatosBase = contatosBase.concat(validos); // Agora aceita contatos repetidos normalmente
             atualizarMetricas();
             document.getElementById('paste-area').value = '';
             if (isAdbReady) document.getElementById('btn-start').disabled = false;
             fecharModal();
-            showToast(`${validos.length} contatos aprovados.`, 'success');
+            showToast(`${validos.length} contatos aprovados e inseridos na fila.`, 'success');
         }
 
         function atualizarMetricas() {
@@ -356,12 +348,14 @@
             document.getElementById('stat-pendentes').innerText = contatosBase.filter(c => c.statusChamada === 'Pendente' || c.statusChamada === 'Retentativa').length;
         }
 
-        /* --- MÁQUINA DE ESTADOS DA CHAMADA --- */
-        let isCampaignActive = false, currentIndex = 0, callTimer = null, timeLeft = 0, callState = 'IDLE', processados = 0;
+        let isCampaignActive = false, currentIndex = 0, callState = 'IDLE', processados = 0;
+        let autoHangupTimer = null, timeLeft = 0;
+        let isProcessingEval = false; 
 
         async function iniciarCampanha() {
             if (currentIndex >= contatosBase.length) { showToast("Fila finalizada.", "info"); return; }
             if (!isAdbReady) { showToast("Conecte o USB primeiro.", "error"); return; }
+            
             isCampaignActive = true;
             document.getElementById('btn-start').style.display = 'none';
             document.getElementById('action-buttons').classList.remove('hidden');
@@ -393,7 +387,7 @@
             }
 
             const maxRetries = parseInt(document.getElementById('cfg-retries').value) || 1;
-            document.getElementById('stage-badge').innerText = `TENTATIVA ${contato.tentativas + 1}/${maxRetries} | CÓD: ${contato.code}`;
+            document.getElementById('stage-badge').innerText = `LIGANDO: TENTATIVA ${contato.tentativas + 1}/${maxRetries} | CÓD: ${contato.code}`;
             document.getElementById('stage-name').innerText = contato.name;
             let p = contato.phone;
             document.getElementById('stage-phone').innerText = p.length === 11 ? `(${p.substring(0,2)}) ${p.substring(2,7)}-${p.substring(7)}` : p;
@@ -404,32 +398,39 @@
             toggleAvaliacoes(false);
 
             callState = 'CALLING';
+            isProcessingEval = false;
+
+            // ACORDA A TELA ANTES DE TODA LIGAÇÃO PARA GARANTIR
+            await runAdbShell("input keyevent 224");
+
+            // Envia Comando de Ligação
             const success = await runAdbShell(`am start -a android.intent.action.CALL -d tel:${contato.phone}`);
             if(!success) { showToast("Falha USB ao discar.", "error"); return; }
 
-            const maxTime = parseInt(document.getElementById('cfg-time').value) || 10;
+            // Inicia Cronômetro
+            const maxTime = parseInt(document.getElementById('cfg-time').value) || 15;
             timeLeft = maxTime;
             const timerEl = document.getElementById('stage-timer');
             timerEl.innerText = timeLeft;
             timerEl.className = "text-7xl font-black tabular-nums tracking-tighter transition-colors duration-300 timer-active calling-pulse";
             document.getElementById('timer-label').innerText = "Chamando...";
             
-            clearInterval(callTimer);
-            callTimer = setInterval(async () => {
+            clearInterval(autoHangupTimer);
+            autoHangupTimer = setInterval(async () => {
                 if (callState !== 'CALLING') return;
                 timeLeft--;
                 timerEl.innerText = timeLeft;
                 if (timeLeft <= 0) {
-                    clearInterval(callTimer);
-                    await handleTimeout();
+                    clearInterval(autoHangupTimer);
+                    // O tempo acabou, vamos mandar avaliar automaticamente como "Não Atendeu"
+                    await avaliarChamada('Não Atendeu');
                 }
             }, 1000);
         }
 
-        // SE O USUÁRIO CLICAR EM "ATENDEU" ANTES DO TEMPO ACABAR
         function marcarAtendido() {
             if (callState !== 'CALLING') return;
-            clearInterval(callTimer); // PARA O RELÓGIO (Não desliga o celular)
+            clearInterval(autoHangupTimer); // PARA O RELÓGIO (Não desliga o celular)
             callState = 'TALKING';
             
             const timerEl = document.getElementById('stage-timer');
@@ -441,91 +442,56 @@
             toggleAvaliacoes(true);
         }
 
-        async function encerrarLigacaoForcada() {
-            clearInterval(callTimer);
+        async function avaliarChamada(resultado) {
+            // Trava de segurança para impedir cliques duplos ou colisão
+            if (isProcessingEval) return; 
+            isProcessingEval = true;
+
+            clearInterval(autoHangupTimer);
+            
+            // Se estava chamando ou falando, precisamos mandar o celular desligar a linha física
+            if (callState === 'CALLING' || callState === 'TALKING') {
+                await runAdbShell("input keyevent 6"); // Botão Desligar
+                await sleep(500); // Dá tempo para o Android processar o fim da chamada
+            }
+            
             callState = 'EVALUATING';
-            await runAdbShell("input keyevent 6"); // Força desligar
-            resetTimerUI();
-            document.getElementById('timer-label').innerText = "Chamada encerrada. Tabule a ligação abaixo.";
-            document.getElementById('btn-atendeu').style.display = 'none';
-            toggleAvaliacoes(true);
-        }
-
-        // SE O TEMPO ACABAR E NINGUÉM ATENDER
-        async function handleTimeout() {
-            callState = 'EVALUATING';
-            await runAdbShell("input keyevent 6"); // Desliga
-            await tabularChamada('Não Atendeu'); // Inicia a tabulação + SMS + Pulo Automático
-        }
-
-        // SE O USUÁRIO CLICAR NOS BOTÕES DE TABULAÇÃO
-        async function avaliar(resultado) {
-            if (callState === 'TALKING') await runAdbShell("input keyevent 6");
-            clearInterval(callTimer);
-            await tabularChamada(resultado);
-        }
-
-        /* --- TABULAÇÃO E SMS SÍNCRONO --- */
-        async function tabularChamada(resultado) {
             let contato = contatosBase[currentIndex];
             contato.tentativas++;
             
+            document.getElementById('timer-label').innerText = "Avaliando chamada...";
+            toggleAvaliacoes(false);
+
+            // 1. LÓGICA DO SMS (Qualquer resultado que não seja Atendeu)
             const sendSms = document.getElementById('cfg-sms-ativo').checked;
             const smsText = document.getElementById('cfg-sms-texto').value.trim();
-            const isFailure = !resultado.toLowerCase().includes('atendeu'); // Se for sucesso, não manda SMS
+            const isFailure = resultado !== 'Atendeu'; 
 
-            document.getElementById('timer-label').innerText = "Processando resultado...";
-            toggleAvaliacoes(false);
-            
-            // ENVIO DE SMS SÍNCRONO (Espera terminar 100% antes de ir pro próximo)
             if (sendSms && smsText && isFailure) {
-                showToast(`Enviando SMS automático para ${contato.name}... (Aguarde)`, 'warning');
-                try {
-                    // Acorda e Desbloqueia Tela
-                    await runAdbShell("input keyevent 224");
-                    await sleep(500);
-                    await runAdbShell("input keyevent 82"); // Menu/Unlock
-                    await sleep(500);
-
-                    // Prepara e abre o SMS
-                    let msgEncoded = smsText.replace(/'/g, "\\'");
-                    await runAdbShell(`am start -a android.intent.action.SENDTO -d sms:${contato.phone} --es sms_body '${msgEncoded}'`);
-                    
-                    // Dá tempo para o app de mensagens do celular carregar a tela
-                    await sleep(2500);
-                    
-                    // Simula teclas de Envio (Dedo Fantasma)
-                    await runAdbShell("input keyevent 22"); // Direita
-                    await runAdbShell("input keyevent 66"); // Enter
-                    await sleep(500);
-                    await runAdbShell("input keyevent 61"); // Tab (Se falhar a primeira)
-                    await runAdbShell("input keyevent 66"); // Enter
-                    
-                    await sleep(1000);
-                    await runAdbShell("input keyevent 3"); // Botão Home (Limpa a tela)
-                    showToast("SMS enviado com sucesso!", "success");
-                } catch (e) {
-                    console.error("Falha no SMS", e);
-                }
+                document.getElementById('stage-badge').innerText = "ENVIANDO SMS AUTOMÁTICO...";
+                showToast(`Despachando SMS para ${contato.name}...`, 'warning');
+                await dispararSMS_ADB(contato.phone, smsText);
             }
 
-            // LÓGICA DE RETENTATIVA COM BASE NO CAMPO DO USUÁRIO
+            // 2. LÓGICA DE RETENTATIVAS
             const maxRetries = parseInt(document.getElementById('cfg-retries').value) || 1;
             let isFinal = true;
             
-            if (resultado === 'Não Atendeu' || resultado === 'Caixa Postal') {
+            // Só faz retentativa se for um erro comum e ainda tiver tentativas sobrando
+            if (isFailure && resultado !== 'Número Cancelado' && resultado !== 'Desconhece Titular') {
                 if (contato.tentativas < maxRetries) {
                     isFinal = false;
                     contato.statusChamada = 'Retentativa';
-                    // Move pro final da fila
-                    let temp = contatosBase.splice(currentIndex, 1)[0];
-                    contatosBase.push(temp);
-                    currentIndex--; // Ajusta o index porque removemos 1
+                    // Remove da posição atual e joga pro final da fila
+                    let c = contatosBase.splice(currentIndex, 1)[0];
+                    contatosBase.push(c);
+                    currentIndex--; // Ajusta o index porque removemos 1 da frente
                     showToast(`Marcado para Retentativa (${contato.tentativas}/${maxRetries}).`);
                 } else {
                     contato.statusChamada = `Falha Final (${resultado})`;
                 }
             } else {
+                // Se atendeu ou for cancelado, é definitivo
                 contato.statusChamada = resultado;
             }
 
@@ -536,14 +502,52 @@
             
             atualizarMetricas();
             resetTimerUI();
-            currentIndex++;
             
-            // SOMENTE APÓS TUDO ISSO, AVANÇA PARA O PRÓXIMO CONTATO (Se tiver em modo auto)
+            currentIndex++; // Avança sempre
+            
             if (isCampaignActive) {
-                document.getElementById('stage-badge').innerText = "Avançando...";
+                document.getElementById('stage-badge').innerText = "AVANÇANDO...";
                 document.getElementById('timer-label').innerText = "Preparando próximo contato...";
-                await sleep(1500); // Respiro
+                await sleep(1500); // Respiro humano entre chamadas
                 processarProximo();
+            }
+        }
+
+        async function dispararSMS_ADB(phone, text) {
+            try {
+                // 1. Acorda e Desbloqueia Tela
+                await runAdbShell("input keyevent 224");
+                await sleep(500);
+                await runAdbShell("input keyevent 82"); // Menu/Unlock
+                await sleep(500);
+
+                // 2. Prepara e abre o SMS
+                let msgEncoded = text.replace(/'/g, "\\'");
+                await runAdbShell(`am start -a android.intent.action.SENDTO -d sms:${phone} --es sms_body '${msgEncoded}'`);
+                
+                // Dá tempo para o app de mensagens do celular carregar a tela e o teclado subir
+                await sleep(2500);
+                
+                // 3. Fecha o teclado para o cursor não se perder! Isso previne o celular clicar em 'Voltar'
+                await runAdbShell("input keyevent 111"); // Escape/Back (fecha o teclado virtual)
+                await sleep(500);
+
+                // 4. Simula teclas de Envio focadas no botão Send
+                await runAdbShell("input keyevent 61"); // Tab (Sai do campo de texto e vai pro botão enviar)
+                await sleep(300);
+                await runAdbShell("input keyevent 66"); // Enter (Aperta Enviar)
+                await sleep(500);
+                
+                // Fallback de Segurança (Caso o Tab não tenha sido suficiente em alguns apps como Mensagens do Google)
+                await runAdbShell("input keyevent 22"); // Seta para Direita
+                await sleep(300);
+                await runAdbShell("input keyevent 66"); // Enter
+                
+                await sleep(1000);
+                await runAdbShell("input keyevent 3"); // Botão Home (Limpa a tela e fecha o app de mensagem)
+                showToast("SMS disparado com sucesso!", "success");
+            } catch (e) {
+                console.error("Falha na rotina SMS", e);
             }
         }
 
@@ -562,7 +566,6 @@
             link.download = "Relatorio_DiscaAI.csv"; link.click();
         }
 
-        /* --- MOTOR WEB-USB ADB (RSA NATIVO) --- */
         let usbDevice = null, epIn = null, epOut = null, isAdbReady = false, localIdCounter = 1;
         async function getAdbKeyPair() { return await crypto.subtle.generateKey({ name: "RSASSA-PKCS1-v1_5", modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: "SHA-256" }, true, ["sign", "verify"]); }
         async function signAdbToken(keyPair, token) { const signature = await crypto.subtle.sign("RSASSA-PKCS1-v1_5", keyPair.privateKey, token); return new Uint8Array(signature); }
@@ -582,6 +585,7 @@
             const nameBytes = new TextEncoder().encode("DiscaAI_Premium\0"), fullPayload = new Uint8Array(buffer.byteLength + nameBytes.length);
             fullPayload.set(bytes, 0); fullPayload.set(nameBytes, buffer.byteLength); return fullPayload;
         }
+        
         async function sendPacket(cmd, arg0, arg1, data = new Uint8Array(0)) {
             if (!usbDevice || !epOut) return;
             const header = new ArrayBuffer(24), view = new DataView(header);
@@ -591,6 +595,7 @@
             const buffer = new Uint8Array(24 + data.length); buffer.set(new Uint8Array(header), 0); buffer.set(data, 24);
             await usbDevice.transferOut(epOut, buffer);
         }
+        
         async function readPacket() {
             if (!usbDevice || !epIn) return null;
             try {
@@ -603,6 +608,7 @@
                 return { cmd, arg0, arg1, data: payload };
             } catch (e) { return { error: true, msg: e.message }; }
         }
+
         async function conectarUSB() {
             try {
                 usbDevice = await navigator.usb.requestDevice({ filters: [{ classCode: 255, subclassCode: 66, protocolCode: 1 }] });
@@ -632,12 +638,16 @@
                     document.getElementById('usb-status').classList.remove('hidden'); document.getElementById('usb-status').classList.add('flex');
                     document.getElementById('btn-start').disabled = false;
                     
-                    // FORÇA A TELA A NUNCA DESLIGAR ENQUANTO NO CABO (stay_on_while_plugged_in 3)
+                    // FORÇA A TELA A NUNCA DESLIGAR ENQUANTO NO CABO E MUDA O TEMPO LIMITE PARA 24 DIAS
                     await runAdbShell("settings put global stay_on_while_plugged_in 3");
+                    await runAdbShell("settings put system screen_off_timeout 2147483647"); 
+                    await runAdbShell("input keyevent 224"); // Acorda a tela agora mesmo
+                    
                     showToast("Autorizado! Tela do celular configurada para não apagar.", "success");
                 }
             } catch (e) { showToast("Erro USB: " + e.message, "error"); }
         }
+        
         async function runAdbShell(command) {
             if (!isAdbReady) return false;
             try {
