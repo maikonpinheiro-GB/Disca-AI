@@ -613,14 +613,37 @@
             const isFailure = !resultado.toLowerCase().includes('atendeu') && !resultado.toLowerCase().includes('venda');
 
             if (sendSms && smsText && isFailure) {
-                showToast(`Enviando SMS automático para ${contato.phone}...`, 'info');
+                showToast(`Preparando SMS automático (Mantenha a tela desbloqueada)...`, 'warning');
                 try {
-                    let msgEncoded = smsText.replace(/"/g, '\\"');
-                    await runAdbShell(`am start -a android.intent.action.SENDTO -d sms:${contato.phone} --es sms_body "${msgEncoded}"`);
+                    // Acorda a tela caso esteja apagada
+                    await runAdbShell("input keyevent 224"); // KEYCODE_WAKEUP
+                    
+                    // Prepara o texto usando aspas simples para proteger contra erros no terminal
+                    let msgEncoded = smsText.replace(/'/g, "\\'");
+                    
+                    // Abre o aplicativo nativo de SMS já com o texto preenchido
+                    await runAdbShell(`am start -a android.intent.action.SENDTO -d sms:${contato.phone} --es sms_body '${msgEncoded}'`);
+                    
+                    // Aguarda 2.5 segundos para garantir que o app abriu e carregou o botão de Enviar
                     setTimeout(async () => {
-                        await runAdbShell("input keyevent 22"); // Foca no enviar
-                        await runAdbShell("input keyevent 66"); // Aperta Enter
-                    }, 1500);
+                        showToast("Simulando dedo fantasma para enviar SMS...", "info");
+                        
+                        // Tentativa 1 (Padrão Samsung): Foco para Direita + Enter
+                        await runAdbShell("input keyevent 22");
+                        await runAdbShell("input keyevent 66");
+                        
+                        // Tentativa 2 (Padrão Google Messages): Tab + Enter
+                        setTimeout(async () => {
+                            await runAdbShell("input keyevent 61");
+                            await runAdbShell("input keyevent 66");
+                            
+                            // Aguarda 1 segundo e volta para a tela inicial (Home) para limpar a tela
+                            setTimeout(async () => {
+                                await runAdbShell("input keyevent 3");
+                            }, 1000);
+                        }, 500);
+                        
+                    }, 2500);
                 } catch (e) {
                     console.error("Falha no SMS", e);
                 }
