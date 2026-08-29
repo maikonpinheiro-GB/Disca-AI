@@ -710,17 +710,20 @@
             await desligarLigacaoFisica();
             
             // Pular contabiliza como "Não Atendeu" no log
-            registrarEAvancar('Não Atendeu / Pular', true);
+            await registrarEAvancar('Não Atendeu / Pular', true, false, false);
         }
 
         async function tabulaChamada(resultado) {
-            await desligarLigacaoFisica(); // Como o operador já encerrou, desliga agora.
+            let manterLigacao = (resultado === 'Venda Realizada' || resultado.startsWith('Retorno Agendado'));
+            
+            if (!manterLigacao) {
+                await desligarLigacaoFisica(); 
+            }
             
             if (resultado === 'Queda de Ligação') {
-                // Não incrementa currentIndex (ele repete o contato na hora)
-                registrarEAvancar(resultado, false, true);
+                await registrarEAvancar(resultado, false, true, false);
             } else {
-                registrarEAvancar(resultado, false, false);
+                await registrarEAvancar(resultado, false, false, manterLigacao);
             }
         }
 
@@ -783,12 +786,13 @@
             
             let dataFormatada = dataStr.split('-').reverse().join('/') + " às " + hora;
             fecharModalCalendario();
-            await desligarLigacaoFisica();
-            registrarEAvancar(`Retorno Agendado: ${dataFormatada}`, false, false);
+            
+            // REMOVIDO: desligarLigacaoFisica() -> O robô vai manter você na linha agora!
+            await registrarEAvancar(`Retorno Agendado: ${dataFormatada}`, false, false, true);
         }
 
-        async function registrarEAvancar(resultado, foiPulo = false, repeteAgora = false) {
-            callState = 'IDLE';
+        async function registrarEAvancar(resultado, foiPulo = false, repeteAgora = false, manterLigacao = false) {
+            if (!manterLigacao) callState = 'IDLE';
             let contato = contatosBase[currentIndex];
             
             historico.push({
@@ -804,7 +808,7 @@
                 let textToSend = "";
                 let customSms = document.getElementById('cfg-sms-texto').value.trim();
                 let primeiroNome = contato.name.trim().split(' ')[0];
-                const tagRegex = /:re:?/ig; // Substitui o :re pelo Nome
+                const tagRegex = /:re:?/ig; 
 
                 if (resultado === 'Venda Realizada') {
                     textToSend = `${primeiroNome}, parabéns! Seu pedido foi efetuado com sucesso através da nossa ligação. Para acompanhar a entrega, acesse o app Revendedor Grupo Boticário. Muito sucesso!`;
@@ -814,7 +818,7 @@
                         textToSend = `${primeiroNome}, passando para deixar o lembrete: iremos retornar dia ${partes[0]} às ${partes[1]}. Qualquer coisa me chame no WhatsApp ou chat Boticário.`;
                     }
                 } else if (resultado === 'Desconhece Titular') {
-                    textToSend = ""; // Bloqueia SMS
+                    textToSend = ""; 
                 } else if (foiPulo) {
                     if (customSms) textToSend = customSms.replace(tagRegex, primeiroNome);
                 }
@@ -825,15 +829,31 @@
                 }
             }
 
-            if (!repeteAgora) currentIndex++; // Avança
+            if (manterLigacao) {
+                document.getElementById('grid-tabulacao').classList.add('hidden');
+                document.getElementById('aguardo-desligamento').classList.remove('hidden');
+                showToast("Registro Salvo e SMS enviado. A ligação continua ativa!", "success");
+            } else {
+                concluirAvancoFila(repeteAgora);
+            }
+        }
+
+        function concluirAvancoFila(repeteAgora) {
+            callState = 'IDLE';
+            if (!repeteAgora) currentIndex++; 
             
             salvarDadosLocais();
             atualizarInterfaceBase();
             resetarInterfaceCall();
 
             if (estadoOperacao === 'RODANDO') {
-                setTimeout(processarChamada, 1500); // 1.5s para respirar e ligar de novo
+                setTimeout(processarChamada, 1500); 
             }
+        }
+
+        async function finalizarLigacaoPosTabulacao() {
+            await desligarLigacaoFisica();
+            concluirAvancoFila(false);
         }
 
         function resetarInterfaceCall() {
@@ -843,6 +863,12 @@
             document.getElementById('btn-atendeu').classList.remove('flex');
             document.getElementById('tela-tabulacao').classList.add('hidden');
             document.getElementById('stage-container').classList.remove('animate-calling');
+            
+            // Restaura o grid para o próximo cliente
+            const gridTab = document.getElementById('grid-tabulacao');
+            if(gridTab) gridTab.classList.remove('hidden');
+            const aguardo = document.getElementById('aguardo-desligamento');
+            if(aguardo) aguardo.classList.add('hidden');
         }
 
         function finalizaMesaBaseVazia() {
