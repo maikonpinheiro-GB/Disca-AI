@@ -17,7 +17,7 @@
                 extend: {
                     fontFamily: { sans: ['"Space Grotesk"', 'sans-serif'] },
                     colors: {
-                        positivus: '#B9FF66', /* Verde característico */
+                        positivus: '#B9FF66',
                         dark: '#191A23',
                         light: '#F3F4F6'
                     }
@@ -80,13 +80,11 @@
         }
         .animate-calling { animation: call-pulse 1.5s infinite; border-color: #B9FF66; }
 
-        /* Timer progress bar */
         .progress-bar-inner { transition: width 1s linear; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col font-sans antialiased overflow-x-hidden">
 
-    <!-- HEADER POSITIVUS -->
     <header class="bg-white border-b-2 border-dark sticky top-0 z-50">
         <div class="max-w-[1800px] mx-auto px-6 py-4 flex justify-between items-center">
             <div class="flex items-center gap-3">
@@ -114,7 +112,6 @@
         </div>
     </header>
 
-    <!-- MAIN LAYOUT -->
     <main class="flex-1 w-full max-w-[1800px] mx-auto p-6 grid grid-cols-1 xl:grid-cols-12 gap-8">
         
         <!-- COLUNA ESQUERDA: Importação e Configurações -->
@@ -169,7 +166,6 @@
                 </div>
             </div>
             
-            <!-- Resumo da Base -->
             <div class="neo-card p-6 flex-1 flex flex-col max-h-[300px]">
                 <div class="flex justify-between items-center mb-4 border-b-2 border-dark pb-2">
                     <h2 class="text-sm font-bold text-dark uppercase"><i class="fa-solid fa-list-ol"></i> Fila de Discagem</h2>
@@ -181,12 +177,10 @@
             </div>
         </div>
 
-        <!-- COLUNA CENTRAL: Mesa de Operação -->
         <div class="xl:col-span-6 flex flex-col gap-6">
             
             <div class="neo-card p-10 flex flex-col items-center justify-center relative min-h-[550px]" id="stage-container">
                 
-                <!-- Status Superior -->
                 <div class="absolute top-6 left-0 w-full flex justify-center z-20">
                     <span id="stage-badge" class="px-5 py-2 rounded-full bg-white border-2 border-dark text-xs font-bold text-dark shadow-[4px_4px_0px_#191A23] uppercase">
                         Aguardando
@@ -198,7 +192,6 @@
                     <p id="stage-code" class="text-xs font-bold text-gray-500 uppercase mb-1 bg-gray-100 inline-block px-3 py-1 rounded border border-gray-300">CÓD: ---</p>
                     <p id="stage-phone" class="text-3xl font-bold text-dark mb-8 tracking-wider">---</p>
 
-                    <!-- Cronômetro (Barra) -->
                     <div id="timer-container" class="hidden flex-col items-center justify-center mb-8 w-full bg-white p-4 rounded-xl border-2 border-dark shadow-[4px_4px_0px_#191A23]">
                         <p class="text-xs font-bold text-dark uppercase mb-2" id="timer-label">Chamando (Aguardando)</p>
                         <div class="text-6xl font-bold tabular-nums text-dark mb-4" id="stage-timer">00</div>
@@ -207,7 +200,6 @@
                         </div>
                     </div>
 
-                    <!-- Controles Principais de Campanha -->
                     <div id="main-controls" class="w-full mt-4">
                         <button id="btn-iniciar" onclick="iniciarCampanha()" class="neo-btn w-full bg-positivus text-dark font-bold text-xl py-5 flex items-center justify-center gap-3 disabled:opacity-50 uppercase">
                             <i class="fa-solid fa-play"></i> Iniciar Atendimento
@@ -226,15 +218,15 @@
                         </div>
                     </div>
 
-                    <!-- Botão de O Cliente Atendeu (Para o relógio e abre tabulação) -->
-                    <button id="btn-atendeu" onclick="marcarAtendido()" class="hidden neo-btn mt-6 w-full bg-dark text-positivus font-bold text-xl py-6 flex-col items-center justify-center gap-2 animate-bounce hover:animate-none uppercase border-positivus border-4">
+                    <!-- Botão estático (sem pulo) -->
+                    <button id="btn-atendeu" onclick="marcarAtendido()" class="hidden neo-btn mt-6 w-full bg-dark text-positivus font-bold text-xl py-6 flex-col items-center justify-center gap-2 uppercase border-positivus border-4 hover:bg-gray-800">
                         <span class="flex items-center gap-3"><i class="fa-solid fa-headset text-2xl"></i> Cliente Atendeu</span>
                         <span class="text-xs text-white">O Cronômetro será pausado</span>
                     </button>
                 </div>
             </div>
 
-            <!-- TELA DE ATENDIMENTO (Tabulação) -->
+            <!-- TELA DE ATENDIMENTO E TABULAÇÃO -->
             <div id="tela-tabulacao" class="hidden neo-card p-6 bg-gray-50 transition-all">
                 <div class="flex justify-between items-center mb-6 border-b-2 border-dark pb-3">
                     <h3 class="text-sm font-bold text-dark uppercase flex items-center gap-2">
@@ -245,8 +237,9 @@
                     </button>
                 </div>
                 
-                <div class="grid grid-cols-2 gap-4">
-                    <button onclick="tabulaChamada('Venda')" class="neo-btn bg-positivus text-dark p-5 flex flex-col items-center gap-3 hover:-translate-y-2">
+                <!-- GRID DE BOTÕES DE TABULAÇÃO -->
+                <div id="grid-tabulacao" class="grid grid-cols-2 gap-4">
+                    <button onclick="tabulaChamada('Venda Realizada')" class="neo-btn bg-positivus text-dark p-5 flex flex-col items-center gap-3 hover:-translate-y-2">
                         <i class="fa-solid fa-handshake text-3xl"></i>
                         <span class="text-sm uppercase text-center">Venda<br>Realizada</span>
                     </button>
@@ -266,10 +259,22 @@
                         <span class="text-sm uppercase text-center">Queda de Ligação<br>(Repete Agora)</span>
                     </button>
                 </div>
+
+                <!-- ÁREA DE AGUARDO DE DESLIGAMENTO (Aparece após Venda/Agendar) -->
+                <div id="aguardo-desligamento" class="hidden flex flex-col items-center py-6 bg-white border-2 border-dark rounded-xl shadow-inner">
+                    <div class="w-16 h-16 bg-positivus border-2 border-dark rounded-full flex items-center justify-center mb-4 animate-pulse">
+                        <i class="fa-solid fa-phone-volume text-dark text-2xl"></i>
+                    </div>
+                    <p class="text-sm font-bold text-dark uppercase text-center mb-1">A chamada continua ativa</p>
+                    <p class="text-xs font-bold text-gray-500 text-center mb-6 px-4">O SMS automático foi despachado! Continue conversando com o cliente e clique no botão abaixo apenas quando encerrar o atendimento para avançar na fila.</p>
+                    
+                    <button onclick="finalizarLigacaoPosTabulacao()" class="neo-btn bg-red-500 text-white font-bold text-lg py-4 px-8 flex items-center justify-center gap-3 hover:bg-red-600 uppercase w-3/4">
+                        <i class="fa-solid fa-phone-slash"></i> Encerrar Chamada e Avançar
+                    </button>
+                </div>
             </div>
         </div>
 
-        <!-- COLUNA DIREITA: Relatórios -->
         <div class="xl:col-span-3 flex flex-col gap-6">
             <div class="neo-card p-6 flex-1 flex flex-col h-full max-h-[85vh]">
                 <div class="flex justify-between items-center mb-6 border-b-2 border-dark pb-4">
@@ -314,7 +319,7 @@
         </div>
     </footer>
 
-    <!-- MODAL CALENDÁRIO -->
+    <!-- MODAL CALENDÁRIO COM MINUTOS -->
     <div id="modal-calendario" class="fixed inset-0 bg-dark/80 z-[100] hidden items-center justify-center p-4">
         <div class="neo-card w-full max-w-sm flex flex-col overflow-hidden bg-white">
             <div class="p-5 border-b-2 border-dark bg-yellow-300 flex justify-between items-center">
@@ -329,7 +334,7 @@
                     <p id="cal-erro" class="text-xs text-red-500 font-bold mt-2 hidden bg-red-100 p-2 rounded border border-red-500"></p>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-dark uppercase mb-2">Horário (09:00 - 18:00)</label>
+                    <label class="block text-xs font-bold text-dark uppercase mb-2">Horário (09:00 às 18:00)</label>
                     <input type="time" id="cal-hora" class="w-full neo-input px-4 py-3 text-dark font-bold" value="09:00">
                 </div>
             </div>
@@ -379,14 +384,13 @@
         let historico = [];
         let currentIndex = 0;
         
-        let estadoOperacao = 'PARADO'; // PARADO, RODANDO, PAUSADO
-        let callState = 'IDLE'; // IDLE, CALLING, TALKING
+        let estadoOperacao = 'PARADO';
+        let callState = 'IDLE';
         
         let timeLeft = 0;
         let timerInterval = null;
         let wakeLock = null;
 
-        // Estado WebADB
         let usbDevice = null;
         let epIn = null;
         let epOut = null;
@@ -398,7 +402,7 @@
         const feriadosNacionais = ['01-01', '21-04', '01-05', '07-09', '12-10', '02-11', '15-11', '25-12'];
 
         window.onload = () => {
-            carregarDadosLocais();
+            carregarDadosLocais(); // Essa função agora limpa tudo (Cache Desativado)
             atualizarInterfaceBase();
             requestWakeLock();
         };
@@ -411,10 +415,10 @@
             try {
                 if ('wakeLock' in navigator) {
                     wakeLock = await navigator.wakeLock.request('screen');
-                    console.log("Tela bloqueada para não dormir (WakeLock ativado).");
+                    console.log("Tela do PC bloqueada para não dormir (WakeLock ativado).");
                 }
             } catch (err) {
-                console.info('Aviso: Wake Lock bloqueado neste ambiente (Iframe/Sandbox). O sistema funcionará normalmente.');
+                // Silencioso. Evita erros vermelhos no Iframe da plataforma.
             }
         }
 
@@ -435,7 +439,7 @@
             document.getElementById('usb-disconnected-warning').classList.remove('hidden');
             document.getElementById('usb-disconnected-warning').classList.add('flex');
             
-            pausarCampanha(true); // Pausa instantaneamente o fluxo
+            pausarCampanha(true); 
         }
 
         function showToast(msg, type = 'info') {
@@ -502,7 +506,6 @@
                 if (!phone) continue;
                 let status = "Válido", originalPhone = phone;
 
-                // Regra Anatel de Correção BR
                 if (phone.length === 10) {
                     phone = phone.substring(0, 2) + '9' + phone.substring(2);
                     status = "Corrigido";
@@ -514,8 +517,6 @@
 
                 st.total++;
                 let name = nameParts.join(' ').replace(/[^\w\sÀ-ÿ]/g, '').trim() || "Contato sem nome";
-                
-                // NOTA: Agora permitimos duplicados normalmente.
                 tempContatos.push({ name, code, phone, originalPhone, status, id: Date.now() + Math.random() });
             }
 
@@ -625,7 +626,7 @@
             btnPausar.classList.remove('bg-positivus');
             btnPausar.onclick = pausarCampanha;
             
-            if (callState === 'IDLE') processarChamada(); // Retoma
+            if (callState === 'IDLE') processarChamada();
         }
 
         async function refazerLigacao() {
@@ -643,7 +644,6 @@
             callState = 'CALLING';
             atualizarInterfaceBase();
 
-            // Ui Update
             document.getElementById('stage-badge').innerText = `RODANDO • FILA: ${currentIndex + 1}/${contatosBase.length}`;
             document.getElementById('stage-name').innerText = contato.name;
             document.getElementById('stage-code').innerText = `CÓD: ${contato.code}`;
@@ -656,7 +656,6 @@
             document.getElementById('tela-tabulacao').classList.add('hidden');
             document.getElementById('stage-container').classList.add('animate-calling');
             
-            // Físico: Acorda tela e Disca
             await runAdbShell("input keyevent 224");
             const res = await runAdbShell(`am start -a android.intent.action.CALL -d tel:${contato.phone}`);
             
@@ -687,7 +686,7 @@
 
         function marcarAtendido() {
             if (callState !== 'CALLING') return;
-            clearInterval(timerInterval); // Paralisa o tempo, não desliga!
+            clearInterval(timerInterval);
             callState = 'TALKING';
             
             document.getElementById('timer-label').innerText = "Em Atendimento";
@@ -709,7 +708,6 @@
             clearInterval(timerInterval);
             await desligarLigacaoFisica();
             
-            // Pular contabiliza como "Não Atendeu" no log
             await registrarEAvancar('Não Atendeu / Pular', true, false, false);
         }
 
@@ -778,8 +776,8 @@
             }
             
             let [h, m] = hora.split(':').map(Number);
-            if (h < 9 || h >= 18 || (h === 18 && m > 0)) {
-                erroEl.innerText = "Horário inválido. Escolha entre 09:00 e 18:00.";
+            if (h < 9 || h > 18 || (h === 18 && m > 0)) {
+                erroEl.innerText = "Horário inválido. Escolha um horário entre 09:00 e 18:00.";
                 erroEl.classList.remove('hidden');
                 return;
             }
@@ -787,7 +785,6 @@
             let dataFormatada = dataStr.split('-').reverse().join('/') + " às " + hora;
             fecharModalCalendario();
             
-            // REMOVIDO: desligarLigacaoFisica() -> O robô vai manter você na linha agora!
             await registrarEAvancar(`Retorno Agendado: ${dataFormatada}`, false, false, true);
         }
 
@@ -811,11 +808,11 @@
                 const tagRegex = /:re:?/ig; 
 
                 if (resultado === 'Venda Realizada') {
-                    textToSend = `${primeiroNome}, parabéns! Seu pedido foi efetuado com sucesso através da nossa ligação. Para acompanhar a entrega, acesse o app Revendedor Grupo Boticário. Muito sucesso!`;
+                    textToSend = `${primeiroNome}, parabéns! Seu pedido foi efetuado por ligação com sucesso. Para acompanhar mais sobre o seu pedido, acesse o app Revendedores Grupo Boticário.`;
                 } else if (resultado.startsWith('Retorno Agendado:')) {
                     let partes = resultado.replace('Retorno Agendado: ', '').split(' às ');
                     if (partes.length === 2) {
-                        textToSend = `${primeiroNome}, passando para deixar o lembrete: iremos retornar dia ${partes[0]} às ${partes[1]}. Qualquer coisa me chame no WhatsApp ou chat Boticário.`;
+                        textToSend = `${primeiroNome}, passando aqui para te deixar esse lembrete: iremos retomar nossa conversa dia ${partes[0]} às ${partes[1]}. Não se esqueça viu, qualquer coisa me chame no WhatsApp ou pelo chat dentro do aplicativo Revendedor Grupo Boticário.`;
                     }
                 } else if (resultado === 'Desconhece Titular') {
                     textToSend = ""; 
@@ -864,7 +861,6 @@
             document.getElementById('tela-tabulacao').classList.add('hidden');
             document.getElementById('stage-container').classList.remove('animate-calling');
             
-            // Restaura o grid para o próximo cliente
             const gridTab = document.getElementById('grid-tabulacao');
             if(gridTab) gridTab.classList.remove('hidden');
             const aguardo = document.getElementById('aguardo-desligamento');
@@ -890,15 +886,12 @@
 
                 let cleanText = text.replace(/\r?\n|\r/g, ' ').replace(/"/g, '\\"').replace(/'/g, "");
                 
-                // Força o +55 para a operadora aceitar e não dar erro vermelho.
                 let smsPhone = phone;
                 if (!phone.startsWith('55') && !phone.startsWith('+55')) smsPhone = '+55' + phone;
 
-                // Abre app
                 await runAdbShell(`am start -a android.intent.action.SENDTO -d smsto:${smsPhone} --es sms_body "${cleanText}"`);
                 await sleep(3500); 
                 
-                // Desce a mira da Seta de Voltar para a Caixa de Texto e Envia
                 await runAdbShell("input keyevent 20"); 
                 await sleep(200);
                 await runAdbShell("input keyevent 20"); 
@@ -906,13 +899,11 @@
                 await runAdbShell("input keyevent 20"); 
                 await sleep(300);
                 
-                // Mover pro botão enviar e apertar
                 await runAdbShell("input keyevent 22"); 
                 await sleep(300);
                 await runAdbShell("input keyevent 66"); 
                 await sleep(1500);
                 
-                // Limpa tela para próxima operação
                 await runAdbShell("input keyevent 3"); 
                 showToast("SMS Disparado com Sucesso.", "success");
             } catch (e) {
@@ -921,14 +912,17 @@
         }
 
         function salvarDadosLocais() {
-            localStorage.setItem('discaAI_positivus', JSON.stringify({ base: contatosBase, idx: currentIndex, hist: historico }));
+            // O sistema não vai mais salvar nada no cache.
         }
+        
         function carregarDadosLocais() {
-            try {
-                let d = JSON.parse(localStorage.getItem('discaAI_positivus'));
-                if(d) { contatosBase = d.base || []; currentIndex = d.idx || 0; historico = d.hist || []; }
-            } catch(e) {}
+            // Ao iniciar, força a limpeza total e nasce zerado.
+            localStorage.removeItem('discaAI_positivus');
+            contatosBase = []; 
+            currentIndex = 0; 
+            historico = [];
         }
+
         function exportarRelatorio() {
             if(historico.length === 0) return showToast("Histórico vazio", "warning");
             let csv = "Data,Nome,Telefone,Resultado Final\n";
@@ -1022,7 +1016,6 @@
                     document.getElementById('usb-status').classList.remove('hidden'); 
                     document.getElementById('usb-status').classList.add('flex');
                     
-                    // Comandos de Força: 24 Dias de Tela Acordada
                     await runAdbShell("settings put system screen_off_timeout 2147483647");
                     await runAdbShell("settings put global stay_on_while_plugged_in 3");
                     await runAdbShell("input keyevent 224");
