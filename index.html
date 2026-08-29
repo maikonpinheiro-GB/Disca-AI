@@ -1,29 +1,25 @@
 <!DOCTYPE html>
-<html lang="pt-BR" class="dark">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Disca AI - Central de Atendimento USB</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Fonte Space Grotesk (Estilo Positivus) -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
     <script>
         tailwind.config = {
-            darkMode: 'class',
             theme: {
                 extend: {
-                    fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+                    fontFamily: { sans: ['"Space Grotesk"', 'sans-serif'] },
                     colors: {
-                        background: '#09090b',
-                        surface: '#18181b',
-                        surface_hover: '#27272a',
-                        primary: '#10b981', // Emerald
-                        primary_hover: '#059669',
-                        accent: '#3b82f6', // Blue
-                        danger: '#ef4444'
+                        positivus: '#B9FF66', /* Verde característico */
+                        dark: '#191A23',
+                        light: '#F3F4F6'
                     }
                 }
             }
@@ -31,37 +27,58 @@
     </script>
 
     <style>
-        body { background-color: #09090b; color: #f4f4f5; }
+        body { background-color: #F3F4F6; color: #191A23; }
         
-        .glass-panel {
-            background: rgba(24, 24, 27, 0.7);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        /* Estilo Neo-Brutalista (Positivus) */
+        .neo-card {
+            background-color: white;
+            border: 2px solid #191A23;
+            border-radius: 16px;
+            box-shadow: 4px 4px 0px #191A23;
+            transition: all 0.2s ease;
         }
 
-        .btn-press { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
-        .btn-press:active:not(:disabled) { transform: scale(0.96); }
+        .neo-btn {
+            border: 2px solid #191A23;
+            border-radius: 12px;
+            box-shadow: 4px 4px 0px #191A23;
+            transition: all 0.1s ease;
+            font-weight: 700;
+        }
         
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        .neo-btn:active:not(:disabled) {
+            transform: translate(4px, 4px);
+            box-shadow: 0px 0px 0px #191A23;
+        }
+        
+        .neo-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            box-shadow: 0px 0px 0px #191A23;
+            transform: translate(4px, 4px);
+        }
+
+        .neo-input {
+            border: 2px solid #191A23;
+            border-radius: 12px;
+            background: white;
+            transition: all 0.2s;
+        }
+        
+        .neo-input:focus {
+            outline: none;
+            box-shadow: 4px 4px 0px #B9FF66;
+        }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #52525b; }
+        ::-webkit-scrollbar-thumb { background: #191A23; border-radius: 4px; }
 
         @keyframes call-pulse {
-            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); border-color: rgba(59, 130, 246, 0.5); }
-            70% { box-shadow: 0 0 0 20px rgba(59, 130, 246, 0); border-color: rgba(59, 130, 246, 0.1); }
-            100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); border-color: rgba(59, 130, 246, 0.5); }
+            0%, 100% { box-shadow: 4px 4px 0px #191A23; }
+            50% { box-shadow: 0px 0px 20px #B9FF66, 4px 4px 0px #191A23; }
         }
-        .animate-calling { animation: call-pulse 2s infinite; }
-        
-        @keyframes talk-pulse {
-            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); border-color: rgba(16, 185, 129, 0.5); }
-            70% { box-shadow: 0 0 0 20px rgba(16, 185, 129, 0); border-color: rgba(16, 185, 129, 0.1); }
-            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); border-color: rgba(16, 185, 129, 0.5); }
-        }
-        .animate-talking { animation: talk-pulse 2s infinite; }
+        .animate-calling { animation: call-pulse 1.5s infinite; border-color: #B9FF66; }
 
         /* Timer progress bar */
         .progress-bar-inner { transition: width 1s linear; }
@@ -69,100 +86,97 @@
 </head>
 <body class="min-h-screen flex flex-col font-sans antialiased overflow-x-hidden">
 
-    <!-- HEADER -->
-    <header class="glass-panel sticky top-0 z-50 border-b border-white/5">
+    <!-- HEADER POSITIVUS -->
+    <header class="bg-white border-b-2 border-dark sticky top-0 z-50">
         <div class="max-w-[1800px] mx-auto px-6 py-4 flex justify-between items-center">
-            <div class="flex items-center gap-4">
-                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.3)]">
-                    <i class="fa-solid fa-headset text-white text-2xl"></i>
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-xl bg-positivus border-2 border-dark flex items-center justify-center shadow-[4px_4px_0px_#191A23]">
+                    <i class="fa-solid fa-headset text-dark text-2xl"></i>
                 </div>
                 <div>
-                    <h1 class="font-black text-2xl tracking-tight text-white">Disca <span class="text-emerald-500">AI</span></h1>
-                    <p class="text-[10px] text-gray-400 uppercase tracking-widest font-bold">Central Premium (Nativo USB)</p>
+                    <h1 class="font-bold text-2xl tracking-tight text-dark uppercase">Disca AI</h1>
                 </div>
             </div>
             
             <div class="flex items-center gap-4">
-                <div id="usb-status" class="hidden items-center gap-3 px-5 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 shadow-inner">
-                    <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_#10b981]"></div>
-                    <div class="flex flex-col">
-                        <span class="text-xs font-bold text-emerald-400">Smartphone Conectado</span>
-                        <span class="text-[9px] text-emerald-600 uppercase tracking-wider font-semibold">ADB Criptografado & Tela Bloqueada</span>
-                    </div>
+                <div id="usb-status" class="hidden items-center gap-3 px-4 py-2 bg-positivus border-2 border-dark rounded-xl shadow-[4px_4px_0px_#191A23]">
+                    <i class="fa-solid fa-link text-dark"></i>
+                    <span class="text-sm font-bold text-dark uppercase">Samsung Conectado</span>
                 </div>
-                <div id="usb-disconnected-warning" class="hidden items-center gap-3 px-5 py-2.5 rounded-xl bg-red-500/10 border border-red-500/20 shadow-inner">
-                    <i class="fa-solid fa-triangle-exclamation text-red-500 animate-bounce"></i>
-                    <span class="text-xs font-bold text-red-400">Cabo Desconectado! Pausado.</span>
+                <div id="usb-disconnected-warning" class="hidden items-center gap-3 px-4 py-2 bg-red-400 border-2 border-dark rounded-xl shadow-[4px_4px_0px_#191A23]">
+                    <i class="fa-solid fa-triangle-exclamation text-dark animate-bounce"></i>
+                    <span class="text-sm font-bold text-dark uppercase">Cabo Solto! Pausado.</span>
                 </div>
-                <button id="btn-conectar" onclick="conectarUSB()" class="btn-press bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl text-sm font-bold flex items-center gap-2 shadow-[0_4px_20px_rgba(37,99,235,0.4)] border border-blue-400/30">
-                    <i class="fa-brands fa-usb text-lg"></i> Conectar USB
+                <button id="btn-conectar" onclick="conectarUSB()" class="neo-btn bg-white hover:bg-gray-50 text-dark px-6 py-3 text-sm flex items-center gap-2">
+                    <i class="fa-brands fa-usb text-lg"></i> Iniciar
                 </button>
             </div>
         </div>
     </header>
 
     <!-- MAIN LAYOUT -->
-    <main class="flex-1 w-full max-w-[1800px] mx-auto p-6 grid grid-cols-1 xl:grid-cols-12 gap-6">
+    <main class="flex-1 w-full max-w-[1800px] mx-auto p-6 grid grid-cols-1 xl:grid-cols-12 gap-8">
         
         <!-- COLUNA ESQUERDA: Importação e Configurações -->
         <div class="xl:col-span-3 flex flex-col gap-6">
             
-            <div class="glass-panel rounded-3xl p-6">
-                <h2 class="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                    <i class="fa-solid fa-paste text-emerald-500"></i> Importar Contatos
+            <div class="neo-card p-6">
+                <h2 class="text-sm font-bold text-dark uppercase mb-4 flex items-center gap-2">
+                    <span class="bg-positivus px-2 py-1 rounded border border-dark"><i class="fa-solid fa-paste"></i></span> Copiar & Colar Base
                 </h2>
-                <textarea id="paste-area" rows="4" class="w-full bg-surface/50 border border-white/10 rounded-xl p-4 text-sm text-gray-300 focus:outline-none focus:border-emerald-500 transition-colors placeholder-gray-600 resize-none shadow-inner" placeholder="Cole contatos (Nome, Cód, Telefone). Ex: Maria 123 41999999999"></textarea>
-                <div class="flex gap-2 mt-3">
-                    <button onclick="processarEntradas()" class="flex-1 btn-press bg-white/5 hover:bg-white/10 text-white border border-white/10 py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-wand-magic-sparkles text-emerald-400"></i> Filtrar e Adicionar
+                <textarea id="paste-area" rows="4" class="w-full neo-input p-3 text-sm text-dark placeholder-gray-400 resize-none" placeholder="Cole de planilhas ou PDF (Ex: Maria 123 41999999999)"></textarea>
+                <div class="flex gap-2 mt-4">
+                    <button onclick="processarEntradas()" class="flex-1 neo-btn bg-dark text-white py-3 text-xs flex items-center justify-center gap-2 hover:bg-gray-800">
+                        Processar e Higienizar
                     </button>
-                    <button onclick="document.getElementById('fileInput').click()" class="btn-press bg-white/5 hover:bg-white/10 text-white border border-white/10 px-4 rounded-xl text-xs flex items-center justify-center" title="Importar Excel/CSV">
-                        <i class="fa-solid fa-file-excel text-emerald-500"></i>
+                    <button onclick="document.getElementById('fileInput').click()" class="neo-btn bg-white text-dark px-4 text-xs flex items-center justify-center" title="Importar Excel/CSV">
+                        <i class="fa-solid fa-file-excel"></i>
                     </button>
                     <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleFileImport(event)" />
                 </div>
             </div>
 
-            <div class="glass-panel rounded-3xl p-6">
-                <h2 class="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                    <i class="fa-solid fa-gear text-emerald-500"></i> Configurações de Operação
+            <div class="neo-card p-6 bg-positivus">
+                <h2 class="text-sm font-bold text-dark uppercase mb-4">
+                    <i class="fa-solid fa-gear"></i> Regras da Operação
                 </h2>
                 <div class="space-y-4">
-                    <div class="bg-surface/50 p-3 rounded-xl border border-white/5">
-                        <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Pular chamada se não atender em:</label>
+                    <div class="bg-white p-3 rounded-xl border-2 border-dark">
+                        <label class="block text-[11px] font-bold text-dark uppercase mb-1">Pular chamada em:</label>
                         <div class="flex items-center gap-2">
-                            <input type="number" id="cfg-time" value="25" class="w-16 bg-transparent border-b border-gray-600 text-lg text-white focus:outline-none focus:border-emerald-500 text-center font-bold">
-                            <span class="text-xs text-gray-400">Segundos</span>
+                            <input type="number" id="cfg-time" value="25" class="w-16 neo-input p-1 text-center font-bold">
+                            <span class="text-xs font-bold">Segundos</span>
                         </div>
                     </div>
                     
-                    <div class="bg-surface/50 p-4 rounded-xl border border-white/5">
+                    <div class="bg-white p-4 rounded-xl border-2 border-dark">
                         <label class="flex items-center gap-3 cursor-pointer group mb-2">
                             <div class="relative">
-                                <input type="checkbox" id="cfg-sms-ativo" class="peer sr-only" onchange="toggleSmsBox()">
-                                <div class="w-9 h-5 bg-gray-700 rounded-full peer peer-checked:bg-emerald-600 transition-colors"></div>
-                                <div class="absolute w-3 h-3 bg-white rounded-full left-1 top-1 peer-checked:translate-x-4 transition-transform shadow-sm"></div>
+                                <input type="checkbox" id="cfg-sms-ativo" class="peer sr-only" onchange="toggleSmsBox()" checked>
+                                <div class="w-10 h-6 bg-gray-200 border-2 border-dark rounded-full peer peer-checked:bg-positivus transition-colors"></div>
+                                <div class="absolute w-4 h-4 bg-dark rounded-full left-1 top-1 peer-checked:translate-x-4 transition-transform"></div>
                             </div>
-                            <span class="text-xs font-bold text-gray-300 group-hover:text-white">Automação de SMS (Falhas)</span>
+                            <span class="text-xs font-bold text-dark">Automação de SMS</span>
                         </label>
-                        <p class="text-[9px] text-amber-500 font-semibold uppercase tracking-wider bg-amber-500/10 p-2 rounded-lg border border-amber-500/20 leading-tight">
-                            <i class="fa-solid fa-circle-info mr-1"></i>Atenção: Verifique quantos SMS foram enviados no mês atual. Seu limite é de 900 envios.
+                        <p class="text-[9px] font-bold uppercase bg-yellow-200 p-2 rounded border border-dark leading-tight mt-2">
+                            Aviso: Limite de 900 envios/mês pela operadora.
                         </p>
-                        <div id="box-sms" class="hidden mt-3">
-                            <textarea id="cfg-sms-texto" rows="3" class="w-full bg-background border border-white/10 rounded-lg p-2 text-xs text-gray-300 focus:outline-none focus:border-emerald-500 resize-none" placeholder="Texto automático de retenção..."></textarea>
+                        <div id="box-sms" class="mt-3 block">
+                            <label class="text-[9px] font-bold uppercase text-gray-500 mb-1 block">Texto para "Não Atendeu":</label>
+                            <textarea id="cfg-sms-texto" rows="3" class="w-full neo-input p-2 text-xs text-dark resize-none" placeholder="Use :re para puxar o nome. Ex: Olá :re, tentei ligar..."></textarea>
                         </div>
                     </div>
                 </div>
             </div>
             
             <!-- Resumo da Base -->
-            <div class="glass-panel rounded-3xl p-6 flex-1">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-[11px] font-black text-gray-400 uppercase tracking-widest"><i class="fa-solid fa-list-ul text-emerald-500"></i> Fila de Discagem</h2>
-                    <span id="stat-total" class="bg-white/10 px-2 py-1 rounded text-xs font-bold text-white">0</span>
+            <div class="neo-card p-6 flex-1 flex flex-col max-h-[300px]">
+                <div class="flex justify-between items-center mb-4 border-b-2 border-dark pb-2">
+                    <h2 class="text-sm font-bold text-dark uppercase"><i class="fa-solid fa-list-ol"></i> Fila de Discagem</h2>
+                    <span id="stat-total" class="bg-dark px-3 py-1 rounded-full text-xs font-bold text-positivus">0</span>
                 </div>
-                <div id="queue-list" class="space-y-2 max-h-[300px] overflow-y-auto pr-2">
-                    <p class="text-xs text-gray-500 text-center py-4">Fila vazia</p>
+                <div id="queue-list" class="space-y-2 overflow-y-auto pr-2 flex-1">
+                    <p class="text-xs text-gray-500 font-bold text-center py-4">Sua fila está vazia</p>
                 </div>
             </div>
         </div>
@@ -170,89 +184,86 @@
         <!-- COLUNA CENTRAL: Mesa de Operação -->
         <div class="xl:col-span-6 flex flex-col gap-6">
             
-            <div class="glass-panel rounded-[2rem] p-8 flex flex-col items-center justify-center relative min-h-[500px] border border-white/5 transition-all duration-300" id="stage-container">
+            <div class="neo-card p-10 flex flex-col items-center justify-center relative min-h-[550px]" id="stage-container">
                 
                 <!-- Status Superior -->
                 <div class="absolute top-6 left-0 w-full flex justify-center z-20">
-                    <span id="stage-badge" class="px-5 py-2 rounded-full bg-surface border border-white/10 text-[10px] font-black text-gray-400 tracking-widest uppercase shadow-lg">
-                        Mesa Parada - Aguardando Operador
+                    <span id="stage-badge" class="px-5 py-2 rounded-full bg-white border-2 border-dark text-xs font-bold text-dark shadow-[4px_4px_0px_#191A23] uppercase">
+                        Aguardando
                     </span>
                 </div>
 
                 <div class="text-center w-full max-w-md relative z-10 mt-8">
-                    <h2 id="stage-name" class="text-3xl font-black text-white mb-2 truncate">---</h2>
-                    <p id="stage-code" class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">CÓD: ---</p>
-                    <p id="stage-phone" class="text-4xl font-mono text-emerald-400 mb-8 font-semibold tracking-wider">---</p>
+                    <h2 id="stage-name" class="text-4xl font-bold text-dark mb-2 truncate">---</h2>
+                    <p id="stage-code" class="text-xs font-bold text-gray-500 uppercase mb-1 bg-gray-100 inline-block px-3 py-1 rounded border border-gray-300">CÓD: ---</p>
+                    <p id="stage-phone" class="text-3xl font-bold text-dark mb-8 tracking-wider">---</p>
 
-                    <!-- Cronômetro Circular Adaptado (Barra) -->
-                    <div id="timer-container" class="hidden flex-col items-center justify-center mb-8 w-full">
-                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2" id="timer-label">Chamando (Aguardando Atendimento)</p>
-                        <div class="text-5xl font-black tabular-nums tracking-tighter text-white mb-3" id="stage-timer">00</div>
-                        <div class="w-full bg-surface rounded-full h-1.5 overflow-hidden border border-white/5">
-                            <div id="timer-bar" class="bg-blue-500 h-full w-full progress-bar-inner"></div>
+                    <!-- Cronômetro (Barra) -->
+                    <div id="timer-container" class="hidden flex-col items-center justify-center mb-8 w-full bg-white p-4 rounded-xl border-2 border-dark shadow-[4px_4px_0px_#191A23]">
+                        <p class="text-xs font-bold text-dark uppercase mb-2" id="timer-label">Chamando (Aguardando)</p>
+                        <div class="text-6xl font-bold tabular-nums text-dark mb-4" id="stage-timer">00</div>
+                        <div class="w-full bg-gray-100 rounded-full h-3 overflow-hidden border-2 border-dark">
+                            <div id="timer-bar" class="bg-positivus h-full w-full progress-bar-inner"></div>
                         </div>
                     </div>
 
                     <!-- Controles Principais de Campanha -->
                     <div id="main-controls" class="w-full mt-4">
-                        <button id="btn-iniciar" onclick="iniciarCampanha()" class="btn-press w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black text-lg py-5 rounded-2xl shadow-[0_0_30px_rgba(16,185,129,0.3)] flex items-center justify-center gap-3 disabled:opacity-50">
-                            <i class="fa-solid fa-play"></i> INICIAR ATENDIMENTO
+                        <button id="btn-iniciar" onclick="iniciarCampanha()" class="neo-btn w-full bg-positivus text-dark font-bold text-xl py-5 flex items-center justify-center gap-3 disabled:opacity-50 uppercase">
+                            <i class="fa-solid fa-play"></i> Iniciar Atendimento
                         </button>
                         
-                        <div id="active-controls" class="hidden grid grid-cols-2 gap-3 mt-4">
-                            <button id="btn-pausar" onclick="pausarCampanha()" class="btn-press bg-surface border border-white/10 hover:border-amber-500 text-white font-bold text-sm py-4 rounded-xl flex flex-col items-center justify-center gap-1">
-                                <i class="fa-solid fa-pause text-amber-500"></i> Pausar Operação
+                        <div id="active-controls" class="hidden grid grid-cols-2 gap-4 mt-4">
+                            <button id="btn-pausar" onclick="pausarCampanha()" class="neo-btn bg-white text-dark py-4 text-sm flex flex-col items-center justify-center gap-2 hover:bg-gray-50">
+                                <i class="fa-solid fa-pause text-xl"></i> Pausar Operação
                             </button>
-                            <button id="btn-pular" onclick="desligarEPular()" class="btn-press bg-surface border border-white/10 hover:border-red-500 text-white font-bold text-sm py-4 rounded-xl flex flex-col items-center justify-center gap-1">
-                                <i class="fa-solid fa-forward-step text-red-500"></i> Desligar e Pular
+                            <button id="btn-pular" onclick="desligarEPular()" class="neo-btn bg-red-400 text-dark py-4 text-sm flex flex-col items-center justify-center gap-2 hover:bg-red-500">
+                                <i class="fa-solid fa-forward-step text-xl"></i> Desligar e Pular
                             </button>
-                            <button id="btn-callback-imediato" onclick="refazerLigacao()" class="col-span-2 btn-press bg-blue-900/20 border border-blue-500/30 hover:bg-blue-900/40 text-blue-400 font-bold text-sm py-3 rounded-xl flex items-center justify-center gap-2 mt-1">
+                            <button id="btn-callback-imediato" onclick="refazerLigacao()" class="col-span-2 neo-btn bg-blue-300 text-dark py-3 text-sm flex items-center justify-center gap-2 hover:bg-blue-400">
                                 <i class="fa-solid fa-phone-flip"></i> Callback (Refazer Ligação Agora)
                             </button>
                         </div>
                     </div>
 
                     <!-- Botão de O Cliente Atendeu (Para o relógio e abre tabulação) -->
-                    <button id="btn-atendeu" onclick="marcarAtendido()" class="hidden btn-press mt-6 w-full bg-blue-600 hover:bg-blue-500 text-white font-black text-xl py-6 rounded-2xl shadow-[0_0_40px_rgba(37,99,235,0.4)] border-2 border-blue-400/50 flex flex-col items-center justify-center gap-1 animate-bounce hover:animate-none">
-                        <span class="flex items-center gap-3"><i class="fa-solid fa-headset text-2xl"></i> CLIENTE ATENDEU</span>
-                        <span class="text-[10px] uppercase font-bold tracking-widest text-blue-200">Clique aqui para falar</span>
+                    <button id="btn-atendeu" onclick="marcarAtendido()" class="hidden neo-btn mt-6 w-full bg-dark text-positivus font-bold text-xl py-6 flex-col items-center justify-center gap-2 animate-bounce hover:animate-none uppercase border-positivus border-4">
+                        <span class="flex items-center gap-3"><i class="fa-solid fa-headset text-2xl"></i> Cliente Atendeu</span>
+                        <span class="text-xs text-white">O Cronômetro será pausado</span>
                     </button>
                 </div>
             </div>
 
             <!-- TELA DE ATENDIMENTO (Tabulação) -->
-            <div id="tela-tabulacao" class="hidden glass-panel rounded-[2rem] p-6 border border-emerald-500/30 bg-emerald-900/5 shadow-[0_0_30px_rgba(16,185,129,0.1)] transition-all">
-                <div class="flex justify-between items-center mb-4 border-b border-white/5 pb-3">
-                    <h3 class="text-xs font-black text-emerald-400 uppercase tracking-widest flex items-center gap-2">
-                        <i class="fa-solid fa-comment-dots"></i> Em Atendimento
+            <div id="tela-tabulacao" class="hidden neo-card p-6 bg-gray-50 transition-all">
+                <div class="flex justify-between items-center mb-6 border-b-2 border-dark pb-3">
+                    <h3 class="text-sm font-bold text-dark uppercase flex items-center gap-2">
+                        <span class="bg-positivus p-1 rounded border border-dark"><i class="fa-solid fa-comment-dots"></i></span> Em Atendimento
                     </h3>
-                    <div class="flex items-center gap-2 text-red-400 font-bold text-xs bg-red-500/10 px-3 py-1.5 rounded-lg cursor-pointer hover:bg-red-500/20 transition-colors" onclick="desligarLigacaoFisica()">
+                    <button class="neo-btn bg-red-500 text-white px-4 py-2 text-xs flex items-center gap-2 hover:bg-red-600" onclick="desligarLigacaoFisica()">
                         <i class="fa-solid fa-phone-slash"></i> Forçar Desligamento
-                    </div>
+                    </button>
                 </div>
                 
-                <p class="text-sm text-gray-300 mb-4 font-medium text-center">Selecione o resultado para finalizar e puxar o próximo:</p>
-                
-                <div class="grid grid-cols-2 gap-3">
-                    <button onclick="tabulaChamada('Venda')" class="btn-press bg-surface hover:bg-emerald-900/50 border border-white/10 hover:border-emerald-500 text-gray-300 hover:text-emerald-400 p-4 rounded-xl flex flex-col items-center gap-2">
-                        <i class="fa-solid fa-handshake text-2xl"></i>
-                        <span class="text-[11px] font-bold uppercase tracking-wide">Venda Realizada</span>
+                <div class="grid grid-cols-2 gap-4">
+                    <button onclick="tabulaChamada('Venda')" class="neo-btn bg-positivus text-dark p-5 flex flex-col items-center gap-3 hover:-translate-y-2">
+                        <i class="fa-solid fa-handshake text-3xl"></i>
+                        <span class="text-sm uppercase text-center">Venda<br>Realizada</span>
                     </button>
                     
-                    <button onclick="abrirModalCalendario()" class="btn-press bg-surface hover:bg-amber-900/50 border border-white/10 hover:border-amber-500 text-gray-300 hover:text-amber-400 p-4 rounded-xl flex flex-col items-center gap-2">
-                        <i class="fa-solid fa-calendar-clock text-2xl"></i>
-                        <span class="text-[11px] font-bold uppercase tracking-wide">Pediu Retorno (Agendar)</span>
+                    <button onclick="abrirModalCalendario()" class="neo-btn bg-yellow-300 text-dark p-5 flex flex-col items-center gap-3 hover:-translate-y-2">
+                        <i class="fa-solid fa-calendar-clock text-3xl"></i>
+                        <span class="text-sm uppercase text-center">Pediu Retorno<br>(Agendar)</span>
                     </button>
                     
-                    <button onclick="tabulaChamada('Desconhece Titular')" class="btn-press bg-surface hover:bg-orange-900/50 border border-white/10 hover:border-orange-500 text-gray-300 hover:text-orange-400 p-4 rounded-xl flex flex-col items-center gap-2">
-                        <i class="fa-solid fa-user-xmark text-2xl"></i>
-                        <span class="text-[11px] font-bold uppercase tracking-wide">Desconhece Titular</span>
+                    <button onclick="tabulaChamada('Desconhece Titular')" class="neo-btn bg-white text-dark p-5 flex flex-col items-center gap-3 hover:-translate-y-2">
+                        <i class="fa-solid fa-user-xmark text-3xl"></i>
+                        <span class="text-sm uppercase text-center">Desconhece<br>Titular</span>
                     </button>
                     
-                    <button onclick="tabulaChamada('Queda de Ligação')" class="btn-press bg-surface hover:bg-red-900/50 border border-white/10 hover:border-red-500 text-gray-300 hover:text-red-400 p-4 rounded-xl flex flex-col items-center gap-2 relative overflow-hidden group">
-                        <div class="absolute inset-0 bg-red-500/10 group-hover:animate-pulse"></div>
-                        <i class="fa-solid fa-tower-broadcast text-2xl relative z-10"></i>
-                        <span class="text-[11px] font-bold uppercase tracking-wide relative z-10">Queda de Ligação (Priorizar)</span>
+                    <button onclick="tabulaChamada('Queda de Ligação')" class="neo-btn bg-red-100 text-dark p-5 flex flex-col items-center gap-3 hover:-translate-y-2 border-red-500 border-2">
+                        <i class="fa-solid fa-tower-broadcast text-3xl text-red-600"></i>
+                        <span class="text-sm uppercase text-center">Queda de Ligação<br>(Repete Agora)</span>
                     </button>
                 </div>
             </div>
@@ -260,107 +271,102 @@
 
         <!-- COLUNA DIREITA: Relatórios -->
         <div class="xl:col-span-3 flex flex-col gap-6">
-            <div class="glass-panel rounded-3xl p-6 flex-1 flex flex-col h-full max-h-[85vh]">
-                <div class="flex justify-between items-center mb-6 border-b border-white/5 pb-4">
-                    <h2 class="text-[11px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                        <i class="fa-solid fa-chart-pie text-emerald-500"></i> Relatório da Operação
+            <div class="neo-card p-6 flex-1 flex flex-col h-full max-h-[85vh]">
+                <div class="flex justify-between items-center mb-6 border-b-2 border-dark pb-4">
+                    <h2 class="text-sm font-bold text-dark uppercase">
+                        <i class="fa-solid fa-chart-pie text-positivus drop-shadow-[1px_1px_0_#000]"></i> Relatório
                     </h2>
-                    <button onclick="exportarRelatorio()" class="text-emerald-500 hover:text-emerald-400 transition-colors" title="Exportar CSV">
-                        <i class="fa-solid fa-download text-lg"></i>
+                    <button onclick="exportarRelatorio()" class="neo-btn bg-white px-3 py-1 text-xs" title="Exportar CSV">
+                        <i class="fa-solid fa-download"></i> Baixar
                     </button>
                 </div>
                 
                 <div class="grid grid-cols-2 gap-3 mb-6">
-                    <div class="bg-surface/50 p-3 rounded-xl border border-white/5 text-center">
-                        <p class="text-[9px] text-gray-500 uppercase font-bold tracking-wider mb-1">Processados</p>
-                        <p id="rep-processados" class="text-xl font-black text-white">0</p>
+                    <div class="bg-gray-100 p-3 rounded-xl border-2 border-dark text-center shadow-[2px_2px_0px_#191A23]">
+                        <p class="text-[10px] text-dark font-bold uppercase mb-1">Processados</p>
+                        <p id="rep-processados" class="text-2xl font-bold text-dark">0</p>
                     </div>
-                    <div class="bg-surface/50 p-3 rounded-xl border border-white/5 text-center">
-                        <p class="text-[9px] text-gray-500 uppercase font-bold tracking-wider mb-1">Vendas</p>
-                        <p id="rep-vendas" class="text-xl font-black text-emerald-400">0</p>
+                    <div class="bg-positivus p-3 rounded-xl border-2 border-dark text-center shadow-[2px_2px_0px_#191A23]">
+                        <p class="text-[10px] text-dark font-bold uppercase mb-1">Vendas</p>
+                        <p id="rep-vendas" class="text-2xl font-bold text-dark">0</p>
                     </div>
-                    <div class="bg-surface/50 p-3 rounded-xl border border-white/5 text-center">
-                        <p class="text-[9px] text-gray-500 uppercase font-bold tracking-wider mb-1">Agendados</p>
-                        <p id="rep-retornos" class="text-xl font-black text-amber-400">0</p>
+                    <div class="bg-yellow-300 p-3 rounded-xl border-2 border-dark text-center shadow-[2px_2px_0px_#191A23]">
+                        <p class="text-[10px] text-dark font-bold uppercase mb-1">Agendados</p>
+                        <p id="rep-retornos" class="text-2xl font-bold text-dark">0</p>
                     </div>
-                    <div class="bg-surface/50 p-3 rounded-xl border border-white/5 text-center">
-                        <p class="text-[9px] text-gray-500 uppercase font-bold tracking-wider mb-1">Pendentes</p>
-                        <p id="rep-pendentes" class="text-xl font-black text-gray-300">0</p>
+                    <div class="bg-white p-3 rounded-xl border-2 border-dark text-center shadow-[2px_2px_0px_#191A23]">
+                        <p class="text-[10px] text-dark font-bold uppercase mb-1">Pendentes</p>
+                        <p id="rep-pendentes" class="text-2xl font-bold text-dark">0</p>
                     </div>
                 </div>
 
-                <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3">Histórico Recente</p>
+                <p class="text-[11px] font-bold text-dark uppercase mb-3 border-b border-gray-300 pb-1">Histórico Recente</p>
                 <div id="history-list" class="flex-1 overflow-y-auto space-y-2 pr-2">
-                    <p class="text-xs text-gray-600 text-center py-4 font-medium">Nenhum atendimento registrado.</p>
+                    <p class="text-xs text-gray-500 font-bold text-center py-4">Nenhum atendimento.</p>
                 </div>
             </div>
         </div>
     </main>
 
-    <!-- MODAL CALENDÁRIO (Pediu Retorno) -->
-    <div id="modal-calendario" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
-        <div class="glass-panel rounded-3xl w-full max-w-sm flex flex-col overflow-hidden border border-white/10 shadow-2xl">
-            <div class="p-5 border-b border-white/5 bg-surface/50 flex justify-between items-center">
-                <h3 class="font-bold text-white flex items-center gap-2"><i class="fa-solid fa-calendar-day text-amber-500"></i> Agendar Retorno</h3>
-                <button onclick="fecharModalCalendario()" class="text-gray-500 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+    <footer class="bg-white border-t-2 border-dark py-4 mt-auto">
+        <div class="max-w-[1800px] mx-auto px-6 text-center text-xs font-bold text-dark uppercase">
+            Disparador idealizado por Maikon Nattan
+        </div>
+    </footer>
+
+    <!-- MODAL CALENDÁRIO -->
+    <div id="modal-calendario" class="fixed inset-0 bg-dark/80 z-[100] hidden items-center justify-center p-4">
+        <div class="neo-card w-full max-w-sm flex flex-col overflow-hidden bg-white">
+            <div class="p-5 border-b-2 border-dark bg-yellow-300 flex justify-between items-center">
+                <h3 class="font-bold text-dark uppercase"><i class="fa-solid fa-calendar-day"></i> Agendar Retorno</h3>
+                <button onclick="fecharModalCalendario()" class="text-dark hover:scale-110 transition-transform"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
             
             <div class="p-6 flex flex-col gap-5">
                 <div>
-                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Selecione a Data</label>
-                    <input type="date" id="cal-data" class="w-full bg-surface border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500 transition-colors cursor-pointer" onchange="validarDataCalendario(this)">
-                    <p id="cal-erro" class="text-[10px] text-red-400 font-bold mt-1 hidden"></p>
+                    <label class="block text-xs font-bold text-dark uppercase mb-2">Selecione a Data (Útil)</label>
+                    <input type="date" id="cal-data" class="w-full neo-input px-4 py-3 text-dark font-bold" onchange="validarDataCalendario(this)">
+                    <p id="cal-erro" class="text-xs text-red-500 font-bold mt-2 hidden bg-red-100 p-2 rounded border border-red-500"></p>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Horário (09:00 - 18:00)</label>
-                    <select id="cal-hora" class="w-full bg-surface border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-amber-500 transition-colors cursor-pointer appearance-none">
-                        <option value="09:00">09:00</option>
-                        <option value="10:00">10:00</option>
-                        <option value="11:00">11:00</option>
-                        <option value="12:00">12:00</option>
-                        <option value="13:00">13:00</option>
-                        <option value="14:00">14:00</option>
-                        <option value="15:00">15:00</option>
-                        <option value="16:00">16:00</option>
-                        <option value="17:00">17:00</option>
-                        <option value="18:00">18:00</option>
-                    </select>
+                    <label class="block text-xs font-bold text-dark uppercase mb-2">Horário (09:00 - 18:00)</label>
+                    <input type="time" id="cal-hora" class="w-full neo-input px-4 py-3 text-dark font-bold" value="09:00">
                 </div>
             </div>
 
-            <div class="p-5 border-t border-white/5 bg-surface/80 flex gap-3">
-                <button onclick="fecharModalCalendario()" class="flex-1 btn-press py-3 rounded-xl text-xs font-bold text-gray-400 hover:bg-white/5 border border-transparent">Cancelar</button>
-                <button onclick="confirmarAgendamento()" class="flex-1 btn-press bg-amber-600 hover:bg-amber-500 text-white py-3 rounded-xl text-xs font-bold shadow-[0_0_15px_rgba(217,119,6,0.4)]">Agendar</button>
+            <div class="p-5 border-t-2 border-dark bg-gray-50 flex gap-3">
+                <button onclick="fecharModalCalendario()" class="flex-1 neo-btn bg-white py-3 text-xs">Cancelar</button>
+                <button onclick="confirmarAgendamento()" class="flex-1 neo-btn bg-yellow-300 py-3 text-xs">Agendar</button>
             </div>
         </div>
     </div>
 
     <!-- MODAL PREVIEW DE IMPORTAÇÃO -->
-    <div id="modal-preview" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
-        <div class="glass-panel rounded-3xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden border border-white/10 shadow-2xl">
-            <div class="p-5 border-b border-white/5 flex justify-between items-center bg-surface/50">
-                <h2 class="text-sm font-black text-white uppercase tracking-widest"><i class="fa-solid fa-list-check text-emerald-500 mr-2"></i> Inspeção de Contatos</h2>
-                <button onclick="fecharModalPreview()" class="text-gray-500 hover:text-white transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button>
+    <div id="modal-preview" class="fixed inset-0 bg-dark/80 z-[100] hidden items-center justify-center p-4">
+        <div class="neo-card w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden bg-white">
+            <div class="p-5 border-b-2 border-dark bg-positivus flex justify-between items-center">
+                <h2 class="text-sm font-bold text-dark uppercase"><i class="fa-solid fa-list-check"></i> Inspeção de Base</h2>
+                <button onclick="fecharModalPreview()" class="text-dark hover:scale-110 transition-transform"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
             
-            <div class="p-5 grid grid-cols-3 gap-4 border-b border-white/5 bg-surface/30">
-                <div class="bg-surface/50 p-3 rounded-xl text-center border border-white/5"><span class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Localizados</span><span id="prev-total" class="text-xl font-black text-white">0</span></div>
-                <div class="bg-amber-500/10 p-3 rounded-xl text-center border border-amber-500/20"><span class="block text-[10px] font-bold text-amber-500/80 uppercase tracking-widest mb-1">Faltava o 9 (Corrigidos)</span><span id="prev-corrigidos" class="text-xl font-black text-amber-400">0</span></div>
-                <div class="bg-red-500/10 p-3 rounded-xl text-center border border-red-500/20"><span class="block text-[10px] font-bold text-red-500/80 uppercase tracking-widest mb-1">Inválidos / Descartados</span><span id="prev-invalidos" class="text-xl font-black text-red-400">0</span></div>
+            <div class="p-5 grid grid-cols-3 gap-4 border-b-2 border-dark bg-gray-50">
+                <div class="bg-white p-3 rounded-xl text-center border-2 border-dark shadow-[2px_2px_0_#000]"><span class="block text-[10px] font-bold text-dark uppercase mb-1">Localizados</span><span id="prev-total" class="text-xl font-bold">0</span></div>
+                <div class="bg-yellow-300 p-3 rounded-xl text-center border-2 border-dark shadow-[2px_2px_0_#000]"><span class="block text-[10px] font-bold text-dark uppercase mb-1">Corrigidos (Faltava 9)</span><span id="prev-corrigidos" class="text-xl font-bold">0</span></div>
+                <div class="bg-red-400 p-3 rounded-xl text-center border-2 border-dark shadow-[2px_2px_0_#000]"><span class="block text-[10px] font-bold text-dark uppercase mb-1">Inválidos / Descartados</span><span id="prev-invalidos" class="text-xl font-bold">0</span></div>
             </div>
 
-            <div class="flex-1 overflow-y-auto p-2">
+            <div class="flex-1 overflow-y-auto p-4 bg-white">
                 <table class="w-full text-left text-sm">
-                    <thead class="text-[10px] uppercase text-gray-500 font-bold sticky top-0 bg-[#09090b] z-10">
-                        <tr><th class="py-3 px-4">Nome</th><th class="py-3 px-4">Código</th><th class="py-3 px-4">Telefone</th><th class="py-3 px-4">Status</th></tr>
+                    <thead class="text-[10px] uppercase text-dark font-bold sticky top-0 bg-white shadow-sm z-10">
+                        <tr><th class="py-3 px-4 border-b-2 border-dark">Nome</th><th class="py-3 px-4 border-b-2 border-dark">Código</th><th class="py-3 px-4 border-b-2 border-dark">Telefone</th><th class="py-3 px-4 border-b-2 border-dark">Status</th></tr>
                     </thead>
-                    <tbody id="preview-table-body" class="divide-y divide-white/5 text-gray-300 bg-surface/20"></tbody>
+                    <tbody id="preview-table-body" class="divide-y-2 divide-gray-100 font-medium text-xs"></tbody>
                 </table>
             </div>
 
-            <div class="p-5 border-t border-white/5 bg-surface/80 flex justify-end gap-3">
-                <button onclick="fecharModalPreview()" class="btn-press px-6 py-3 rounded-xl text-xs font-bold text-gray-400 hover:bg-white/5">Cancelar</button>
-                <button onclick="confirmarImportacao()" class="btn-press px-8 py-3 rounded-xl text-xs font-black bg-emerald-600 hover:bg-emerald-500 text-white shadow-[0_4px_15px_rgba(16,185,129,0.3)]">APROVAR E JOGAR NA FILA</button>
+            <div class="p-5 border-t-2 border-dark bg-gray-50 flex justify-end gap-4">
+                <button onclick="fecharModalPreview()" class="neo-btn bg-white px-6 py-3 text-xs">Cancelar</button>
+                <button onclick="confirmarImportacao()" class="neo-btn bg-positivus px-8 py-3 text-xs">APROVAR E INICIAR FILA</button>
             </div>
         </div>
     </div>
@@ -387,11 +393,8 @@
         let isAdbReady = false;
         let localIdCounter = 1;
         let tempContatos = [];
-        let fallbackAgendamento = null;
 
         const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
-
-        // Feriados Nacionais (DD/MM)
         const feriadosNacionais = ['01-01', '21-04', '01-05', '07-09', '12-10', '02-11', '15-11', '25-12'];
 
         window.onload = () => {
@@ -406,17 +409,18 @@
 
         async function requestWakeLock() {
             try {
-                if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen');
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    console.log("Tela bloqueada para não dormir (WakeLock ativado).");
+                }
             } catch (err) {
-                console.info('Aviso: Wake Lock indisponível neste ambiente.');
+                console.info('Aviso: Wake Lock bloqueado neste ambiente (Iframe/Sandbox). O sistema funcionará normalmente.');
             }
         }
 
         if (navigator.usb) {
             navigator.usb.addEventListener('disconnect', (event) => {
-                if (usbDevice && event.device === usbDevice) {
-                    lidarComQuedaUSB();
-                }
+                if (usbDevice && event.device === usbDevice) lidarComQuedaUSB();
             });
         }
 
@@ -431,17 +435,22 @@
             document.getElementById('usb-disconnected-warning').classList.remove('hidden');
             document.getElementById('usb-disconnected-warning').classList.add('flex');
             
-            pausarCampanha(true);
+            pausarCampanha(true); // Pausa instantaneamente o fluxo
         }
 
         function showToast(msg, type = 'info') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
-            const bg = type === 'error' ? 'bg-red-950/90 border-red-500/50 text-red-200' : (type === 'warning' ? 'bg-amber-950/90 border-amber-500/50 text-amber-200' : 'bg-surface/95 border-emerald-500/50 text-emerald-300');
-            const icon = type === 'error' ? 'fa-triangle-exclamation text-red-500' : (type === 'warning' ? 'fa-bell text-amber-500' : 'fa-circle-check text-emerald-500');
             
-            toast.className = `${bg} backdrop-blur-md px-5 py-4 rounded-xl border flex items-center gap-3 transform transition-all duration-300 translate-y-10 opacity-0 pointer-events-auto shadow-[0_10px_30px_rgba(0,0,0,0.5)]`;
-            toast.innerHTML = `<i class="fa-solid ${icon} text-lg"></i><span class="text-[11px] font-bold uppercase tracking-wider">${msg}</span>`;
+            let bgClass = 'bg-white';
+            let icon = 'fa-info-circle text-blue-500';
+            
+            if(type === 'error') { bgClass = 'bg-red-400'; icon = 'fa-triangle-exclamation text-dark'; }
+            if(type === 'success') { bgClass = 'bg-positivus'; icon = 'fa-check text-dark'; }
+            if(type === 'warning') { bgClass = 'bg-yellow-300'; icon = 'fa-bell text-dark'; }
+            
+            toast.className = `neo-card ${bgClass} px-5 py-4 flex items-center gap-3 transform transition-all duration-300 translate-y-10 opacity-0 pointer-events-auto`;
+            toast.innerHTML = `<i class="fa-solid ${icon} text-lg"></i><span class="text-xs font-bold uppercase text-dark">${msg}</span>`;
             
             container.appendChild(toast);
             requestAnimationFrame(() => toast.classList.remove('translate-y-10', 'opacity-0'));
@@ -465,7 +474,7 @@
                     const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], {header: 1});
                     const rawLines = json.map(row => row.join(' ')).join('\n');
                     analisarEPrevisualizar(rawLines);
-                } catch(e) { showToast("Erro ao ler arquivo. Tente colar o texto.", "error"); }
+                } catch(e) { showToast("Erro ao ler arquivo. Tente copiar e colar o texto.", "error"); }
             };
             reader.readAsArrayBuffer(file);
             e.target.value = '';
@@ -493,6 +502,7 @@
                 if (!phone) continue;
                 let status = "Válido", originalPhone = phone;
 
+                // Regra Anatel de Correção BR
                 if (phone.length === 10) {
                     phone = phone.substring(0, 2) + '9' + phone.substring(2);
                     status = "Corrigido";
@@ -503,11 +513,13 @@
                 }
 
                 st.total++;
-                let name = nameParts.join(' ').replace(/[^\w\sÀ-ÿ]/g, '').trim() || "Sem Nome";
+                let name = nameParts.join(' ').replace(/[^\w\sÀ-ÿ]/g, '').trim() || "Contato sem nome";
+                
+                // NOTA: Agora permitimos duplicados normalmente.
                 tempContatos.push({ name, code, phone, originalPhone, status, id: Date.now() + Math.random() });
             }
 
-            if(st.total === 0) return showToast("Nenhum contato encontrado.", "error");
+            if(st.total === 0) return showToast("Nenhum contato brasileiro válido encontrado.", "error");
 
             document.getElementById('prev-total').innerText = st.total;
             document.getElementById('prev-corrigidos').innerText = st.corrigidos;
@@ -515,9 +527,9 @@
 
             const tbody = document.getElementById('preview-table-body');
             tbody.innerHTML = tempContatos.map(c => {
-                let badge = c.status === 'Válido' ? 'text-emerald-400 bg-emerald-500/10' : (c.status === 'Corrigido' ? 'text-amber-400 bg-amber-500/10' : 'text-red-400 bg-red-500/10');
-                let pDisp = c.status === 'Corrigido' ? `<span class="line-through text-gray-500 text-[9px] block">${c.originalPhone}</span>${c.phone}` : c.phone;
-                return `<tr class="hover:bg-white/5 border-b border-white/5"><td class="py-3 px-4 font-semibold text-xs">${c.name}</td><td class="py-3 px-4 font-mono text-[10px] text-gray-400">${c.code}</td><td class="py-3 px-4 font-mono text-xs text-blue-400 font-bold">${pDisp}</td><td class="py-3 px-4"><span class="px-2 py-1 rounded-md text-[9px] font-bold uppercase tracking-widest ${badge}">${c.status}</span></td></tr>`;
+                let badge = c.status === 'Válido' ? 'text-green-700 bg-green-100 border border-green-700' : (c.status === 'Corrigido' ? 'text-yellow-700 bg-yellow-100 border border-yellow-700' : 'text-red-700 bg-red-100 border border-red-700');
+                let pDisp = c.status === 'Corrigido' ? `<span class="line-through text-gray-400 text-[10px] block">${c.originalPhone}</span>${c.phone}` : c.phone;
+                return `<tr class="hover:bg-gray-100"><td class="py-3 px-4 font-bold text-dark">${c.name}</td><td class="py-3 px-4 font-mono text-gray-500">${c.code}</td><td class="py-3 px-4 font-mono font-bold">${pDisp}</td><td class="py-3 px-4"><span class="px-2 py-1 rounded text-[10px] font-bold uppercase ${badge}">${c.status}</span></td></tr>`;
             }).join('');
 
             document.getElementById('modal-preview').classList.remove('hidden');
@@ -543,7 +555,6 @@
         }
 
         function atualizarInterfaceBase() {
-            // Conta Pendentes (Daqui pra frente no array)
             const pendentes = contatosBase.length - currentIndex;
             
             document.getElementById('stat-total').innerText = contatosBase.length;
@@ -554,16 +565,16 @@
 
             const filaDiv = document.getElementById('queue-list');
             if(pendentes <= 0) {
-                filaDiv.innerHTML = `<p class="text-xs text-gray-600 text-center py-4 font-medium">Fila concluída ou vazia.</p>`;
+                filaDiv.innerHTML = `<p class="text-xs text-gray-500 font-bold text-center py-4 border-2 border-dashed border-gray-300 rounded-xl">Fila concluída ou vazia.</p>`;
             } else {
                 const proximos = contatosBase.slice(currentIndex, currentIndex + 20);
                 filaDiv.innerHTML = proximos.map((c, idx) => `
-                    <div class="bg-surface/50 p-3 rounded-xl border border-white/5 flex justify-between items-center">
+                    <div class="bg-white p-3 rounded-xl border-2 border-dark flex justify-between items-center shadow-[2px_2px_0px_#191A23]">
                         <div>
-                            <p class="text-[11px] font-bold text-gray-300">${c.name} <span class="text-gray-500 font-normal">(${c.code})</span></p>
-                            <p class="text-[10px] font-mono text-emerald-400 mt-0.5">${c.phone}</p>
+                            <p class="text-[11px] font-bold text-dark">${c.name} <span class="text-gray-500 bg-gray-100 px-1 rounded ml-1 border border-gray-300">${c.code}</span></p>
+                            <p class="text-[10px] font-mono font-bold text-gray-600 mt-1">${c.phone}</p>
                         </div>
-                        ${idx === 0 && estadoOperacao !== 'PARADO' ? '<span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse shadow-[0_0_8px_#3b82f6]"></span>' : ''}
+                        ${idx === 0 && estadoOperacao !== 'PARADO' ? '<span class="w-3 h-3 rounded-full bg-positivus animate-pulse border-2 border-dark"></span>' : ''}
                     </div>
                 `).join('');
             }
@@ -571,10 +582,10 @@
             const histDiv = document.getElementById('history-list');
             if (historico.length > 0) {
                 histDiv.innerHTML = [...historico].reverse().slice(0, 15).map(h => {
-                    let color = h.resultado === 'Venda Realizada' ? 'text-emerald-400' : (h.resultado.includes('Retorno') ? 'text-amber-400' : (h.resultado === 'Queda de Ligação' ? 'text-red-400' : 'text-gray-400'));
-                    return `<div class="bg-surface/30 p-2.5 rounded-lg border border-white/5 flex justify-between items-center mb-1">
-                        <div><p class="text-[10px] font-bold text-gray-300">${h.nome}</p><p class="text-[9px] ${color} font-bold uppercase">${h.resultado}</p></div>
-                        <p class="text-[9px] font-mono text-gray-500">${h.data}</p>
+                    let bg = h.resultado === 'Venda Realizada' ? 'bg-positivus' : (h.resultado.includes('Retorno') ? 'bg-yellow-300' : (h.resultado === 'Queda de Ligação' ? 'bg-red-400' : 'bg-gray-200'));
+                    return `<div class="p-3 rounded-xl border-2 border-dark flex justify-between items-center mb-2 ${bg} shadow-[2px_2px_0px_#191A23]">
+                        <div><p class="text-[10px] font-bold text-dark">${h.nome}</p><p class="text-[9px] font-bold uppercase mt-1 text-dark/80">${h.resultado}</p></div>
+                        <p class="text-[9px] font-bold bg-white/50 px-2 py-1 rounded border border-dark/20">${h.data.split(' ')[1]}</p>
                     </div>`;
                 }).join('');
             }
@@ -585,16 +596,13 @@
         }
 
         async function iniciarCampanha() {
-            if (!isAdbReady) return showToast("Conecte o smartphone USB primeiro.", "error");
+            if (!isAdbReady) return showToast("Conecte o smartphone USB (Iniciar ADB) primeiro.", "error");
             if (currentIndex >= contatosBase.length) return showToast("A fila acabou. Importe mais contatos.", "warning");
 
             estadoOperacao = 'RODANDO';
-            
-            // Troca os botões
             document.getElementById('btn-iniciar').classList.add('hidden');
             document.getElementById('active-controls').classList.remove('hidden');
-            document.getElementById('stage-container').classList.remove('border-white/5');
-            document.getElementById('stage-container').classList.add('border-blue-500/30');
+            document.getElementById('stage-container').classList.add('border-positivus');
             
             processarChamada();
         }
@@ -602,25 +610,27 @@
         function pausarCampanha(forcaStatus = false) {
             estadoOperacao = 'PAUSADO';
             const btnPausar = document.getElementById('btn-pausar');
-            btnPausar.innerHTML = `<i class="fa-solid fa-play text-emerald-500"></i> Retomar Operação`;
+            btnPausar.innerHTML = `<i class="fa-solid fa-play text-xl"></i> Retomar Operação`;
+            btnPausar.classList.add('bg-positivus');
             btnPausar.onclick = retomarCampanha;
             
-            if(!forcaStatus) showToast("Operação em Pausa. A próxima chamada não será puxada.", "warning");
+            if(!forcaStatus) showToast("Operação em Pausa. A próxima não será puxada.", "warning");
         }
 
         function retomarCampanha() {
             if (!isAdbReady) return showToast("Cabo USB não está conectado.", "error");
             estadoOperacao = 'RODANDO';
             const btnPausar = document.getElementById('btn-pausar');
-            btnPausar.innerHTML = `<i class="fa-solid fa-pause text-amber-500"></i> Pausar Operação`;
+            btnPausar.innerHTML = `<i class="fa-solid fa-pause text-xl"></i> Pausar Operação`;
+            btnPausar.classList.remove('bg-positivus');
             btnPausar.onclick = pausarCampanha;
             
-            if (callState === 'IDLE') processarChamada(); // Se tava parado sem ligar, retoma discando
+            if (callState === 'IDLE') processarChamada(); // Retoma
         }
 
         async function refazerLigacao() {
             if (callState !== 'IDLE') await desligarLigacaoFisica();
-            processarChamada(); // Usa o mesmo currentIndex atual
+            processarChamada(); 
         }
 
         async function processarChamada() {
@@ -645,9 +655,8 @@
             document.getElementById('btn-atendeu').classList.add('flex');
             document.getElementById('tela-tabulacao').classList.add('hidden');
             document.getElementById('stage-container').classList.add('animate-calling');
-            document.getElementById('stage-container').classList.remove('animate-talking');
             
-            // Físico: Acorda tela (burlar power saving) e Disca
+            // Físico: Acorda tela e Disca
             await runAdbShell("input keyevent 224");
             const res = await runAdbShell(`am start -a android.intent.action.CALL -d tel:${contato.phone}`);
             
@@ -657,7 +666,7 @@
             timeLeft = maxTime;
             const timerEl = document.getElementById('stage-timer');
             const barEl = document.getElementById('timer-bar');
-            document.getElementById('timer-label').innerText = "Chamando (Aguardando Atendimento)";
+            document.getElementById('timer-label').innerText = "Chamando (Aguardando)";
             
             timerEl.innerText = timeLeft;
             barEl.style.width = '100%';
@@ -671,59 +680,52 @@
 
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
-                    await desligarEPular(); // Timeout automático
+                    await desligarEPular(); 
                 }
             }, 1000);
         }
 
         function marcarAtendido() {
             if (callState !== 'CALLING') return;
-            clearInterval(timerInterval); // Paralisa o tempo, mantém a ligação viva
+            clearInterval(timerInterval); // Paralisa o tempo, não desliga!
             callState = 'TALKING';
             
-            document.getElementById('timer-label').innerText = "Em Atendimento (Tempo Livre)";
+            document.getElementById('timer-label').innerText = "Em Atendimento";
             document.getElementById('stage-timer').innerText = "NO AR";
             document.getElementById('btn-atendeu').classList.add('hidden');
             document.getElementById('btn-atendeu').classList.remove('flex');
             
             document.getElementById('stage-container').classList.remove('animate-calling');
-            document.getElementById('stage-container').classList.add('animate-talking');
-            
             document.getElementById('tela-tabulacao').classList.remove('hidden');
         }
 
         async function desligarLigacaoFisica() {
-            await runAdbShell("input keyevent 6");
+            await runAdbShell("input keyevent 6"); // Desliga
             await sleep(600);
         }
 
         async function desligarEPular() {
-            if (callState === 'IDLE') return; // Segurança
+            if (callState === 'IDLE') return;
             clearInterval(timerInterval);
             await desligarLigacaoFisica();
             
-            // Apenas pular contabiliza como "Não Atendeu" no log silencioso
+            // Pular contabiliza como "Não Atendeu" no log
             registrarEAvancar('Não Atendeu / Pular', true);
         }
 
         async function tabulaChamada(resultado) {
-            await desligarLigacaoFisica();
+            await desligarLigacaoFisica(); // Como o operador já encerrou, desliga agora.
             
             if (resultado === 'Queda de Ligação') {
-                // Estratégia Prioridade 1: Retrocedemos o índice, então o sistema vai pegar ele de novo agora
-                // Não incrementa currentIndex
+                // Não incrementa currentIndex (ele repete o contato na hora)
                 registrarEAvancar(resultado, false, true);
             } else {
                 registrarEAvancar(resultado, false, false);
             }
         }
 
-        // Fluxo do Calendário
         function abrirModalCalendario() {
-            fallbackAgendamento = null;
             document.getElementById('cal-erro').classList.add('hidden');
-            
-            // Seta min = amanhã
             let amanha = new Date();
             amanha.setDate(amanha.getDate() + 1);
             document.getElementById('cal-data').min = amanha.toISOString().split('T')[0];
@@ -738,14 +740,13 @@
         }
 
         function validarDataCalendario(input) {
-            let dataSelec = new Date(input.value + "T12:00:00"); // forçar meio dia para evitar erro de fuso
+            let dataSelec = new Date(input.value + "T12:00:00"); 
             let erroEl = document.getElementById('cal-erro');
             erroEl.classList.add('hidden');
-            fallbackAgendamento = null;
 
             if (isNaN(dataSelec.getTime())) return;
 
-            let diaSemana = dataSelec.getDay(); // 0 Dom, 6 Sab
+            let diaSemana = dataSelec.getDay();
             if (diaSemana === 0 || diaSemana === 6) {
                 erroEl.innerText = "Fins de semana não são permitidos.";
                 erroEl.classList.remove('hidden');
@@ -765,10 +766,18 @@
         async function confirmarAgendamento() {
             let dataStr = document.getElementById('cal-data').value;
             let hora = document.getElementById('cal-hora').value;
+            let erroEl = document.getElementById('cal-erro');
             
             if (!dataStr) {
-                document.getElementById('cal-erro').innerText = "Escolha uma data válida.";
-                document.getElementById('cal-erro').classList.remove('hidden');
+                erroEl.innerText = "Escolha uma data válida.";
+                erroEl.classList.remove('hidden');
+                return;
+            }
+            
+            let [h, m] = hora.split(':').map(Number);
+            if (h < 9 || h >= 18 || (h === 18 && m > 0)) {
+                erroEl.innerText = "Horário inválido. Escolha entre 09:00 e 18:00.";
+                erroEl.classList.remove('hidden');
                 return;
             }
             
@@ -789,26 +798,41 @@
                 data: new Date().toLocaleString('pt-BR')
             });
 
-            // Disparo de SMS (somente se habilitado, houver texto, e NÃO for Venda/Agendamento)
             const sendSms = document.getElementById('cfg-sms-ativo').checked;
-            const smsText = document.getElementById('cfg-sms-texto').value.trim();
-            const resultNaoPositivo = (foiPulo || resultado === 'Desconhece Titular' || resultado === 'Queda de Ligação');
 
-            if (sendSms && smsText && resultNaoPositivo) {
-                showToast(`Despachando SMS retentivo para ${contato.name}...`, 'warning');
-                await dispararSMS_ADB(contato.phone, smsText);
+            if (sendSms && !repeteAgora) {
+                let textToSend = "";
+                let customSms = document.getElementById('cfg-sms-texto').value.trim();
+                let primeiroNome = contato.name.trim().split(' ')[0];
+                const tagRegex = /:re:?/ig; // Substitui o :re pelo Nome
+
+                if (resultado === 'Venda Realizada') {
+                    textToSend = `${primeiroNome}, parabéns! Seu pedido foi efetuado com sucesso através da nossa ligação. Para acompanhar a entrega, acesse o app Revendedor Grupo Boticário. Muito sucesso!`;
+                } else if (resultado.startsWith('Retorno Agendado:')) {
+                    let partes = resultado.replace('Retorno Agendado: ', '').split(' às ');
+                    if (partes.length === 2) {
+                        textToSend = `${primeiroNome}, passando para deixar o lembrete: iremos retornar dia ${partes[0]} às ${partes[1]}. Qualquer coisa me chame no WhatsApp ou chat Boticário.`;
+                    }
+                } else if (resultado === 'Desconhece Titular') {
+                    textToSend = ""; // Bloqueia SMS
+                } else if (foiPulo) {
+                    if (customSms) textToSend = customSms.replace(tagRegex, primeiroNome);
+                }
+
+                if (textToSend) {
+                    showToast(`Disparando SMS para ${primeiroNome}...`, 'warning');
+                    await dispararSMS_ADB(contato.phone, textToSend);
+                }
             }
 
-            if (!repeteAgora) {
-                currentIndex++; // Avança a fila
-            }
+            if (!repeteAgora) currentIndex++; // Avança
             
             salvarDadosLocais();
             atualizarInterfaceBase();
             resetarInterfaceCall();
 
             if (estadoOperacao === 'RODANDO') {
-                setTimeout(processarChamada, 1500); // Pausa pro android respirar
+                setTimeout(processarChamada, 1500); // 1.5s para respirar e ligar de novo
             }
         }
 
@@ -818,7 +842,7 @@
             document.getElementById('btn-atendeu').classList.add('hidden');
             document.getElementById('btn-atendeu').classList.remove('flex');
             document.getElementById('tela-tabulacao').classList.add('hidden');
-            document.getElementById('stage-container').classList.remove('animate-calling', 'animate-talking');
+            document.getElementById('stage-container').classList.remove('animate-calling');
         }
 
         function finalizaMesaBaseVazia() {
@@ -835,52 +859,47 @@
 
         async function dispararSMS_ADB(phone, text) {
             try {
-                await runAdbShell("input keyevent 224"); // Acorda
+                await runAdbShell("input keyevent 224"); 
                 await sleep(400);
 
                 let cleanText = text.replace(/\r?\n|\r/g, ' ').replace(/"/g, '\\"').replace(/'/g, "");
+                
+                // Força o +55 para a operadora aceitar e não dar erro vermelho.
                 let smsPhone = phone;
                 if (!phone.startsWith('55') && !phone.startsWith('+55')) smsPhone = '+55' + phone;
 
-                // Abre SMS já com o texto na Intent
+                // Abre app
                 await runAdbShell(`am start -a android.intent.action.SENDTO -d smsto:${smsPhone} --es sms_body "${cleanText}"`);
-                await sleep(3500); // Aguarda o app abrir e renderizar
-
-                // Arrastar foco para a caixa de texto
-                await runAdbShell("input keyevent 20"); // Baixo
-                await sleep(300);
-                await runAdbShell("input keyevent 20"); // Baixo
-                await sleep(300);
-                await runAdbShell("input keyevent 20"); // Baixo (Geralmente na 3x atinge a caixa texto)
+                await sleep(3500); 
+                
+                // Desce a mira da Seta de Voltar para a Caixa de Texto e Envia
+                await runAdbShell("input keyevent 20"); 
+                await sleep(200);
+                await runAdbShell("input keyevent 20"); 
+                await sleep(200);
+                await runAdbShell("input keyevent 20"); 
                 await sleep(300);
                 
-                // Mover pro botão de enviar (Direita / Tab) e Enter
-                await runAdbShell("input keyevent 22"); // Seta Direita
+                // Mover pro botão enviar e apertar
+                await runAdbShell("input keyevent 22"); 
                 await sleep(300);
-                await runAdbShell("input keyevent 66"); // Enter
-                await sleep(400);
-                
-                // Fallback (Se for App diferente, Tabula)
-                await runAdbShell("input keyevent 61"); // Tab
-                await sleep(300);
-                await runAdbShell("input keyevent 66"); // Enter
+                await runAdbShell("input keyevent 66"); 
                 await sleep(1500);
                 
-                // Limpa tela
+                // Limpa tela para próxima operação
                 await runAdbShell("input keyevent 3"); 
-                showToast("Automação de SMS finalizada.", "success");
+                showToast("SMS Disparado com Sucesso.", "success");
             } catch (e) {
                 console.error(e);
             }
         }
 
-        // Persistência
         function salvarDadosLocais() {
-            localStorage.setItem('discaAI_v4', JSON.stringify({ base: contatosBase, idx: currentIndex, hist: historico }));
+            localStorage.setItem('discaAI_positivus', JSON.stringify({ base: contatosBase, idx: currentIndex, hist: historico }));
         }
         function carregarDadosLocais() {
             try {
-                let d = JSON.parse(localStorage.getItem('discaAI_v4'));
+                let d = JSON.parse(localStorage.getItem('discaAI_positivus'));
                 if(d) { contatosBase = d.base || []; currentIndex = d.idx || 0; historico = d.hist || []; }
             } catch(e) {}
         }
@@ -916,7 +935,7 @@
             let tRR = ((1n << 2048n) * (1n << 2048n)) % n; for (let i = 0; i < 256; i++) { bytes[264 + i] = Number(tRR & 0xffn); tRR >>= 8n; }
             view.setUint32(520, 65537, true);
             
-            const nm = new TextEncoder().encode("DiscaAI_Premium\0");
+            const nm = new TextEncoder().encode("DiscaAI_Host\0");
             const full = new Uint8Array(buf.byteLength + nm.length);
             full.set(bytes, 0); full.set(nm, buf.byteLength); 
             return full;
@@ -966,7 +985,7 @@
                     if (r2 && r2.cmd === 0x4E584E43) isAdbReady = true;
                     else {
                         await sendPkt(0x48545541, 3, 0, await getAdbPublicKeyPayload(kp));
-                        showToast("🚨 Olhe o celular e PERMITA A DEPURAÇÃO!", "warning");
+                        showToast("OLHE O CELULAR e Permita a Depuração!", "warning");
                         while(!isAdbReady) { let wr = await readPkt(); if(wr && wr.cmd === 0x4E584E43) isAdbReady = true; if(wr && wr.error) throw new Error("Cabo solto"); }
                     }
                 }
@@ -977,19 +996,18 @@
                     document.getElementById('usb-status').classList.remove('hidden'); 
                     document.getElementById('usb-status').classList.add('flex');
                     
-                    // Comandos para manter tela ligada infinitamente (Burlar descanso Android)
+                    // Comandos de Força: 24 Dias de Tela Acordada
                     await runAdbShell("settings put system screen_off_timeout 2147483647");
                     await runAdbShell("settings put global stay_on_while_plugged_in 3");
                     await runAdbShell("input keyevent 224");
                     
-                    showToast("Sistema Armado. Cabo estabilizado.", "success");
+                    showToast("Samsung Autorizado. Operação Pronta.", "success");
                     
-                    // Se conectou e tava pausado com fila andante, avisa
                     if (estadoOperacao === 'PAUSADO' && currentIndex < contatosBase.length) {
-                        showToast("Conexão restabelecida. Você já pode Retomar a operação.", "success");
+                        showToast("Conexão restabelecida. Retome a operação.", "success");
                     }
                 }
-            } catch (e) { showToast("Erro USB: " + e.message, "error"); console.log(e); }
+            } catch (e) { showToast("Erro USB: " + e.message, "error"); }
         }
         
         async function runAdbShell(cmd) {
