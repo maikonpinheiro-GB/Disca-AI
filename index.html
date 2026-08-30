@@ -155,10 +155,11 @@
                             </div>
                             <span class="text-xs font-bold text-dark">Automação de SMS</span>
                         </label>
-                        <p class="text-[9px] font-bold uppercase bg-yellow-200 p-2 rounded border border-dark leading-tight mt-2">
-                            Aviso: Limite de 900 envios/mês pela operadora.
-                        </p>
+                        
                         <div id="box-sms" class="mt-3 block">
+                            <p class="text-[9px] font-bold uppercase bg-yellow-200 p-2 rounded border border-dark leading-tight mb-3">
+                                Lembrete: Verifique quantos disparos já foram feitos neste mês. Seu limite seguro é de 900 envios.
+                            </p>
                             <label class="text-[9px] font-bold uppercase text-gray-500 mb-1 block">Texto para "Não Atendeu":</label>
                             <textarea id="cfg-sms-texto" rows="3" class="w-full neo-input p-2 text-xs text-dark resize-none" placeholder="Use :re para puxar o nome. Ex: Olá :re, tentei ligar..."></textarea>
                         </div>
@@ -597,7 +598,7 @@
         }
 
         async function iniciarCampanha() {
-            if (!isAdbReady) return showToast("Conecte o smartphone USB (Iniciar ADB) primeiro.", "error");
+            if (!isAdbReady) return showToast("Lembrou de conectar no botão Iniciar ali no canto superior direito?", "warning");
             if (currentIndex >= contatosBase.length) return showToast("A fila acabou. Importe mais contatos.", "warning");
 
             estadoOperacao = 'RODANDO';
@@ -925,11 +926,23 @@
 
         function exportarRelatorio() {
             if(historico.length === 0) return showToast("Histórico vazio", "warning");
-            let csv = "Data,Nome,Telefone,Resultado Final\n";
-            historico.forEach(h => csv += `"${h.data}","${h.nome}","${h.telefone}","${h.resultado}"\n`);
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a"); link.href = URL.createObjectURL(blob);
-            link.download = "Relatorio_DiscaAI.csv"; link.click();
+            
+            // Transforma o histórico em formato oficial de Excel
+            const dadosExcel = historico.map(h => ({
+                "Data e Hora": h.data,
+                "Nome do Cliente": h.nome,
+                "Telefone": h.telefone,
+                "Status / Resultado": h.resultado
+            }));
+            
+            const ws = XLSX.utils.json_to_sheet(dadosExcel);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Relatorio");
+            
+            // Força o download como arquivo Excel (.xlsx) oficial
+            XLSX.writeFile(wb, "Relatorio_DiscaAI.xlsx");
+            
+            showToast("Relatório baixado! Arraste o arquivo para o seu Google Drive para abrir no Planilhas.", "success");
         }
 
         async function getAdbKeyPair() { 
@@ -1026,7 +1039,9 @@
                         showToast("Conexão restabelecida. Retome a operação.", "success");
                     }
                 }
-            } catch (e) { showToast("Erro USB: " + e.message, "error"); }
+            } catch (e) { 
+                showToast("Verifique se seu aparelho está conectado no USB. Lembrando que a Depuração USB tem que estar ativada no celular!", "error"); 
+            }
         }
         
         async function runAdbShell(cmd) {
