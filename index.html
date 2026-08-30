@@ -114,7 +114,6 @@
 
     <main class="flex-1 w-full max-w-[1800px] mx-auto p-6 grid grid-cols-1 xl:grid-cols-12 gap-8">
         
-        <!-- COLUNA ESQUERDA: Importação e Configurações -->
         <div class="xl:col-span-3 flex flex-col gap-6">
             
             <div class="neo-card p-6">
@@ -178,7 +177,6 @@
             </div>
         </div>
 
-        <!-- COLUNA CENTRAL: Mesa de Operação -->
         <div class="xl:col-span-6 flex flex-col gap-6">
             
             <div class="neo-card p-10 flex flex-col items-center justify-center relative min-h-[550px]" id="stage-container">
@@ -273,7 +271,6 @@
             </div>
         </div>
 
-        <!-- COLUNA DIREITA: Relatório -->
         <div class="xl:col-span-3 flex flex-col gap-6">
             <div class="neo-card p-6 flex-1 flex flex-col h-full max-h-[85vh]">
                 <div class="flex justify-between items-center mb-6 border-b-2 border-dark pb-4">
@@ -417,7 +414,7 @@
                     console.log("WakeLock ativado: A tela não irá desligar.");
                 }
             } catch (err) {
-                // Silencia erros em ambientes restritos (como iframes) para não poluir o console.
+                // Silencia erros em ambientes restritos para manter o console limpo
             }
         }
 
@@ -489,20 +486,62 @@
             const linhas = rawText.split('\n');
 
             for (let linha of linhas) {
-                let text = linha.trim().replace(/(?:\b|\+)(?:55|0055)\s?/g, '');
-                if (!text) continue;
+                // Remove +55 ou 55 isolado da linha
+                let cleanText = linha.trim().replace(/(?:\b|\+)(?:55|0055)\s?/g, '');
+                if (!cleanText) continue;
                 
-                let phone = "", code = "S/C", nameParts = [];
-                let words = text.split(/\s+/);
+                let tokens = cleanText.split(/\s+/);
+                if (tokens.length === 0) continue;
+
+                let phone = "";
+                let tokensToRemove = 0;
+                let tempDigits = "";
                 
-                for (let word of words) {
-                    let cleanWord = word.replace(/\D/g, '');
-                    if (cleanWord.length >= 10 && cleanWord.length <= 11 && !phone) phone = cleanWord;
-                    else if (cleanWord.length >= 2 && cleanWord.length <= 7 && code === "S/C") code = cleanWord;
-                    else nameParts.push(word);
+                // 1. Busca o Telefone lendo a linha de trás pra frente
+                for (let i = tokens.length - 1; i >= 0; i--) {
+                    let tokenDigits = tokens[i].replace(/\D/g, '');
+                    tempDigits = tokenDigits + tempDigits; 
+                    
+                    if (tempDigits.length >= 10 && tempDigits.length <= 11) {
+                        phone = tempDigits;
+                        tokensToRemove = tokens.length - i;
+                        break;
+                    }
+                    if (tempDigits.length > 11) break; // Passou do limite, aborta busca reversa
                 }
 
-                if (!phone) continue;
+                if (!phone && tokens.length > 0) {
+                    let lastTokenDigits = tokens[tokens.length - 1].replace(/\D/g, '');
+                    if(lastTokenDigits.length >= 10 && lastTokenDigits.length <= 11) {
+                        phone = lastTokenDigits;
+                        tokensToRemove = 1;
+                    }
+                }
+
+                if (!phone) continue; // Linha inválida (sem telefone)
+
+                // 2. Separa Código e Nome
+                let remainingTokens = tokens.slice(0, tokens.length - tokensToRemove);
+                let code = "S/C";
+                let name = "";
+
+                if (remainingTokens.length > 0) {
+                    // REGRA DE OURO: Se o primeiro bloco tem números, ele é o Código
+                    let firstTokenDigits = remainingTokens[0].replace(/\D/g, '');
+                    if (firstTokenDigits.length > 0) {
+                        code = remainingTokens[0]; 
+                        remainingTokens.shift(); // Tira o código da lista de nomes
+                    }
+                    
+                    // O que sobrou no meio é o Nome
+                    if (remainingTokens.length > 0) {
+                        name = remainingTokens.join(' ').replace(/[^\w\sÀ-ÿ]/g, '').trim();
+                    }
+                }
+                
+                if(!name) name = "Contato sem nome";
+
+                // 3. Validação do Telefone
                 let status = "Válido", originalPhone = phone;
 
                 if (phone.length === 10) {
@@ -515,7 +554,6 @@
                 }
 
                 st.total++;
-                let name = nameParts.join(' ').replace(/[^\w\sÀ-ÿ]/g, '').trim() || "Contato sem nome";
                 tempContatos.push({ name, code, phone, originalPhone, status, id: Date.now() + Math.random() });
             }
 
@@ -924,11 +962,11 @@
         }
 
         function salvarDadosLocais() {
-            // Desativado para limpar os dados sempre que a página for fechada/atualizada
+            // Desativado propositalmente: Não queremos que grave lixo antigo ao fechar o navegador.
         }
         
         function carregarDadosLocais() {
-            // Ao iniciar, força a limpeza total e nasce zerado.
+            // Toda vez que a página inicia, ela limpa tudo e nasce zerada.
             localStorage.removeItem('discaAI_positivus');
             contatosBase = []; 
             currentIndex = 0; 
@@ -1065,7 +1103,7 @@
                     }
                 }
             } catch (e) { 
-                showToast("Verifique se seu aparelho está conectado no USB e se a depuração está ativada.", "warning"); 
+                showToast("Verifique se seu aparelho está conectado no USB. A depuração precisa estar ativada.", "warning"); 
             }
         }
         
