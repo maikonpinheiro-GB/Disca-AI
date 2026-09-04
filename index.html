@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Disca AI - Central de Operação USB</title>
+  <title>Disca AI</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
@@ -43,7 +43,7 @@
 
     .btn-action { transition: all 0.2s ease; }
     .btn-action:active:not(:disabled) { transform: scale(0.97); }
-    .btn-action:disabled { cursor: not-allowed; }
+    .btn-action:disabled { cursor: not-allowed; opacity: 0.5; }
     
     @keyframes pulse-dot {
       0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
@@ -73,9 +73,6 @@
       </div>
 
       <div class="flex items-center gap-4">
-        <div id="usb-disconnected-warning" class="hidden text-red-500 font-semibold text-sm flex items-center gap-2">
-            <i class="fa-solid fa-triangle-exclamation animate-pulse"></i> Cabo Desconectado!
-        </div>
         <button id="btnConnectUSB" onclick="conectarUSB()" class="bg-vdi-blue hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2 transition-colors btn-action shadow-sm">
           <i class="fa-brands fa-usb text-lg"></i> Conectar
         </button>
@@ -156,12 +153,12 @@
               </div>
             </div>
             
-            <!-- BOTÃO CLIENTE ATENDEU -->
+            <!-- BOTÃO CLIENTE ATENDEU (Parado) -->
             <button id="btn-atendeu" onclick="marcarAtendido()" class="hidden mt-6 btn-action bg-green-600 hover:bg-green-700 text-white font-bold text-lg uppercase tracking-wide px-10 py-4 rounded-xl shadow-md flex items-center justify-center gap-3 w-full max-w-sm">
               <i class="fa-solid fa-headset text-2xl"></i> Cliente Atendeu
             </button>
             
-            <!-- TABULAÇÃO (Aparece ao atender) -->
+            <!-- TABULAÇÃO E ENCERRAMENTO -->
             <div id="tela-tabulacao" class="hidden w-full max-w-lg mt-4 border-t border-gray-200 pt-6">
                 <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4 flex items-center justify-center gap-2">
                     <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> Em Atendimento: Registre o resultado
@@ -195,8 +192,8 @@
                     <p class="text-sm font-bold text-gray-800 mb-1">Registro Salvo! SMS despachado.</p>
                     <p class="text-xs text-gray-600 text-center mb-5 max-w-sm">Você ainda está na linha com o cliente. Fique à vontade para continuar a conversa.</p>
                     
-                    <button onclick="finalizarLigacaoPosTabulacao()" class="btn-action bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg shadow-sm text-sm">
-                        <i class="fa-solid fa-phone-slash"></i> Encerrar Chamada e Avançar
+                    <button onclick="finalizarLigacaoPosTabulacao()" class="btn-action w-full bg-red-600 hover:bg-red-700 text-white font-bold py-4 rounded-xl shadow-md text-sm flex justify-center items-center gap-2 uppercase tracking-wide">
+                        <i class="fa-solid fa-phone-slash text-lg"></i> Encerrar Chamada e Avançar
                     </button>
                 </div>
             </div>
@@ -204,7 +201,7 @@
 
           <!-- CONTROLES MESTRES -->
           <div class="flex items-center gap-3 mt-4">
-            <button id="btn-iniciar" onclick="iniciarCampanha()" disabled class="btn-action flex-1 bg-vdi-blue text-white font-bold text-sm uppercase tracking-wider py-4 rounded-xl shadow-sm flex items-center justify-center gap-2 opacity-50 cursor-not-allowed">
+            <button id="btn-iniciar" onclick="iniciarCampanha()" disabled class="btn-action flex-1 bg-vdi-blue text-white font-bold text-sm uppercase tracking-wider py-4 rounded-xl shadow-sm flex items-center justify-center gap-2">
               <i class="fa-solid fa-play"></i> Iniciar Atendimento
             </button>
             <div id="active-controls" class="hidden flex-1 grid grid-cols-2 gap-3">
@@ -253,7 +250,7 @@
                 </div>
                 <div>
                     <span class="text-sm font-bold text-gray-800 block">Envio de SMS</span>
-                    <span class="text-[11px] text-gray-500">Quando um revendedor não atender, será enviado um SMS automatico para ele caso esse botão esteja ativado.</span>
+                    <span class="text-[11px] text-gray-500">Quando um revendedor não atender (tempo esgotado), será enviado um SMS automatico caso este botão esteja ativado.</span>
                 </div>
             </label>
             
@@ -261,7 +258,7 @@
                 <div class="bg-amber-50 border border-amber-200 p-3 rounded-md flex gap-2 items-start mb-4">
                     <i class="fa-solid fa-circle-exclamation text-amber-500 mt-0.5"></i>
                     <p class="text-[11px] font-bold text-amber-800 leading-tight uppercase">
-                        Lembrete: 900 envios de SMS é o seu limite mensal. Verifique antes de iniciar os disparos.
+                        LEMBRETE: 900 ENVIOS DE SMS É O SEU LIMITE MENSAL. VERIFIQUE ANTES DE INICIAR OS DISPAROS.
                     </p>
                 </div>
                 <label class="text-xs font-semibold text-gray-600 mb-2 block">Mensagem para quem NÃO atender (Timeout):</label>
@@ -300,11 +297,8 @@
     </div>
   </main>
 
-  <!-- RODAPÉ -->
   <footer class="bg-white border-t border-gray-200 py-6 mt-auto">
-    <div class="max-w-7xl mx-auto px-6 flex justify-between items-center text-xs text-gray-500 font-medium">
-      <!-- Vazio conforme solicitado -->
-    </div>
+    <div class="max-w-7xl mx-auto px-6 flex justify-between items-center text-xs text-gray-500 font-medium"></div>
   </footer>
 
   <!-- MODAL CALENDÁRIO -->
@@ -337,9 +331,6 @@
   <div id="toast-container" class="fixed bottom-6 right-6 z-[200] flex flex-col gap-2 pointer-events-none"></div>
 
   <script>
-    // ==========================================
-    // ESTADO GLOBAL DO SISTEMA (SEM CACHE)
-    // ==========================================
     let contatosBase = [];
     let historico = [];
     let currentIndex = 0;
@@ -362,6 +353,7 @@
     const feriadosNacionais = ['01-01', '21-04', '01-05', '07-09', '12-10', '02-11', '15-11', '25-12'];
 
     window.onload = () => {
+        // ZERADO sempre que atualiza (Sem Cache)
         contatosBase = []; currentIndex = 0; historico = [];
         atualizarInterfaceBase();
         requestWakeLock();
@@ -384,11 +376,11 @@
         document.getElementById('box-sms').style.display = document.getElementById('cfg-sms-ativo').checked ? 'block' : 'none';
     }
 
-    // WakeLock para manter PC Ligado
+    // WakeLock Silencioso
     document.addEventListener('visibilitychange', async () => { if (document.visibilityState === 'visible') requestWakeLock(); });
     async function requestWakeLock() {
         try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } 
-        catch (err) { console.log("WakeLock contornado suavemente."); }
+        catch (err) { /* Silencioso se não suportado */ }
     }
 
     function showToast(msg, type = 'info') {
@@ -404,9 +396,6 @@
         setTimeout(() => { toast.classList.add('translate-y-4', 'opacity-0'); setTimeout(() => toast.remove(), 300); }, 4500);
     }
 
-    // ==========================================
-    // CÉREBRO DA VDI (Extração Avançada)
-    // ==========================================
     function processarEntradas() {
         const rawText = document.getElementById('paste-area').value;
         if(!rawText.trim()) return showToast("Cole dados antes de processar.", "warning");
@@ -456,7 +445,6 @@
                 if (tempDigits.length > 11) break; 
             }
 
-            // Fallback se for apenas 1 bloco colado
             if (!phone && tokens.length > 0) {
                 let lastTokenDigits = tokens[tokens.length - 1].replace(/\D/g, '');
                 if(lastTokenDigits.length >= 10 && lastTokenDigits.length <= 11) {
@@ -482,7 +470,7 @@
             }
             if(!name) name = "Contato Não Identificado";
 
-            // 3. Validação do Nono Dígito
+            // 3. Validação final do telefone
             if (phone.length === 10) phone = phone.substring(0, 2) + '9' + phone.substring(2);
             if (phone.length === 11) {
                 contatosBase.push({ name, code, phone });
@@ -548,9 +536,6 @@
         }
     }
 
-    // ==========================================
-    // MÁQUINA DE ESTADOS
-    // ==========================================
     async function iniciarCampanha() {
         if (!isAdbReady) return showToast("Lembrou de iniciar no botão Conectar no canto superior direito?", "warning");
         if (currentIndex >= contatosBase.length) return showToast("A fila acabou. Importe mais contatos.", "warning");
@@ -634,7 +619,7 @@
             if (timeLeft <= 0) {
                 clearInterval(timerInterval);
                 await desligarLigacaoFisica();
-                // OCORREU TIMEOUT: É o único momento que dispara o SMS genérico se o botão estiver ativado
+                // TIMEOUT: Dispara SMS genérico SE ativado
                 await registrarEAvancar('Não Atendeu', false, false, false, true); 
             }
         }, 1000);
@@ -661,13 +646,10 @@
         if (callState === 'IDLE') return;
         clearInterval(timerInterval);
         await desligarLigacaoFisica();
-        // PULO MANUAL: False para timeout, não dispara SMS.
+        // PULO MANUAL: False no final para NÃO disparar SMS de timeout
         await registrarEAvancar('Pulo Manual', true, false, false, false);
     }
 
-    // ==========================================
-    // TABULAÇÃO E AGENDAMENTO
-    // ==========================================
     async function tabulaChamada(resultado) {
         let manterLigacao = (resultado === 'Venda Realizada' || resultado.startsWith('Retorno Agendado'));
         
@@ -688,10 +670,12 @@
         document.getElementById('modal-calendario').classList.remove('hidden');
         document.getElementById('modal-calendario').classList.add('flex');
     }
+    
     function fecharModalCalendario() {
         document.getElementById('modal-calendario').classList.add('hidden');
         document.getElementById('modal-calendario').classList.remove('flex');
     }
+    
     function validarDataCalendario(input) {
         let dataSelec = new Date(input.value + "T12:00:00"); 
         let erroEl = document.getElementById('cal-erro');
@@ -731,7 +715,7 @@
         if (primeiroNome === "Contato") primeiroNome = "Cliente";
         const tagRegex = /:re:?/ig; 
 
-        // Vendas e Agendamento SÃO SEMPRE ENVIADOS independentes da chave do painel.
+        // Vendas e Agendamento SÃO ENVIADOS INDEPENDENTES DA CHAVE DE SMS
         if (resultado === 'Venda Realizada') {
             textToSend = `${primeiroNome}, parabéns! Seu pedido foi efetuado por ligação com sucesso. Para acompanhar mais sobre o seu pedido, acesse o app Revendedor Grupo Boticário.`;
         } else if (resultado.startsWith('Retorno Agendado:')) {
@@ -740,7 +724,7 @@
                 textToSend = `${primeiroNome}, passando aqui para te deixar esse lembrete: iremos retornar nossa conversa dia ${partes[0]} às ${partes[1]}. Não se esqueça viu, qualquer coisa me chame no WhatsApp ou pelo chat dentro do aplicativo Revendedor Grupo Boticário.`;
             }
         } 
-        // Timeout manda texto customizado APENAS SE a chave estiver ligada
+        // Timeout manda o SMS personalizado APENAS se a chave estiver ligada
         else if (isTimeout && !repeteAgora) {
             const isSmsToggleAtivo = document.getElementById('cfg-sms-ativo').checked;
             if (isSmsToggleAtivo) {
@@ -749,7 +733,6 @@
             }
         }
 
-        // Se tiver texto pra enviar, manda via D-Pad
         if (textToSend && !repeteAgora) {
             showToast(`Despachando SMS oculto para ${primeiroNome}...`, 'info');
             await dispararSMS_ADB(contato.phone, textToSend);
@@ -771,18 +754,26 @@
             if (!phone.startsWith('55') && !phone.startsWith('+55')) smsPhone = '+55' + phone;
 
             await runAdbShell(`am start -a android.intent.action.SENDTO -d smsto:${smsPhone} --es sms_body "${cleanText}"`);
-            await sleep(3000); 
-            await runAdbShell("input keyevent 111"); // Fecha o teclado (Crucial para o D-PAD funcionar)
-            await sleep(800);
-            await runAdbShell("input keyevent 61"); // TAB
-            await sleep(300);
-            await runAdbShell("input keyevent 61"); // TAB
-            await sleep(300);
-            await runAdbShell("input keyevent 66"); // ENTER DUPLO PARA GARANTIR
-            await sleep(500);
-            await runAdbShell("input keyevent 66"); 
-            await sleep(1500); 
-            await runAdbShell("input keyevent 3"); // HOME
+            await sleep(3500); 
+
+            // Combo de Ouro (Ajustado para Samsung / Google Messages com RCS)
+            await runAdbShell("input keyevent 111"); // Fecha o teclado p/ limpar a tela
+            await sleep(1000);
+
+            // Bateria 1: TAB + ENTER (Cobre a maioria dos apps que foca o botão de envio no Tab order)
+            await runAdbShell("input keyevent 61"); await sleep(200);
+            await runAdbShell("input keyevent 66"); await sleep(200);
+            await runAdbShell("input keyevent 61"); await sleep(200);
+            await runAdbShell("input keyevent 66"); await sleep(200);
+            
+            // Bateria 2: Seta Direita + ENTER (Cobre o RCS que coloca Emoji e Enviar à direita do Input)
+            await runAdbShell("input keyevent 22"); await sleep(200);
+            await runAdbShell("input keyevent 66"); await sleep(200);
+            await runAdbShell("input keyevent 22"); await sleep(200);
+            await runAdbShell("input keyevent 66"); await sleep(200);
+
+            // Volta pra Home
+            await runAdbShell("input keyevent 3"); 
         } catch (e) { console.error(e); }
     }
 
@@ -830,9 +821,6 @@
         resetarInterfaceCall();
     }
 
-    // ==========================================
-    // EXPORTAÇÃO CSV
-    // ==========================================
     function exportarRelatorioCSV() {
         if(historico.length === 0) return showToast("Histórico vazio. Nenhuma chamada realizada.", "warning");
         
@@ -853,9 +841,6 @@
         showToast("Relatório CSV baixado com sucesso!", "success");
     }
 
-    // ==========================================
-    // ADB NATIVO (RSA)
-    // ==========================================
     async function getAdbKeyPair() { 
         return await crypto.subtle.generateKey({ name: "RSASSA-PKCS1-v1_5", modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: "SHA-256" }, true, ["sign", "verify"]); 
     }
@@ -916,26 +901,37 @@
             await usbDevice.claimInterface(intfNum);
             await sendPkt(0x4E584E43, 0x01000000, 4096, new TextEncoder().encode("host::DiscaAI\0"));
             
-            let kp = await getAdbKeyPair(); let r = await readPkt();
+            let kp = await getAdbKeyPair(); 
+            let r = await readPkt();
             
-            if (r && r.cmd === 0x4E584E43) isAdbReady = true;
-            else if (r && r.cmd === 0x48545541 && r.arg0 === 1) {
+            if (r && r.cmd === 0x4E584E43) {
+                isAdbReady = true;
+            } else if (r && r.cmd === 0x48545541 && r.arg0 === 1) {
                 await sendPkt(0x48545541, 2, 0, await signAdbToken(kp, r.data));
                 let r2 = await readPkt();
-                if (r2 && r2.cmd === 0x4E584E43) isAdbReady = true;
-                else {
+                if (r2 && r2.cmd === 0x4E584E43) {
+                    isAdbReady = true;
+                } else {
                     await sendPkt(0x48545541, 3, 0, await getAdbPublicKeyPayload(kp));
                     showToast("ATENÇÃO: Olhe a tela do celular e Permita a Depuração USB!", "warning");
-                    while(!isAdbReady) { let wr = await readPkt(); if(wr && wr.cmd === 0x4E584E43) isAdbReady = true; if(wr && wr.error) throw new Error("Cabo solto"); }
+                    
+                    // NOVA LÓGICA DE ESPERA (POLLING): Bate na porta do celular até ele aceitar.
+                    let tentativas = 0;
+                    while(!isAdbReady && tentativas < 20) {
+                        await sleep(1000);
+                        await sendPkt(0x4E584E43, 0x01000000, 4096, new TextEncoder().encode("host::DiscaAI\0"));
+                        let wr = await readPkt();
+                        if(wr && wr.cmd === 0x4E584E43) isAdbReady = true;
+                        tentativas++;
+                    }
+                    if(!isAdbReady) throw new Error("Não aceito ou timeout");
                 }
             }
             
             if (isAdbReady) {
                 document.getElementById('btnConnectUSB').style.display = 'none';
-                document.getElementById('usb-disconnected-warning').classList.add('hidden');
-                document.getElementById('usb-statusBadge').classList.remove('hidden'); document.getElementById('usbStatusBadge').classList.add('flex');
+                document.getElementById('usbStatusBadge').classList.remove('hidden'); document.getElementById('usbStatusBadge').classList.add('flex');
                 
-                // Desbloqueia o botão de Iniciar Atendimento
                 const btnInic = document.getElementById('btn-iniciar');
                 btnInic.disabled = false;
                 btnInic.classList.remove('opacity-50', 'cursor-not-allowed');
@@ -947,7 +943,7 @@
                 if (estadoOperacao === 'PAUSADO' && currentIndex < contatosBase.length) showToast("Conexão restabelecida. Pode retomar o atendimento.", "success");
             }
         } catch (e) { 
-            showToast("Verifique se seu aparelho está conectado no USB. Lembre-se: a Depuração USB deve estar ativada.", "warning"); 
+            showToast("Verifique se seu aparelho está conectado e se você PERMITIU na tela do celular.", "warning"); 
         }
     }
 
@@ -961,14 +957,12 @@
         showToast("Cabo USB Desconectado! Operação Pausada.", "error");
         isAdbReady = false; usbDevice = null;
         
-        // Bloqueia o botão de Iniciar Atendimento
         const btnInic = document.getElementById('btn-iniciar');
         btnInic.disabled = true;
         btnInic.classList.add('opacity-50', 'cursor-not-allowed');
 
         document.getElementById('btnConnectUSB').style.display = 'flex';
         document.getElementById('usbStatusBadge').classList.add('hidden'); document.getElementById('usbStatusBadge').classList.remove('flex');
-        document.getElementById('usb-disconnected-warning').classList.remove('hidden'); document.getElementById('usb-disconnected-warning').classList.add('flex');
         if(estadoOperacao === 'RODANDO') pausarCampanha(true); 
     }
     
