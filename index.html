@@ -1,1126 +1,990 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" class="h-full bg-[#f8f9fc] text-gray-700">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Disca AI - Central de Atendimento USB</title>
-    
-    <!-- Fonte Space Grotesk (Estilo Positivus) -->
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Disca AI - Central de Operação USB</title>
 
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['"Space Grotesk"', 'sans-serif'] },
-                    colors: {
-                        positivus: '#B9FF66',
-                        dark: '#191A23',
-                        light: '#F3F4F6'
-                    }
-                }
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  
+  <script>
+    tailwind.config = {
+      theme: { 
+        extend: { 
+          fontFamily: { sans: ['"Inter"', 'sans-serif'] },
+          colors: {
+            vdi: {
+              blue: '#2563eb',
+              dark: '#08172c',
+              bg: '#f8f9fc',
+              border: '#e5e7eb'
             }
-        }
-    </script>
+          }
+        } 
+      }
+    }
+  </script>
 
-    <style>
-        body { background-color: #F3F4F6; color: #191A23; }
-        
-        /* Estilo Neo-Brutalista (Positivus) */
-        .neo-card {
-            background-color: white;
-            border: 2px solid #191A23;
-            border-radius: 16px;
-            box-shadow: 4px 4px 0px #191A23;
-            transition: all 0.2s ease;
-        }
+  <style>
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    
+    .vdi-panel {
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    }
 
-        .neo-btn {
-            border: 2px solid #191A23;
-            border-radius: 12px;
-            box-shadow: 4px 4px 0px #191A23;
-            transition: all 0.1s ease;
-            font-weight: 700;
-        }
-        
-        .neo-btn:active:not(:disabled) {
-            transform: translate(4px, 4px);
-            box-shadow: 0px 0px 0px #191A23;
-        }
-        
-        .neo-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            box-shadow: 0px 0px 0px #191A23;
-            transform: translate(4px, 4px);
-        }
-
-        .neo-input {
-            border: 2px solid #191A23;
-            border-radius: 12px;
-            background: white;
-            transition: all 0.2s;
-        }
-        
-        .neo-input:focus {
-            outline: none;
-            box-shadow: 4px 4px 0px #B9FF66;
-        }
-
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #191A23; border-radius: 4px; }
-
-        @keyframes call-pulse {
-            0%, 100% { box-shadow: 4px 4px 0px #191A23; }
-            50% { box-shadow: 0px 0px 20px #B9FF66, 4px 4px 0px #191A23; }
-        }
-        .animate-calling { animation: call-pulse 1.5s infinite; border-color: #B9FF66; }
-
-        .progress-bar-inner { transition: width 1s linear; }
-    </style>
+    .btn-action { transition: all 0.2s ease; }
+    .btn-action:active:not(:disabled) { transform: scale(0.97); }
+    .btn-action:disabled { cursor: not-allowed; }
+    
+    @keyframes pulse-dot {
+      0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+      70% { box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+    }
+    .usb-active { animation: pulse-dot 2s infinite; }
+    .timer-bar { transition: width 1s linear; }
+  </style>
 </head>
-<body class="min-h-screen flex flex-col font-sans antialiased overflow-x-hidden">
 
-    <header class="bg-white border-b-2 border-dark sticky top-0 z-50">
-        <div class="max-w-[1800px] mx-auto px-6 py-4 flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <div class="w-12 h-12 rounded-xl bg-positivus border-2 border-dark flex items-center justify-center shadow-[4px_4px_0px_#191A23]">
-                    <i class="fa-solid fa-headset text-dark text-2xl"></i>
-                </div>
-                <div>
-                    <h1 class="font-bold text-2xl tracking-tight text-dark uppercase">Disca AI</h1>
-                </div>
-            </div>
-            
-            <div class="flex items-center gap-4">
-                <div id="usb-status" class="hidden items-center gap-3 px-4 py-2 bg-positivus border-2 border-dark rounded-xl shadow-[4px_4px_0px_#191A23]">
-                    <i class="fa-solid fa-link text-dark"></i>
-                    <span class="text-sm font-bold text-dark uppercase">Samsung Conectado</span>
-                </div>
-                <div id="usb-disconnected-warning" class="hidden items-center gap-3 px-4 py-2 bg-red-400 border-2 border-dark rounded-xl shadow-[4px_4px_0px_#191A23]">
-                    <i class="fa-solid fa-triangle-exclamation text-dark animate-bounce"></i>
-                    <span class="text-sm font-bold text-dark uppercase">Cabo Solto! Pausado.</span>
-                </div>
-                <button id="btn-conectar" onclick="conectarUSB()" class="neo-btn bg-white hover:bg-gray-50 text-dark px-6 py-3 text-sm flex items-center gap-2">
-                    <i class="fa-brands fa-usb text-lg"></i> Iniciar
-                </button>
-            </div>
+<body class="h-full flex flex-col font-sans antialiased overflow-x-hidden selection:bg-vdi-blue selection:text-white">
+  
+  <!-- CABEÇALHO -->
+  <header class="bg-white border-b border-vdi-border sticky top-0 z-40 px-6 py-4 shadow-sm">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="bg-vdi-dark w-10 h-10 rounded-lg flex items-center justify-center shadow-md">
+          <i class="fa-solid fa-headset text-xl text-white"></i>
         </div>
-    </header>
+        <div>
+          <h1 class="font-bold text-xl tracking-tight text-gray-800 flex items-center gap-2">
+            Disca <span class="text-vdi-blue">AI</span>
+          </h1>
+          <p class="text-[11px] text-gray-500 font-medium">Idealizado por Maikon Nattan</p>
+        </div>
+      </div>
 
-    <main class="flex-1 w-full max-w-[1800px] mx-auto p-6 grid grid-cols-1 xl:grid-cols-12 gap-8">
+      <div class="flex items-center gap-4">
+        <div id="usb-disconnected-warning" class="hidden text-red-500 font-semibold text-sm flex items-center gap-2">
+            <i class="fa-solid fa-triangle-exclamation animate-pulse"></i> Cabo Desconectado!
+        </div>
+        <button id="btnConnectUSB" onclick="conectarUSB()" class="bg-vdi-blue hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2 transition-colors btn-action shadow-sm">
+          <i class="fa-brands fa-usb text-lg"></i> Conectar
+        </button>
+        <div id="usbStatusBadge" class="hidden items-center gap-2 bg-green-50 border border-green-200 px-4 py-2 rounded-lg">
+          <div class="w-2.5 h-2.5 rounded-full bg-green-500 usb-active"></div>
+          <span class="text-xs font-bold text-green-700">Sistema Conectado</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto p-6 flex flex-col gap-6">
+    <!-- NAVEGAÇÃO DE ABAS -->
+    <div class="flex items-center gap-3 border-b border-gray-200 pb-4">
+      <button onclick="switchTab('dashboard')" id="tabBtn-dashboard" class="tab-btn bg-vdi-blue text-white border border-vdi-blue px-5 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 transition-colors shadow-sm">
+        <i class="fa-solid fa-desktop"></i> Mesa de Operação
+      </button>
+      <button onclick="switchTab('contacts')" id="tabBtn-contacts" class="tab-btn bg-white text-gray-600 hover:bg-gray-50 border border-gray-300 px-5 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 transition-colors">
+        <i class="fa-solid fa-file-import"></i> Colar Dados <span id="badgeContacts" class="bg-gray-100 text-gray-600 border border-gray-200 text-[10px] px-2 py-0.5 rounded-full font-bold ml-1">0</span>
+      </button>
+      <button onclick="switchTab('history')" id="tabBtn-history" class="tab-btn bg-white text-gray-600 hover:bg-gray-50 border border-gray-300 px-5 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 transition-colors">
+        <i class="fa-solid fa-chart-pie"></i> Relatórios
+      </button>
+    </div>
+
+    <!-- ABA DASHBOARD (MESA DE OPERAÇÃO) -->
+    <div id="tab-dashboard" class="tab-content flex flex-col gap-6">
+      
+      <!-- INDICADORES -->
+      <div class="grid grid-cols-5 gap-4">
+        <div class="col-span-1 vdi-panel p-4 flex flex-col justify-center bg-gray-50 border-blue-200">
+          <span class="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Pular se não atender em:</span>
+          <div class="flex items-center gap-2">
+            <input type="number" id="cfg-time" value="25" class="bg-white border border-gray-300 rounded-md w-16 px-2 py-1 text-center font-bold text-gray-700 outline-none focus:border-vdi-blue">
+            <span class="text-xs text-gray-500 font-medium">Segundos</span>
+          </div>
+        </div>
+        <div class="vdi-panel p-4 flex flex-col justify-between">
+          <span class="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Total na Fila</span>
+          <div class="text-2xl font-black text-gray-800 mt-1" id="stat-total">0</div>
+        </div>
+        <div class="vdi-panel p-4 flex flex-col justify-between">
+          <span class="text-[10px] font-bold text-amber-600 uppercase tracking-wider">Aguardando</span>
+          <div class="text-2xl font-black text-amber-600 mt-1" id="stat-pending">0</div>
+        </div>
+        <div class="vdi-panel p-4 flex flex-col justify-between">
+          <span class="text-[10px] font-bold text-green-600 uppercase tracking-wider">Vendas</span>
+          <div class="text-2xl font-black text-green-600 mt-1" id="stat-sales">0</div>
+        </div>
+        <div class="vdi-panel p-4 flex flex-col justify-between">
+          <span class="text-[10px] font-bold text-vdi-blue uppercase tracking-wider">Agendados</span>
+          <div class="text-2xl font-black text-vdi-blue mt-1" id="stat-returns">0</div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        <div class="xl:col-span-3 flex flex-col gap-6">
+        <!-- MESA CENTRAL -->
+        <div class="lg:col-span-2 vdi-panel p-8 flex flex-col relative">
+          
+          <div class="flex-1 flex flex-col items-center justify-center text-center py-6 mb-4 bg-gray-50 rounded-xl border border-gray-200 relative">
+            <span class="text-[11px] font-bold text-gray-400 uppercase tracking-widest block mb-2">Contato Atual</span>
+            <h2 id="stage-name" class="text-3xl font-bold text-gray-800 mb-1">Aguardando...</h2>
             
-            <div class="neo-card p-6">
-                <h2 class="text-sm font-bold text-dark uppercase mb-4 flex items-center gap-2">
-                    <span class="bg-positivus px-2 py-1 rounded border border-dark"><i class="fa-solid fa-paste"></i></span> Colar Dados
-                </h2>
-                <textarea id="paste-area" rows="5" class="w-full neo-input p-3 text-sm text-dark placeholder-gray-400 resize-none" placeholder="Copie o Código, o Nome e o Telefone da VDI e cole aqui dentro. Caso prefira, importe um documento com os dados clicando no botão de Importar abaixo."></textarea>
-                <div class="flex gap-2 mt-4">
-                    <button onclick="processarEntradas()" class="flex-1 neo-btn bg-dark text-white py-3 text-xs flex items-center justify-center gap-2 hover:bg-gray-800">
-                        Processar Base
-                    </button>
-                    <button onclick="document.getElementById('fileInput').click()" class="flex-1 neo-btn bg-white text-dark py-3 text-xs flex items-center justify-center gap-2" title="Importar Documento">
-                        <i class="fa-solid fa-file-import"></i> Importar Arquivo
-                    </button>
-                    <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleFileImport(event)" />
-                </div>
+            <div class="flex items-center justify-center gap-3 mt-2 mb-6">
+                <span id="stage-code" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                    CÓD: --
+                </span>
+                <p id="stage-phone" class="text-2xl font-mono text-gray-600 tracking-wider">--</p>
             </div>
 
-            <div class="neo-card p-6 bg-positivus">
-                <h2 class="text-sm font-bold text-dark uppercase mb-4">
-                    <i class="fa-solid fa-gear"></i> Regras da Operação
-                </h2>
-                <div class="space-y-4">
-                    <div class="bg-white p-3 rounded-xl border-2 border-dark">
-                        <label class="block text-[11px] font-bold text-dark uppercase mb-1">Pular chamada em:</label>
-                        <div class="flex items-center gap-2">
-                            <input type="number" id="cfg-time" value="25" class="w-16 neo-input p-1 text-center font-bold">
-                            <span class="text-xs font-bold">Segundos</span>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-white p-4 rounded-xl border-2 border-dark">
-                        <label class="flex items-center gap-3 cursor-pointer group mb-2">
-                            <div class="relative">
-                                <input type="checkbox" id="cfg-sms-ativo" class="peer sr-only" onchange="toggleSmsBox()" checked>
-                                <div class="w-10 h-6 bg-gray-200 border-2 border-dark rounded-full peer peer-checked:bg-positivus transition-colors"></div>
-                                <div class="absolute w-4 h-4 bg-dark rounded-full left-1 top-1 peer-checked:translate-x-4 transition-transform"></div>
-                            </div>
-                            <span class="text-xs font-bold text-dark">Automação de SMS</span>
-                        </label>
-                        
-                        <div id="box-sms" class="mt-3 block">
-                            <p class="text-[9px] font-bold uppercase bg-yellow-200 p-2 rounded border border-dark leading-tight mb-3">
-                                LEMBRETE: 900 ENVIOS DE SMS É O SEU LIMITE MENSAL. VERIFIQUE ANTES DE INICIAR OS DISPAROS.
-                            </p>
-                            <label class="text-[9px] font-bold uppercase text-gray-500 mb-1 block">Texto para "Não Atendeu":</label>
-                            <textarea id="cfg-sms-texto" rows="3" class="w-full neo-input p-2 text-xs text-dark resize-none" placeholder="Use :re para puxar o nome. Ex: Olá :re, tentei ligar..."></textarea>
-                        </div>
-                    </div>
-                </div>
+            <!-- CRONÔMETRO -->
+            <div id="timer-container" class="w-full max-w-sm mx-auto hidden flex-col items-center">
+              <p class="text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide">Desligando e pulando em:</p>
+              <div class="text-5xl font-light text-gray-800 mb-3 tabular-nums" id="stage-timer">00</div>
+              <div class="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                <div id="timer-bar" class="bg-vdi-blue h-full w-full timer-bar"></div>
+              </div>
             </div>
             
-            <div class="neo-card p-6 flex-1 flex flex-col max-h-[300px]">
-                <div class="flex justify-between items-center mb-4 border-b-2 border-dark pb-2">
-                    <h2 class="text-sm font-bold text-dark uppercase"><i class="fa-solid fa-list-ol"></i> Fila de Discagem</h2>
-                    <span id="stat-total" class="bg-dark px-3 py-1 rounded-full text-xs font-bold text-positivus">0</span>
-                </div>
-                <div id="queue-list" class="space-y-2 overflow-y-auto pr-2 flex-1">
-                    <p class="text-xs text-gray-500 font-bold text-center py-4">Sua fila está vazia</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="xl:col-span-6 flex flex-col gap-6">
+            <!-- BOTÃO CLIENTE ATENDEU -->
+            <button id="btn-atendeu" onclick="marcarAtendido()" class="hidden mt-6 btn-action bg-green-600 hover:bg-green-700 text-white font-bold text-lg uppercase tracking-wide px-10 py-4 rounded-xl shadow-md flex items-center justify-center gap-3 w-full max-w-sm">
+              <i class="fa-solid fa-headset text-2xl"></i> Cliente Atendeu
+            </button>
             
-            <div class="neo-card p-10 flex flex-col items-center justify-center relative min-h-[550px]" id="stage-container">
+            <!-- TABULAÇÃO (Aparece ao atender) -->
+            <div id="tela-tabulacao" class="hidden w-full max-w-lg mt-4 border-t border-gray-200 pt-6">
+                <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4 flex items-center justify-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> Em Atendimento: Registre o resultado
+                </h3>
                 
-                <div class="absolute top-6 left-0 w-full flex justify-center z-20">
-                    <span id="stage-badge" class="px-5 py-2 rounded-full bg-white border-2 border-dark text-xs font-bold text-dark shadow-[4px_4px_0px_#191A23] uppercase">
-                        Aguardando
-                    </span>
-                </div>
-
-                <div class="text-center w-full max-w-md relative z-10 mt-8">
-                    <h2 id="stage-name" class="text-4xl font-bold text-dark mb-2 truncate">---</h2>
-                    <p id="stage-code" class="text-xs font-bold text-gray-500 uppercase mb-1 bg-gray-100 inline-block px-3 py-1 rounded border border-gray-300">CÓD: ---</p>
-                    <p id="stage-phone" class="text-3xl font-bold text-dark mb-8 tracking-wider">---</p>
-
-                    <div id="timer-container" class="hidden flex-col items-center justify-center mb-8 w-full bg-white p-4 rounded-xl border-2 border-dark shadow-[4px_4px_0px_#191A23]">
-                        <p class="text-xs font-bold text-dark uppercase mb-2" id="timer-label">Chamando (Aguardando)</p>
-                        <div class="text-6xl font-bold tabular-nums text-dark mb-4" id="stage-timer">00</div>
-                        <div class="w-full bg-gray-100 rounded-full h-3 overflow-hidden border-2 border-dark">
-                            <div id="timer-bar" class="bg-positivus h-full w-full progress-bar-inner"></div>
-                        </div>
-                    </div>
-
-                    <div id="main-controls" class="w-full mt-4">
-                        <button id="btn-iniciar" onclick="iniciarCampanha()" class="neo-btn w-full bg-positivus text-dark font-bold text-xl py-5 flex items-center justify-center gap-3 disabled:opacity-50 uppercase">
-                            <i class="fa-solid fa-play"></i> Iniciar Atendimento
-                        </button>
-                        
-                        <div id="active-controls" class="hidden grid grid-cols-2 gap-4 mt-4">
-                            <button id="btn-pausar" onclick="pausarCampanha()" class="neo-btn bg-white text-dark py-4 text-sm flex flex-col items-center justify-center gap-2 hover:bg-gray-50">
-                                <i class="fa-solid fa-pause text-xl"></i> Pausar Operação
-                            </button>
-                            <button id="btn-pular" onclick="desligarEPular()" class="neo-btn bg-red-400 text-dark py-4 text-sm flex flex-col items-center justify-center gap-2 hover:bg-red-500">
-                                <i class="fa-solid fa-forward-step text-xl"></i> Desligar e Pular
-                            </button>
-                            <button id="btn-callback-imediato" onclick="refazerLigacao()" class="col-span-2 neo-btn bg-blue-300 text-dark py-3 text-sm flex items-center justify-center gap-2 hover:bg-blue-400">
-                                <i class="fa-solid fa-phone-flip"></i> Callback (Refazer Ligação Agora)
-                            </button>
-                        </div>
-                    </div>
-
-                    <button id="btn-atendeu" onclick="marcarAtendido()" class="hidden neo-btn mt-6 w-full bg-dark text-positivus font-bold text-xl py-6 flex-col items-center justify-center gap-2 uppercase border-positivus border-4 hover:bg-gray-800 transition-none transform-none">
-                        <span class="flex items-center gap-3"><i class="fa-solid fa-headset text-2xl"></i> Cliente Atendeu</span>
-                        <span class="text-xs text-white">O Cronômetro será pausado</span>
-                    </button>
-                </div>
-            </div>
-
-            <div id="tela-tabulacao" class="hidden neo-card p-6 bg-gray-50 transition-all">
-                <div class="flex justify-between items-center mb-6 border-b-2 border-dark pb-3">
-                    <h3 class="text-sm font-bold text-dark uppercase flex items-center gap-2">
-                        <span class="bg-positivus p-1 rounded border border-dark"><i class="fa-solid fa-comment-dots"></i></span> Em Atendimento
-                    </h3>
-                    <button class="neo-btn bg-red-500 text-white px-4 py-2 text-xs flex items-center gap-2 hover:bg-red-600" onclick="desligarLigacaoFisica()">
-                        <i class="fa-solid fa-phone-slash"></i> Forçar Desligamento
-                    </button>
-                </div>
-                
-                <div id="grid-tabulacao" class="grid grid-cols-2 gap-4">
-                    <button onclick="tabulaChamada('Venda Realizada')" class="neo-btn bg-positivus text-dark p-5 flex flex-col items-center gap-3 hover:-translate-y-2">
-                        <i class="fa-solid fa-handshake text-3xl"></i>
-                        <span class="text-sm uppercase text-center">Venda<br>Realizada</span>
+                <div id="grid-tabulacao" class="grid grid-cols-2 gap-3">
+                    <button onclick="tabulaChamada('Venda Realizada')" class="btn-action bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 p-4 flex flex-col items-center gap-2 rounded-xl">
+                        <i class="fa-solid fa-bag-shopping text-xl text-emerald-600"></i>
+                        <span class="text-[11px] font-bold uppercase">Venda Realizada</span>
                     </button>
                     
-                    <button onclick="abrirModalCalendario()" class="neo-btn bg-yellow-300 text-dark p-5 flex flex-col items-center gap-3 hover:-translate-y-2">
-                        <i class="fa-solid fa-calendar-clock text-3xl"></i>
-                        <span class="text-sm uppercase text-center">Pediu Retorno<br>(Agendar)</span>
+                    <button onclick="abrirModalCalendario()" class="btn-action bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-800 p-4 flex flex-col items-center gap-2 rounded-xl">
+                        <i class="fa-solid fa-calendar-check text-xl text-blue-600"></i>
+                        <span class="text-[11px] font-bold uppercase">Agendar Retorno</span>
                     </button>
                     
-                    <button onclick="tabulaChamada('Desconhece Titular')" class="neo-btn bg-white text-dark p-5 flex flex-col items-center gap-3 hover:-translate-y-2">
-                        <i class="fa-solid fa-user-xmark text-3xl"></i>
-                        <span class="text-sm uppercase text-center">Desconhece<br>Titular</span>
+                    <button onclick="tabulaChamada('Desconhece Titular')" class="btn-action bg-gray-100 hover:bg-gray-200 border border-gray-300 text-gray-700 p-3 flex flex-col items-center gap-2 rounded-xl">
+                        <i class="fa-solid fa-user-slash text-gray-500"></i>
+                        <span class="text-[10px] font-bold uppercase">Desconhece Titular</span>
                     </button>
                     
-                    <button onclick="tabulaChamada('Queda de Ligação')" class="neo-btn bg-red-100 text-dark p-5 flex flex-col items-center gap-3 hover:-translate-y-2 border-red-500 border-2">
-                        <i class="fa-solid fa-tower-broadcast text-3xl text-red-600"></i>
-                        <span class="text-sm uppercase text-center">Queda de Ligação<br>(Repete Agora)</span>
+                    <button onclick="tabulaChamada('Queda de Ligação')" class="btn-action bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 p-3 flex flex-col items-center gap-2 rounded-xl">
+                        <i class="fa-solid fa-phone-slash text-rose-500"></i>
+                        <span class="text-[10px] font-bold uppercase text-center">Queda de Ligação<br>(Ligar Agora)</span>
                     </button>
                 </div>
 
-                <div id="aguardo-desligamento" class="hidden flex flex-col items-center py-6 bg-white border-2 border-dark rounded-xl shadow-inner">
-                    <div class="w-16 h-16 bg-positivus border-2 border-dark rounded-full flex items-center justify-center mb-4 animate-pulse">
-                        <i class="fa-solid fa-phone-volume text-dark text-2xl"></i>
-                    </div>
-                    <p class="text-sm font-bold text-dark uppercase text-center mb-1">A chamada continua ativa</p>
-                    <p class="text-xs font-bold text-gray-500 text-center mb-6 px-4">O SMS automático foi despachado! Continue conversando com o cliente e clique no botão abaixo apenas quando encerrar o atendimento para avançar na fila.</p>
+                <!-- SUCESSO (MANTENDO A LINHA VIVA) -->
+                <div id="aguardo-desligamento" class="hidden flex-col items-center py-6 bg-green-50 border border-green-200 rounded-xl">
+                    <i class="fa-solid fa-circle-check text-3xl text-green-500 mb-2"></i>
+                    <p class="text-sm font-bold text-gray-800 mb-1">Registro Salvo! SMS despachado.</p>
+                    <p class="text-xs text-gray-600 text-center mb-5 max-w-sm">Você ainda está na linha com o cliente. Fique à vontade para continuar a conversa.</p>
                     
-                    <button onclick="finalizarLigacaoPosTabulacao()" class="neo-btn bg-red-500 text-white font-bold text-lg py-4 px-8 flex items-center justify-center gap-3 hover:bg-red-600 uppercase w-3/4">
+                    <button onclick="finalizarLigacaoPosTabulacao()" class="btn-action bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg shadow-sm text-sm">
                         <i class="fa-solid fa-phone-slash"></i> Encerrar Chamada e Avançar
                     </button>
                 </div>
             </div>
+          </div>
+
+          <!-- CONTROLES MESTRES -->
+          <div class="flex items-center gap-3 mt-4">
+            <button id="btn-iniciar" onclick="iniciarCampanha()" disabled class="btn-action flex-1 bg-vdi-blue text-white font-bold text-sm uppercase tracking-wider py-4 rounded-xl shadow-sm flex items-center justify-center gap-2 opacity-50 cursor-not-allowed">
+              <i class="fa-solid fa-play"></i> Iniciar Atendimento
+            </button>
+            <div id="active-controls" class="hidden flex-1 grid grid-cols-2 gap-3">
+                <button id="btn-pular" onclick="desligarEPular()" class="btn-action bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 py-3 rounded-xl text-xs font-bold uppercase shadow-sm">
+                    <i class="fa-solid fa-forward-step"></i> Desligar/Pular
+                </button>
+                <button id="btn-callback" onclick="refazerLigacao()" class="btn-action bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 py-3 rounded-xl text-xs font-bold uppercase shadow-sm">
+                    <i class="fa-solid fa-rotate-left"></i> Callback Agora
+                </button>
+            </div>
+          </div>
         </div>
 
-        <div class="xl:col-span-3 flex flex-col gap-6">
-            <div class="neo-card p-6 flex-1 flex flex-col h-full max-h-[85vh]">
-                <div class="flex justify-between items-center mb-6 border-b-2 border-dark pb-4">
-                    <h2 class="text-sm font-bold text-dark uppercase">
-                        <i class="fa-solid fa-chart-pie text-positivus drop-shadow-[1px_1px_0_#000]"></i> Relatório
-                    </h2>
-                    <button onclick="exportarRelatorio()" class="neo-btn bg-white px-3 py-1 text-xs" title="Baixar Relatório">
-                        <i class="fa-solid fa-download"></i> Baixar
-                    </button>
-                </div>
-                
-                <div class="grid grid-cols-2 gap-3 mb-6">
-                    <div class="bg-gray-100 p-3 rounded-xl border-2 border-dark text-center shadow-[2px_2px_0px_#191A23]">
-                        <p class="text-[10px] text-dark font-bold uppercase mb-1">Processados</p>
-                        <p id="rep-processados" class="text-2xl font-bold text-dark">0</p>
-                    </div>
-                    <div class="bg-positivus p-3 rounded-xl border-2 border-dark text-center shadow-[2px_2px_0px_#191A23]">
-                        <p class="text-[10px] text-dark font-bold uppercase mb-1">Vendas</p>
-                        <p id="rep-vendas" class="text-2xl font-bold text-dark">0</p>
-                    </div>
-                    <div class="bg-yellow-300 p-3 rounded-xl border-2 border-dark text-center shadow-[2px_2px_0px_#191A23]">
-                        <p class="text-[10px] text-dark font-bold uppercase mb-1">Agendados</p>
-                        <p id="rep-retornos" class="text-2xl font-bold text-dark">0</p>
-                    </div>
-                    <div class="bg-white p-3 rounded-xl border-2 border-dark text-center shadow-[2px_2px_0px_#191A23]">
-                        <p class="text-[10px] text-dark font-bold uppercase mb-1">Pendentes</p>
-                        <p id="rep-pendentes" class="text-2xl font-bold text-dark">0</p>
-                    </div>
-                </div>
-
-                <p class="text-[11px] font-bold text-dark uppercase mb-3 border-b border-gray-300 pb-1">Histórico Recente</p>
-                <div id="history-list" class="flex-1 overflow-y-auto space-y-2 pr-2">
-                    <p class="text-xs text-gray-500 font-bold text-center py-4">Nenhum atendimento.</p>
-                </div>
-            </div>
+        <!-- FILA DE ESPERA -->
+        <div class="vdi-panel p-6 flex flex-col h-[650px]">
+          <h3 class="font-bold text-sm text-gray-800 border-b border-gray-100 pb-4 mb-4 flex justify-between items-center">
+            <span><i class="fa-solid fa-list-ol text-gray-400 mr-2"></i> Próximos na Fila</span>
+          </h3>
+          <div id="queue-list" class="flex-1 overflow-y-auto space-y-2 pr-2">
+            <div class="text-center text-gray-400 py-10 text-xs">Sua fila está vazia.</div>
+          </div>
         </div>
-    </main>
-
-    <footer class="bg-white border-t-2 border-dark py-4 mt-auto">
-        <div class="max-w-[1800px] mx-auto px-6 text-center text-xs font-bold text-dark uppercase">
-            Disparador idealizado por Maikon Nattan
-        </div>
-    </footer>
-
-    <!-- MODAL CALENDÁRIO COM MINUTOS -->
-    <div id="modal-calendario" class="fixed inset-0 bg-dark/80 z-[100] hidden items-center justify-center p-4">
-        <div class="neo-card w-full max-w-sm flex flex-col overflow-hidden bg-white">
-            <div class="p-5 border-b-2 border-dark bg-yellow-300 flex justify-between items-center">
-                <h3 class="font-bold text-dark uppercase"><i class="fa-solid fa-calendar-day"></i> Agendar Retorno</h3>
-                <button onclick="fecharModalCalendario()" class="text-dark hover:scale-110 transition-transform"><i class="fa-solid fa-xmark text-xl"></i></button>
-            </div>
-            
-            <div class="p-6 flex flex-col gap-5">
-                <div>
-                    <label class="block text-xs font-bold text-dark uppercase mb-2">Selecione a Data (Útil)</label>
-                    <input type="date" id="cal-data" class="w-full neo-input px-4 py-3 text-dark font-bold" onchange="validarDataCalendario(this)">
-                    <p id="cal-erro" class="text-xs text-red-500 font-bold mt-2 hidden bg-red-100 p-2 rounded border border-red-500"></p>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-dark uppercase mb-2">Horário (09:00 às 18:00)</label>
-                    <input type="time" id="cal-hora" class="w-full neo-input px-4 py-3 text-dark font-bold" value="09:00">
-                </div>
-            </div>
-
-            <div class="p-5 border-t-2 border-dark bg-gray-50 flex gap-3">
-                <button onclick="fecharModalCalendario()" class="flex-1 neo-btn bg-white py-3 text-xs">Cancelar</button>
-                <button onclick="confirmarAgendamento()" class="flex-1 neo-btn bg-yellow-300 py-3 text-xs">Agendar</button>
-            </div>
-        </div>
+      </div>
     </div>
 
-    <!-- MODAL PREVIEW DE IMPORTAÇÃO -->
-    <div id="modal-preview" class="fixed inset-0 bg-dark/80 z-[100] hidden items-center justify-center p-4">
-        <div class="neo-card w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden bg-white">
-            <div class="p-5 border-b-2 border-dark bg-positivus flex justify-between items-center">
-                <h2 class="text-sm font-bold text-dark uppercase"><i class="fa-solid fa-list-check"></i> Inspeção de Base</h2>
-                <button onclick="fecharModalPreview()" class="text-dark hover:scale-110 transition-transform"><i class="fa-solid fa-xmark text-xl"></i></button>
-            </div>
+    <!-- ABA COLAR DADOS -->
+    <div id="tab-contacts" class="tab-content hidden flex-col gap-6">
+      <div class="vdi-panel p-8">
+        <h2 class="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2"><i class="fa-solid fa-file-import text-vdi-blue"></i> Colar Dados</h2>
+        
+        <div class="relative mb-4">
+            <textarea id="paste-area" rows="8" class="w-full border border-gray-300 rounded-lg p-4 text-sm resize-none bg-gray-50 focus:border-vdi-blue focus:ring-1 focus:ring-vdi-blue outline-none" placeholder="Copie o Código, o Nome e o Telefone da VDI e cole aqui dentro.&#10;Caso prefira, importe um documento clicando no botão Importar Arquivo abaixo."></textarea>
+        </div>
+        <div class="flex gap-3 mb-8">
+            <button onclick="processarEntradas()" class="btn-action bg-vdi-blue text-white hover:bg-blue-700 py-3 px-8 rounded-lg font-semibold text-sm shadow-sm">Processar Base Colada</button>
+            <button onclick="document.getElementById('fileInput').click()" class="btn-action bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 py-3 px-8 rounded-lg font-semibold text-sm shadow-sm">Importar Arquivo</button>
+            <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleFileImport(event)" />
+        </div>
+
+        <div class="border-t border-gray-200 pt-6">
+            <label class="flex items-center gap-3 cursor-pointer group mb-4 w-max">
+                <div class="relative">
+                    <input type="checkbox" id="cfg-sms-ativo" class="peer sr-only" onchange="toggleSmsBox()">
+                    <div class="w-10 h-6 bg-gray-300 rounded-full peer peer-checked:bg-vdi-blue transition-colors"></div>
+                    <div class="absolute w-4 h-4 bg-white rounded-full left-1 top-1 peer-checked:translate-x-4 transition-transform shadow-sm"></div>
+                </div>
+                <div>
+                    <span class="text-sm font-bold text-gray-800 block">Envio de SMS</span>
+                    <span class="text-[11px] text-gray-500">Quando um revendedor não atender, será enviado um SMS automatico para ele caso esse botão esteja ativado.</span>
+                </div>
+            </label>
             
-            <div class="p-5 grid grid-cols-3 gap-4 border-b-2 border-dark bg-gray-50">
-                <div class="bg-white p-3 rounded-xl text-center border-2 border-dark shadow-[2px_2px_0_#000]"><span class="block text-[10px] font-bold text-dark uppercase mb-1">Localizados</span><span id="prev-total" class="text-xl font-bold">0</span></div>
-                <div class="bg-yellow-300 p-3 rounded-xl text-center border-2 border-dark shadow-[2px_2px_0_#000]"><span class="block text-[10px] font-bold text-dark uppercase mb-1">Corrigidos (Faltava 9)</span><span id="prev-corrigidos" class="text-xl font-bold">0</span></div>
-                <div class="bg-red-400 p-3 rounded-xl text-center border-2 border-dark shadow-[2px_2px_0_#000]"><span class="block text-[10px] font-bold text-dark uppercase mb-1">Inválidos / Descartados</span><span id="prev-invalidos" class="text-xl font-bold">0</span></div>
-            </div>
-
-            <div class="flex-1 overflow-y-auto p-4 bg-white">
-                <table class="w-full text-left text-sm">
-                    <thead class="text-[10px] uppercase text-dark font-bold sticky top-0 bg-white shadow-sm z-10">
-                        <tr><th class="py-3 px-4 border-b-2 border-dark">Nome</th><th class="py-3 px-4 border-b-2 border-dark">Código</th><th class="py-3 px-4 border-b-2 border-dark">Telefone</th><th class="py-3 px-4 border-b-2 border-dark">Status</th></tr>
-                    </thead>
-                    <tbody id="preview-table-body" class="divide-y-2 divide-gray-100 font-medium text-xs"></tbody>
-                </table>
-            </div>
-
-            <div class="p-5 border-t-2 border-dark bg-gray-50 flex justify-end gap-4">
-                <button onclick="fecharModalPreview()" class="neo-btn bg-white px-6 py-3 text-xs">Cancelar</button>
-                <button onclick="confirmarImportacao()" class="neo-btn bg-positivus px-8 py-3 text-xs">APROVAR E INICIAR FILA</button>
+            <div id="box-sms" style="display: none;" class="bg-gray-50 p-5 rounded-lg border border-gray-200">
+                <div class="bg-amber-50 border border-amber-200 p-3 rounded-md flex gap-2 items-start mb-4">
+                    <i class="fa-solid fa-circle-exclamation text-amber-500 mt-0.5"></i>
+                    <p class="text-[11px] font-bold text-amber-800 leading-tight uppercase">
+                        Lembrete: 900 envios de SMS é o seu limite mensal. Verifique antes de iniciar os disparos.
+                    </p>
+                </div>
+                <label class="text-xs font-semibold text-gray-600 mb-2 block">Mensagem para quem NÃO atender (Timeout):</label>
+                <textarea id="cfg-sms-texto" rows="3" class="w-full border border-gray-300 rounded-md p-3 text-sm resize-none focus:border-vdi-blue outline-none" placeholder="Use :re para puxar o nome da pessoa. Ex: Olá :re, tentei te ligar..."></textarea>
             </div>
         </div>
+      </div>
     </div>
 
-    <!-- TOAST CONTAINER -->
-    <div id="toast-container" class="fixed bottom-6 right-6 z-[200] flex flex-col gap-3 pointer-events-none"></div>
+    <!-- ABA RELATÓRIO -->
+    <div id="tab-history" class="tab-content hidden flex-col gap-6">
+      <div class="vdi-panel p-8 flex flex-col h-[700px]">
+        <div class="flex justify-between items-center border-b border-gray-200 pb-5 mb-5">
+          <h3 class="text-lg font-bold text-gray-800"><i class="fa-solid fa-chart-pie text-vdi-blue mr-2"></i> Relatório de Ligações</h3>
+          <button onclick="exportarRelatorioCSV()" class="btn-action bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 text-xs font-bold px-5 py-2.5 rounded-lg shadow-sm flex items-center gap-2">
+            <i class="fa-solid fa-download"></i> Baixar
+          </button>
+        </div>
+        <div class="flex-1 overflow-y-auto border border-gray-200 rounded-lg">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-gray-50 text-[10px] uppercase text-gray-500 font-bold sticky top-0 border-b border-gray-200">
+              <tr>
+                <th class="py-3 px-4">Código</th>
+                <th class="py-3 px-4">Nome</th>
+                <th class="py-3 px-4">Telefone</th>
+                <th class="py-3 px-4">Ocorrido</th>
+                <th class="py-3 px-4">Data / Hora</th>
+              </tr>
+            </thead>
+            <tbody id="history-list" class="divide-y divide-gray-100 font-medium text-xs text-gray-700">
+                <tr><td colspan="5" class="text-center py-8 text-gray-400">Nenhum registro encontrado.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
 
-    <script>
-        let contatosBase = [];
-        let historico = [];
-        let currentIndex = 0;
+  <!-- RODAPÉ -->
+  <footer class="bg-white border-t border-gray-200 py-6 mt-auto">
+    <div class="max-w-7xl mx-auto px-6 flex justify-between items-center text-xs text-gray-500 font-medium">
+      <!-- Vazio conforme solicitado -->
+    </div>
+  </footer>
+
+  <!-- MODAL CALENDÁRIO -->
+  <div id="modal-calendario" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
+    <div class="bg-white w-full max-w-sm flex flex-col rounded-xl shadow-xl border border-gray-200">
+        <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50 rounded-t-xl">
+            <h3 class="font-bold text-gray-800 text-sm"><i class="fa-solid fa-calendar-day text-vdi-blue mr-2"></i> Agendar Retorno</h3>
+            <button onclick="fecharModalCalendario()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+        </div>
         
-        let estadoOperacao = 'PARADO';
-        let callState = 'IDLE';
+        <div class="p-5 flex flex-col gap-5">
+            <div>
+                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Data (Dia Útil)</label>
+                <input type="date" id="cal-data" class="w-full border border-gray-300 rounded-md p-2 text-sm outline-none focus:border-vdi-blue" onchange="validarDataCalendario(this)">
+                <p id="cal-erro" class="text-[10px] text-red-600 font-medium mt-1 hidden"></p>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Horário Exato (09:00 às 18:00)</label>
+                <input type="time" id="cal-hora" class="w-full border border-gray-300 rounded-md p-2 text-sm outline-none focus:border-vdi-blue" value="09:00" required>
+            </div>
+        </div>
+
+        <div class="p-4 border-t border-gray-100 bg-gray-50 rounded-b-xl flex gap-3">
+            <button onclick="fecharModalCalendario()" class="flex-1 btn-action bg-white border border-gray-300 text-gray-600 hover:bg-gray-100 py-2.5 rounded-lg text-xs font-bold">Cancelar</button>
+            <button onclick="confirmarAgendamento()" class="flex-1 btn-action bg-vdi-blue text-white hover:bg-blue-700 py-2.5 rounded-lg text-xs font-bold">Confirmar</button>
+        </div>
+    </div>
+  </div>
+
+  <div id="toast-container" class="fixed bottom-6 right-6 z-[200] flex flex-col gap-2 pointer-events-none"></div>
+
+  <script>
+    // ==========================================
+    // ESTADO GLOBAL DO SISTEMA (SEM CACHE)
+    // ==========================================
+    let contatosBase = [];
+    let historico = [];
+    let currentIndex = 0;
+    
+    let estadoOperacao = 'PARADO';
+    let callState = 'IDLE';
+    
+    let timeLeft = 0;
+    let timerInterval = null;
+    let wakeLock = null;
+
+    // ADB Nativo
+    let usbDevice = null;
+    let epIn = null;
+    let epOut = null;
+    let isAdbReady = false;
+    let localIdCounter = 1;
+
+    const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+    const feriadosNacionais = ['01-01', '21-04', '01-05', '07-09', '12-10', '02-11', '15-11', '25-12'];
+
+    window.onload = () => {
+        contatosBase = []; currentIndex = 0; historico = [];
+        atualizarInterfaceBase();
+        requestWakeLock();
+    };
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('bg-vdi-blue', 'text-white', 'border-vdi-blue');
+        btn.classList.add('bg-white', 'text-gray-600', 'border-gray-300');
+      });
+      document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+      document.getElementById(`tab-${tabId}`).classList.add('flex');
+      const activeBtn = document.getElementById(`tabBtn-${tabId}`);
+      activeBtn.classList.remove('bg-white', 'text-gray-600', 'border-gray-300');
+      activeBtn.classList.add('bg-vdi-blue', 'text-white', 'border-vdi-blue');
+    }
+
+    function toggleSmsBox() {
+        document.getElementById('box-sms').style.display = document.getElementById('cfg-sms-ativo').checked ? 'block' : 'none';
+    }
+
+    // WakeLock para manter PC Ligado
+    document.addEventListener('visibilitychange', async () => { if (document.visibilityState === 'visible') requestWakeLock(); });
+    async function requestWakeLock() {
+        try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } 
+        catch (err) { console.log("WakeLock contornado suavemente."); }
+    }
+
+    function showToast(msg, type = 'info') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        let bgClass = type === 'error' ? 'bg-red-50 border-red-200 text-red-800' : (type === 'success' ? 'bg-green-50 border-green-200 text-green-800' : (type === 'warning' ? 'bg-amber-50 border-amber-200 text-amber-800' : 'bg-white border-gray-200 text-gray-800'));
+        let icon = type === 'error' ? 'fa-circle-xmark text-red-500' : (type === 'success' ? 'fa-circle-check text-green-500' : (type === 'warning' ? 'fa-triangle-exclamation text-amber-500' : 'fa-info-circle text-blue-500'));
         
-        let timeLeft = 0;
-        let timerInterval = null;
-        let wakeLock = null;
+        toast.className = `p-4 border rounded-lg shadow-lg flex items-center gap-3 transform transition-all duration-300 translate-y-4 opacity-0 pointer-events-auto ${bgClass}`;
+        toast.innerHTML = `<i class="fa-solid ${icon} text-lg"></i><span class="text-xs font-semibold">${msg}</span>`;
+        container.appendChild(toast);
+        requestAnimationFrame(() => toast.classList.remove('translate-y-4', 'opacity-0'));
+        setTimeout(() => { toast.classList.add('translate-y-4', 'opacity-0'); setTimeout(() => toast.remove(), 300); }, 4500);
+    }
 
-        let usbDevice = null;
-        let epIn = null;
-        let epOut = null;
-        let isAdbReady = false;
-        let localIdCounter = 1;
-        let tempContatos = [];
+    // ==========================================
+    // CÉREBRO DA VDI (Extração Avançada)
+    // ==========================================
+    function processarEntradas() {
+        const rawText = document.getElementById('paste-area').value;
+        if(!rawText.trim()) return showToast("Cole dados antes de processar.", "warning");
+        analisarEPrevisualizar(rawText);
+    }
 
-        const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
-        const feriadosNacionais = ['01-01', '21-04', '01-05', '07-09', '12-10', '02-11', '15-11', '25-12'];
-
-        window.onload = () => {
-            carregarDadosLocais(); 
-            atualizarInterfaceBase();
-            requestWakeLock();
+    function handleFileImport(e) {
+        const file = e.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+            try {
+                const data = new Uint8Array(evt.target.result);
+                const workbook = XLSX.read(data, {type: 'array'});
+                const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], {header: 1});
+                const rawLines = json.map(row => row.join(' ')).join('\n');
+                analisarEPrevisualizar(rawLines);
+            } catch(e) { showToast("Erro ao ler arquivo.", "error"); }
         };
+        reader.readAsArrayBuffer(file);
+        e.target.value = '';
+    }
 
-        document.addEventListener('visibilitychange', async () => {
-            if (document.visibilityState === 'visible') requestWakeLock();
+    function analisarEPrevisualizar(rawText) {
+        let validos = 0;
+        const linhas = rawText.split('\n');
+
+        for (let linha of linhas) {
+            let cleanText = linha.trim().replace(/(?:\b|\+)(?:55|0055)\s?/g, '');
+            if (!cleanText) continue;
+            
+            let tokens = cleanText.split(/\s+/);
+            if (tokens.length === 0) continue;
+
+            let phone = "";
+            let tokensToRemove = 0;
+            let tempDigits = "";
+            
+            // 1. Busca Telefone de trás pra frente
+            for (let i = tokens.length - 1; i >= 0; i--) {
+                let tokenDigits = tokens[i].replace(/\D/g, '');
+                tempDigits = tokenDigits + tempDigits; 
+                
+                if (tempDigits.length >= 10 && tempDigits.length <= 11) {
+                    phone = tempDigits; tokensToRemove = tokens.length - i; break;
+                }
+                if (tempDigits.length > 11) break; 
+            }
+
+            // Fallback se for apenas 1 bloco colado
+            if (!phone && tokens.length > 0) {
+                let lastTokenDigits = tokens[tokens.length - 1].replace(/\D/g, '');
+                if(lastTokenDigits.length >= 10 && lastTokenDigits.length <= 11) {
+                    phone = lastTokenDigits; tokensToRemove = 1;
+                }
+            }
+            if (!phone) continue; 
+
+            // 2. Extrai Código e Nome do resto
+            let remainingTokens = tokens.slice(0, tokens.length - tokensToRemove);
+            let code = "S/C"; 
+            let name = "";
+
+            if (remainingTokens.length > 0) {
+                let firstTokenHasNumbers = /\d/.test(remainingTokens[0]);
+                if (firstTokenHasNumbers) {
+                    code = remainingTokens[0].replace(/\D/g, '');
+                    remainingTokens.shift(); 
+                }
+                if (remainingTokens.length > 0) {
+                    name = remainingTokens.join(' ').replace(/[^\w\sÀ-ÿ]/g, '').trim();
+                }
+            }
+            if(!name) name = "Contato Não Identificado";
+
+            // 3. Validação do Nono Dígito
+            if (phone.length === 10) phone = phone.substring(0, 2) + '9' + phone.substring(2);
+            if (phone.length === 11) {
+                contatosBase.push({ name, code, phone });
+                validos++;
+            }
+        }
+
+        if(validos === 0) return showToast("Nenhum telefone válido encontrado.", "error");
+        
+        atualizarInterfaceBase();
+        document.getElementById('paste-area').value = '';
+        switchTab('dashboard');
+        showToast(`${validos} contatos prontos para discagem!`, 'success');
+    }
+
+    function getInitials(name) {
+        let parts = name.trim().split(' ').filter(n => n.length > 0);
+        if (parts.length === 0) return "--";
+        if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+
+    function atualizarInterfaceBase() {
+        const pendentes = contatosBase.length - currentIndex;
+        
+        document.getElementById('stat-total').innerText = contatosBase.length;
+        document.getElementById('badgeContacts').innerText = contatosBase.length;
+        document.getElementById('stat-pending').innerText = Math.max(0, pendentes);
+        document.getElementById('stat-sales').innerText = historico.filter(h => h.resultado === 'Venda Realizada').length;
+        document.getElementById('stat-returns').innerText = historico.filter(h => h.resultado.includes('Retorno')).length;
+
+        const filaDiv = document.getElementById('queue-list');
+        if(pendentes <= 0) {
+            filaDiv.innerHTML = `<div class="text-center text-gray-400 py-10 text-xs">Sua fila está vazia.</div>`;
+        } else {
+            const proximos = contatosBase.slice(currentIndex, currentIndex + 50);
+            filaDiv.innerHTML = proximos.map((c, idx) => {
+                let initials = getInitials(c.name);
+                let isCurrent = (idx === 0 && estadoOperacao !== 'PARADO');
+                let borderClass = isCurrent ? 'border-vdi-blue bg-blue-50' : 'border-gray-200 bg-white';
+                
+                return `
+                <div class="p-3 rounded-lg border ${borderClass} flex items-center gap-3 transition-colors shadow-sm">
+                    <div class="w-9 h-9 rounded-full bg-gray-200 text-gray-600 font-bold text-xs flex items-center justify-center flex-shrink-0">
+                        ${initials}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-xs font-semibold text-gray-800 truncate leading-tight mb-1">${c.name}</p>
+                        <span class="inline-block px-1.5 py-0.5 rounded text-[9px] font-mono text-blue-700 border border-blue-200 bg-blue-50">${c.code}</span>
+                    </div>
+                    ${isCurrent ? '<i class="fa-solid fa-phone-volume text-vdi-blue animate-pulse text-sm"></i>' : ''}
+                </div>`;
+            }).join('');
+        }
+        
+        const histDiv = document.getElementById('history-list');
+        if (historico.length > 0) {
+            histDiv.innerHTML = [...historico].reverse().slice(0, 100).map(h => {
+                let txt = h.resultado === 'Venda Realizada' ? 'text-green-600' : (h.resultado.includes('Retorno') ? 'text-blue-600' : 'text-gray-600');
+                let pts = h.data.split(' ');
+                return `<tr><td class="py-3 px-4 font-mono text-gray-500">${h.codigo}</td><td class="py-3 px-4 font-semibold text-gray-700">${h.nome}</td><td class="py-3 px-4 font-mono">${h.telefone}</td><td class="py-3 px-4 font-bold ${txt}">${h.resultado}</td><td class="py-3 px-4 text-gray-400">${pts[0]}<br>${pts[1]}</td></tr>`;
+            }).join('');
+        }
+    }
+
+    // ==========================================
+    // MÁQUINA DE ESTADOS
+    // ==========================================
+    async function iniciarCampanha() {
+        if (!isAdbReady) return showToast("Lembrou de iniciar no botão Conectar no canto superior direito?", "warning");
+        if (currentIndex >= contatosBase.length) return showToast("A fila acabou. Importe mais contatos.", "warning");
+
+        estadoOperacao = 'RODANDO';
+        
+        const btnInic = document.getElementById('btn-iniciar');
+        btnInic.classList.remove('bg-vdi-blue', 'hover:bg-blue-700');
+        btnInic.classList.add('bg-amber-500', 'hover:bg-amber-600');
+        btnInic.innerHTML = `<i class="fa-solid fa-pause"></i> Pausar Atendimento`;
+        btnInic.onclick = pausarCampanha;
+        
+        document.getElementById('active-controls').classList.remove('hidden');
+        
+        processarChamada();
+    }
+
+    function pausarCampanha(forcaStatus = false) {
+        estadoOperacao = 'PAUSADO';
+        
+        const btnInic = document.getElementById('btn-iniciar');
+        btnInic.classList.remove('bg-amber-500', 'hover:bg-amber-600');
+        btnInic.classList.add('bg-vdi-blue', 'hover:bg-blue-700');
+        btnInic.innerHTML = `<i class="fa-solid fa-play"></i> Retomar Atendimento`;
+        btnInic.onclick = retomarCampanha;
+        
+        document.getElementById('active-controls').classList.add('hidden');
+        if(!forcaStatus) showToast("Operação em Pausa.", "info");
+    }
+
+    function retomarCampanha() {
+        if (!isAdbReady) return showToast("O cabo foi desconectado. Conecte primeiro.", "warning");
+        iniciarCampanha();
+        if (callState === 'IDLE') processarChamada();
+    }
+
+    async function refazerLigacao() {
+        if (callState !== 'IDLE') await desligarLigacaoFisica();
+        processarChamada(); 
+    }
+
+    async function processarChamada() {
+        if (estadoOperacao !== 'RODANDO' || currentIndex >= contatosBase.length) {
+            if(currentIndex >= contatosBase.length) finalizaMesaBaseVazia();
+            return;
+        }
+
+        let contato = contatosBase[currentIndex];
+        callState = 'CALLING';
+        atualizarInterfaceBase();
+
+        document.getElementById('stage-name').innerText = contato.name;
+        document.getElementById('stage-code').innerText = `CÓD: ${contato.code}`;
+        document.getElementById('stage-phone').innerText = contato.phone.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
+        
+        document.getElementById('timer-container').classList.remove('hidden');
+        document.getElementById('timer-container').classList.add('flex');
+        document.getElementById('btn-atendeu').classList.remove('hidden');
+        document.getElementById('btn-atendeu').classList.add('flex');
+        document.getElementById('tela-tabulacao').classList.add('hidden');
+        
+        await runAdbShell("input keyevent 224"); 
+        const res = await runAdbShell(`am start -a android.intent.action.CALL -d tel:${contato.phone}`);
+        if (!res) return lidarComQuedaUSB();
+
+        const maxTime = parseInt(document.getElementById('cfg-time').value) || 25;
+        timeLeft = maxTime;
+        const timerEl = document.getElementById('stage-timer');
+        const barEl = document.getElementById('timer-bar');
+        
+        timerEl.innerText = timeLeft;
+        barEl.style.width = '100%';
+
+        clearInterval(timerInterval);
+        timerInterval = setInterval(async () => {
+            if (callState !== 'CALLING') return;
+            timeLeft--;
+            timerEl.innerText = timeLeft;
+            barEl.style.width = `${(timeLeft / maxTime) * 100}%`;
+
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                await desligarLigacaoFisica();
+                // OCORREU TIMEOUT: É o único momento que dispara o SMS genérico se o botão estiver ativado
+                await registrarEAvancar('Não Atendeu', false, false, false, true); 
+            }
+        }, 1000);
+    }
+
+    function marcarAtendido() {
+        if (callState !== 'CALLING') return;
+        clearInterval(timerInterval);
+        callState = 'TALKING';
+        
+        document.getElementById('timer-container').classList.add('hidden');
+        document.getElementById('timer-container').classList.remove('flex');
+        document.getElementById('btn-atendeu').classList.add('hidden');
+        document.getElementById('btn-atendeu').classList.remove('flex');
+        document.getElementById('tela-tabulacao').classList.remove('hidden');
+    }
+
+    async function desligarLigacaoFisica() {
+        await runAdbShell("input keyevent 6"); 
+        await sleep(600);
+    }
+
+    async function desligarEPular() {
+        if (callState === 'IDLE') return;
+        clearInterval(timerInterval);
+        await desligarLigacaoFisica();
+        // PULO MANUAL: False para timeout, não dispara SMS.
+        await registrarEAvancar('Pulo Manual', true, false, false, false);
+    }
+
+    // ==========================================
+    // TABULAÇÃO E AGENDAMENTO
+    // ==========================================
+    async function tabulaChamada(resultado) {
+        let manterLigacao = (resultado === 'Venda Realizada' || resultado.startsWith('Retorno Agendado'));
+        
+        if (!manterLigacao) await desligarLigacaoFisica(); 
+        
+        if (resultado === 'Queda de Ligação') {
+            await registrarEAvancar(resultado, false, true, false, false);
+        } else {
+            await registrarEAvancar(resultado, false, false, manterLigacao, false);
+        }
+    }
+
+    function abrirModalCalendario() {
+        document.getElementById('cal-erro').classList.add('hidden');
+        let amanha = new Date(); amanha.setDate(amanha.getDate() + 1);
+        document.getElementById('cal-data').min = amanha.toISOString().split('T')[0];
+        
+        document.getElementById('modal-calendario').classList.remove('hidden');
+        document.getElementById('modal-calendario').classList.add('flex');
+    }
+    function fecharModalCalendario() {
+        document.getElementById('modal-calendario').classList.add('hidden');
+        document.getElementById('modal-calendario').classList.remove('flex');
+    }
+    function validarDataCalendario(input) {
+        let dataSelec = new Date(input.value + "T12:00:00"); 
+        let erroEl = document.getElementById('cal-erro');
+        erroEl.classList.add('hidden');
+        if (isNaN(dataSelec.getTime())) return;
+        let diaSemana = dataSelec.getDay();
+        if (diaSemana === 0 || diaSemana === 6) { erroEl.innerText = "Fins de semana bloqueados."; erroEl.classList.remove('hidden'); input.value = ""; return; }
+        let diaMes = ("0" + dataSelec.getDate()).slice(-2) + "-" + ("0" + (dataSelec.getMonth() + 1)).slice(-2);
+        if (feriadosNacionais.includes(diaMes)) { erroEl.innerText = "Feriado Nacional. Escolha outro dia."; erroEl.classList.remove('hidden'); input.value = ""; return; }
+    }
+    
+    async function confirmarAgendamento() {
+        let dataStr = document.getElementById('cal-data').value;
+        let horaStr = document.getElementById('cal-hora').value;
+        let erroEl = document.getElementById('cal-erro');
+        
+        if (!dataStr || !horaStr) { erroEl.innerText = "Escolha data e horário válidos."; erroEl.classList.remove('hidden'); return; }
+        
+        let [h, m] = horaStr.split(':').map(Number);
+        if (h < 9 || h > 18 || (h === 18 && m > 0)) {
+            erroEl.innerText = "O horário deve ser exatamente entre 09:00 e 18:00."; erroEl.classList.remove('hidden'); return;
+        }
+        
+        let dataFormatada = dataStr.split('-').reverse().join('/') + " às " + horaStr;
+        fecharModalCalendario();
+        await tabulaChamada(`Retorno Agendado: ${dataFormatada}`);
+    }
+
+    async function registrarEAvancar(resultado, foiPulo = false, repeteAgora = false, manterLigacao = false, isTimeout = false) {
+        if (!manterLigacao) callState = 'IDLE';
+        let contato = contatosBase[currentIndex];
+        
+        historico.push({ codigo: contato.code, nome: contato.name, telefone: contato.phone, resultado: resultado, data: new Date().toLocaleString('pt-BR') });
+
+        let textToSend = "";
+        let primeiroNome = contato.name.trim().split(' ')[0];
+        if (primeiroNome === "Contato") primeiroNome = "Cliente";
+        const tagRegex = /:re:?/ig; 
+
+        // Vendas e Agendamento SÃO SEMPRE ENVIADOS independentes da chave do painel.
+        if (resultado === 'Venda Realizada') {
+            textToSend = `${primeiroNome}, parabéns! Seu pedido foi efetuado por ligação com sucesso. Para acompanhar mais sobre o seu pedido, acesse o app Revendedor Grupo Boticário.`;
+        } else if (resultado.startsWith('Retorno Agendado:')) {
+            let partes = resultado.replace('Retorno Agendado: ', '').split(' às ');
+            if (partes.length === 2) {
+                textToSend = `${primeiroNome}, passando aqui para te deixar esse lembrete: iremos retornar nossa conversa dia ${partes[0]} às ${partes[1]}. Não se esqueça viu, qualquer coisa me chame no WhatsApp ou pelo chat dentro do aplicativo Revendedor Grupo Boticário.`;
+            }
+        } 
+        // Timeout manda texto customizado APENAS SE a chave estiver ligada
+        else if (isTimeout && !repeteAgora) {
+            const isSmsToggleAtivo = document.getElementById('cfg-sms-ativo').checked;
+            if (isSmsToggleAtivo) {
+                let customSms = document.getElementById('cfg-sms-texto').value.trim();
+                if (customSms) textToSend = customSms.replace(tagRegex, primeiroNome);
+            }
+        }
+
+        // Se tiver texto pra enviar, manda via D-Pad
+        if (textToSend && !repeteAgora) {
+            showToast(`Despachando SMS oculto para ${primeiroNome}...`, 'info');
+            await dispararSMS_ADB(contato.phone, textToSend);
+        }
+
+        if (manterLigacao) {
+            document.getElementById('grid-tabulacao').classList.add('hidden');
+            document.getElementById('aguardo-desligamento').classList.remove('hidden');
+            document.getElementById('aguardo-desligamento').classList.add('flex');
+        } else {
+            concluirAvancoFila(repeteAgora);
+        }
+    }
+
+    async function dispararSMS_ADB(phone, text) {
+        try {
+            let cleanText = text.replace(/\r?\n|\r/g, ' ').replace(/"/g, '\\"').replace(/'/g, "");
+            let smsPhone = phone;
+            if (!phone.startsWith('55') && !phone.startsWith('+55')) smsPhone = '+55' + phone;
+
+            await runAdbShell(`am start -a android.intent.action.SENDTO -d smsto:${smsPhone} --es sms_body "${cleanText}"`);
+            await sleep(3000); 
+            await runAdbShell("input keyevent 111"); // Fecha o teclado (Crucial para o D-PAD funcionar)
+            await sleep(800);
+            await runAdbShell("input keyevent 61"); // TAB
+            await sleep(300);
+            await runAdbShell("input keyevent 61"); // TAB
+            await sleep(300);
+            await runAdbShell("input keyevent 66"); // ENTER DUPLO PARA GARANTIR
+            await sleep(500);
+            await runAdbShell("input keyevent 66"); 
+            await sleep(1500); 
+            await runAdbShell("input keyevent 3"); // HOME
+        } catch (e) { console.error(e); }
+    }
+
+    async function finalizarLigacaoPosTabulacao() {
+        await desligarLigacaoFisica();
+        concluirAvancoFila(false);
+    }
+
+    function concluirAvancoFila(repeteAgora) {
+        callState = 'IDLE';
+        if (!repeteAgora) currentIndex++; 
+        
+        atualizarInterfaceBase();
+        resetarInterfaceCall();
+
+        if (estadoOperacao === 'RODANDO') setTimeout(processarChamada, 1500); 
+    }
+
+    function resetarInterfaceCall() {
+        document.getElementById('timer-container').classList.add('hidden');
+        document.getElementById('timer-container').classList.remove('flex');
+        document.getElementById('btn-atendeu').classList.add('hidden');
+        document.getElementById('btn-atendeu').classList.remove('flex');
+        document.getElementById('tela-tabulacao').classList.add('hidden');
+        
+        const gridTab = document.getElementById('grid-tabulacao');
+        if(gridTab) gridTab.classList.remove('hidden');
+        const aguardo = document.getElementById('aguardo-desligamento');
+        if(aguardo) { aguardo.classList.add('hidden'); aguardo.classList.remove('flex'); }
+    }
+
+    function finalizaMesaBaseVazia() {
+        estadoOperacao = 'PARADO';
+        document.getElementById('stage-name').innerText = "Fila Concluída!";
+        document.getElementById('stage-code').innerText = "--";
+        document.getElementById('stage-phone').innerText = "--";
+
+        const btnInic = document.getElementById('btn-iniciar');
+        btnInic.classList.remove('bg-amber-500', 'hover:bg-amber-600');
+        btnInic.classList.add('bg-vdi-blue', 'hover:bg-blue-700');
+        btnInic.innerHTML = `<i class="fa-solid fa-play"></i> Iniciar Atendimento`;
+        btnInic.onclick = iniciarCampanha;
+        
+        document.getElementById('active-controls').classList.add('hidden');
+        resetarInterfaceCall();
+    }
+
+    // ==========================================
+    // EXPORTAÇÃO CSV
+    // ==========================================
+    function exportarRelatorioCSV() {
+        if(historico.length === 0) return showToast("Histórico vazio. Nenhuma chamada realizada.", "warning");
+        
+        let csvContent = "\uFEFFCÓDIGO;NOME;TELEFONE;OCORRIDO;DATA;HORÁRIO\n";
+        historico.forEach(h => {
+            let cod = h.codigo || "S/C";
+            let partes = h.data.replace(',', '').split(' ');
+            csvContent += `"${cod}";"${h.nome}";"${h.telefone}";"${h.resultado}";"${partes[0] || ""}";"${partes[1] || ""}"\n`;
         });
 
-        async function requestWakeLock() {
-            try {
-                if ('wakeLock' in navigator) {
-                    wakeLock = await navigator.wakeLock.request('screen');
-                    console.log("WakeLock ativado: A tela não irá desligar.");
+        let d = new Date();
+        let nome = `DiscaAI_Relatorio_${String(d.getDate()).padStart(2,'0')}-${String(d.getMonth()+1).padStart(2,'0')}-${d.getFullYear()}_${String(d.getHours()).padStart(2,'0')}-${String(d.getMinutes()).padStart(2,'0')}-${String(d.getSeconds()).padStart(2,'0')}.csv`;
+
+        let blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        let link = document.createElement("a");
+        link.href = URL.createObjectURL(blob); link.download = nome; link.style.display = 'none';
+        document.body.appendChild(link); link.click(); document.body.removeChild(link);
+        showToast("Relatório CSV baixado com sucesso!", "success");
+    }
+
+    // ==========================================
+    // ADB NATIVO (RSA)
+    // ==========================================
+    async function getAdbKeyPair() { 
+        return await crypto.subtle.generateKey({ name: "RSASSA-PKCS1-v1_5", modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: "SHA-256" }, true, ["sign", "verify"]); 
+    }
+    async function signAdbToken(keyPair, token) { 
+        const signature = await crypto.subtle.sign("RSASSA-PKCS1-v1_5", keyPair.privateKey, token); return new Uint8Array(signature); 
+    }
+    async function getAdbPublicKeyPayload(keyPair) {
+        const exp = await crypto.subtle.exportKey("jwk", keyPair.publicKey);
+        const str = atob(exp.n.replace(/-/g, '+').replace(/_/g, '/'));
+        const mod = new Uint8Array(str.length);
+        for (let i = 0; i < str.length; i++) mod[i] = str.charCodeAt(i);
+        
+        let n = 0n; for (let i = 0; i < mod.length; i++) n = (n << 8n) | BigInt(mod[i]);
+        const r32 = 1n << 32n, n0 = n % r32;
+        let inv = 1n; for (let i = 0; i < 32; i++) inv = (inv * (2n - n0 * inv)) % r32;
+        
+        const buf = new ArrayBuffer(524), view = new DataView(buf), bytes = new Uint8Array(buf);
+        view.setUint32(0, 64, true); view.setUint32(4, Number((r32 - inv) % r32), true);
+        let tN = n; for (let i = 0; i < 256; i++) { bytes[8 + i] = Number(tN & 0xffn); tN >>= 8n; }
+        let tRR = ((1n << 2048n) * (1n << 2048n)) % n; for (let i = 0; i < 256; i++) { bytes[264 + i] = Number(tRR & 0xffn); tRR >>= 8n; }
+        view.setUint32(520, 65537, true);
+        
+        const nm = new TextEncoder().encode("DiscaAI_Host\0");
+        const full = new Uint8Array(buf.byteLength + nm.length);
+        full.set(bytes, 0); full.set(nm, buf.byteLength); return full;
+    }
+    async function sendPkt(cmd, arg0, arg1, data = new Uint8Array(0)) {
+        if (!usbDevice || !epOut) return;
+        const hdr = new ArrayBuffer(24), vw = new DataView(hdr);
+        let ck = 0; for (let i = 0; i < data.length; i++) ck = (ck + data[i]) & 0xffffffff;
+        vw.setUint32(0, cmd, true); vw.setUint32(4, arg0, true); vw.setUint32(8, arg1, true);
+        vw.setUint32(12, data.length, true); vw.setUint32(16, ck, true); vw.setUint32(20, (cmd ^ 0xffffffff) >>> 0, true);
+        const b = new Uint8Array(24 + data.length); b.set(new Uint8Array(hdr), 0); b.set(data, 24);
+        await usbDevice.transferOut(epOut, b);
+    }
+    async function readPkt() {
+        if (!usbDevice || !epIn) return null;
+        try {
+            const res = await usbDevice.transferIn(epIn, 24);
+            if (!res.data || res.data.byteLength < 24) return null;
+            const vw = new DataView(res.data.buffer);
+            const cmd = vw.getUint32(0, true), arg0 = vw.getUint32(4, true), arg1 = vw.getUint32(8, true), len = vw.getUint32(12, true);
+            let pay = new Uint8Array(0);
+            if (len > 0) { const dRes = await usbDevice.transferIn(epIn, len); if (dRes.data) pay = new Uint8Array(dRes.data.buffer); }
+            return { cmd, arg0, arg1, data: pay };
+        } catch (e) { return { error: true, msg: e.message }; }
+    }
+
+    async function conectarUSB() {
+        try {
+            usbDevice = await navigator.usb.requestDevice({ filters: [{ classCode: 255, subclassCode: 66, protocolCode: 1 }] });
+            await usbDevice.open(); if (usbDevice.configuration === null) await usbDevice.selectConfiguration(1);
+            
+            let intfNum = -1;
+            for (const c of usbDevice.configurations) for (const i of c.interfaces) for (const a of i.alternates)
+                if (a.interfaceClass === 255 && a.interfaceSubclass === 66 && a.interfaceProtocol === 1) { intfNum = i.interfaceNumber; epIn = a.endpoints.find(e => e.direction === 'in').endpointNumber; epOut = a.endpoints.find(e => e.direction === 'out').endpointNumber; break; }
+            
+            await usbDevice.claimInterface(intfNum);
+            await sendPkt(0x4E584E43, 0x01000000, 4096, new TextEncoder().encode("host::DiscaAI\0"));
+            
+            let kp = await getAdbKeyPair(); let r = await readPkt();
+            
+            if (r && r.cmd === 0x4E584E43) isAdbReady = true;
+            else if (r && r.cmd === 0x48545541 && r.arg0 === 1) {
+                await sendPkt(0x48545541, 2, 0, await signAdbToken(kp, r.data));
+                let r2 = await readPkt();
+                if (r2 && r2.cmd === 0x4E584E43) isAdbReady = true;
+                else {
+                    await sendPkt(0x48545541, 3, 0, await getAdbPublicKeyPayload(kp));
+                    showToast("ATENÇÃO: Olhe a tela do celular e Permita a Depuração USB!", "warning");
+                    while(!isAdbReady) { let wr = await readPkt(); if(wr && wr.cmd === 0x4E584E43) isAdbReady = true; if(wr && wr.error) throw new Error("Cabo solto"); }
                 }
-            } catch (err) {
-                // Silencia erros em ambientes restritos para manter o console limpo
             }
-        }
-
-        if (navigator.usb) {
-            navigator.usb.addEventListener('disconnect', (event) => {
-                if (usbDevice && event.device === usbDevice) lidarComQuedaUSB();
-            });
-        }
-
-        function lidarComQuedaUSB() {
-            showToast("CABO DESCONECTADO! A operação foi pausada.", "error");
-            isAdbReady = false;
-            usbDevice = null;
             
-            document.getElementById('btn-conectar').style.display = 'flex';
-            document.getElementById('usb-status').classList.add('hidden');
-            document.getElementById('usb-status').classList.remove('flex');
-            document.getElementById('usb-disconnected-warning').classList.remove('hidden');
-            document.getElementById('usb-disconnected-warning').classList.add('flex');
-            
-            pausarCampanha(true); 
-        }
-
-        function showToast(msg, type = 'info') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            
-            let bgClass = 'bg-white';
-            let icon = 'fa-info-circle text-blue-500';
-            
-            if(type === 'error') { bgClass = 'bg-red-400'; icon = 'fa-triangle-exclamation text-dark'; }
-            if(type === 'success') { bgClass = 'bg-positivus'; icon = 'fa-check text-dark'; }
-            if(type === 'warning') { bgClass = 'bg-yellow-300'; icon = 'fa-bell text-dark'; }
-            
-            toast.className = `neo-card ${bgClass} px-5 py-4 flex items-center gap-3 transform transition-all duration-300 translate-y-10 opacity-0 pointer-events-auto`;
-            toast.innerHTML = `<i class="fa-solid ${icon} text-lg"></i><span class="text-xs font-bold uppercase text-dark">${msg}</span>`;
-            
-            container.appendChild(toast);
-            requestAnimationFrame(() => toast.classList.remove('translate-y-10', 'opacity-0'));
-            setTimeout(() => { toast.classList.add('translate-y-10', 'opacity-0'); setTimeout(() => toast.remove(), 300); }, 4000);
-        }
-
-        function processarEntradas() {
-            const rawText = document.getElementById('paste-area').value;
-            if(!rawText.trim()) return showToast("Cole dados antes de processar.", "warning");
-            analisarEPrevisualizar(rawText);
-        }
-
-        function handleFileImport(e) {
-            const file = e.target.files[0];
-            if(!file) return;
-            const reader = new FileReader();
-            reader.onload = function(evt) {
-                try {
-                    const data = new Uint8Array(evt.target.result);
-                    const workbook = XLSX.read(data, {type: 'array'});
-                    const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], {header: 1});
-                    const rawLines = json.map(row => row.join(' ')).join('\n');
-                    analisarEPrevisualizar(rawLines);
-                } catch(e) { showToast("Erro ao ler arquivo. Tente copiar e colar o texto.", "error"); }
-            };
-            reader.readAsArrayBuffer(file);
-            e.target.value = '';
-        }
-
-        function analisarEPrevisualizar(rawText) {
-            tempContatos = [];
-            let st = { total: 0, corrigidos: 0, invalidos: 0 };
-            const linhas = rawText.split('\n');
-
-            for (let linha of linhas) {
-                // Remove +55 ou 55 isolado da linha
-                let cleanText = linha.trim().replace(/(?:\b|\+)(?:55|0055)\s?/g, '');
-                if (!cleanText) continue;
+            if (isAdbReady) {
+                document.getElementById('btnConnectUSB').style.display = 'none';
+                document.getElementById('usb-disconnected-warning').classList.add('hidden');
+                document.getElementById('usb-statusBadge').classList.remove('hidden'); document.getElementById('usbStatusBadge').classList.add('flex');
                 
-                let tokens = cleanText.split(/\s+/);
-                if (tokens.length === 0) continue;
+                // Desbloqueia o botão de Iniciar Atendimento
+                const btnInic = document.getElementById('btn-iniciar');
+                btnInic.disabled = false;
+                btnInic.classList.remove('opacity-50', 'cursor-not-allowed');
 
-                let phone = "";
-                let tokensToRemove = 0;
-                let tempDigits = "";
-                
-                // 1. Busca o Telefone lendo a linha de trás pra frente
-                for (let i = tokens.length - 1; i >= 0; i--) {
-                    let tokenDigits = tokens[i].replace(/\D/g, '');
-                    tempDigits = tokenDigits + tempDigits; 
-                    
-                    if (tempDigits.length >= 10 && tempDigits.length <= 11) {
-                        phone = tempDigits;
-                        tokensToRemove = tokens.length - i;
-                        break;
-                    }
-                    if (tempDigits.length > 11) break; // Passou do limite, aborta busca reversa
-                }
-
-                if (!phone && tokens.length > 0) {
-                    let lastTokenDigits = tokens[tokens.length - 1].replace(/\D/g, '');
-                    if(lastTokenDigits.length >= 10 && lastTokenDigits.length <= 11) {
-                        phone = lastTokenDigits;
-                        tokensToRemove = 1;
-                    }
-                }
-
-                if (!phone) continue; // Linha inválida (sem telefone)
-
-                // 2. Separa Código e Nome
-                let remainingTokens = tokens.slice(0, tokens.length - tokensToRemove);
-                let code = "S/C";
-                let name = "";
-
-                if (remainingTokens.length > 0) {
-                    // REGRA DE OURO: Se o primeiro bloco tem números, ele é o Código
-                    let firstTokenDigits = remainingTokens[0].replace(/\D/g, '');
-                    if (firstTokenDigits.length > 0) {
-                        code = remainingTokens[0]; 
-                        remainingTokens.shift(); // Tira o código da lista de nomes
-                    }
-                    
-                    // O que sobrou no meio é o Nome
-                    if (remainingTokens.length > 0) {
-                        name = remainingTokens.join(' ').replace(/[^\w\sÀ-ÿ]/g, '').trim();
-                    }
-                }
-                
-                if(!name) name = "Contato sem nome";
-
-                // 3. Validação do Telefone
-                let status = "Válido", originalPhone = phone;
-
-                if (phone.length === 10) {
-                    phone = phone.substring(0, 2) + '9' + phone.substring(2);
-                    status = "Corrigido";
-                    st.corrigidos++;
-                } else if (phone.length !== 11) {
-                    status = "Inválido";
-                    st.invalidos++;
-                }
-
-                st.total++;
-                tempContatos.push({ name, code, phone, originalPhone, status, id: Date.now() + Math.random() });
-            }
-
-            if(st.total === 0) return showToast("Nenhum contato brasileiro válido encontrado.", "error");
-
-            document.getElementById('prev-total').innerText = st.total;
-            document.getElementById('prev-corrigidos').innerText = st.corrigidos;
-            document.getElementById('prev-invalidos').innerText = st.invalidos;
-
-            const tbody = document.getElementById('preview-table-body');
-            tbody.innerHTML = tempContatos.map(c => {
-                let badge = c.status === 'Válido' ? 'text-green-700 bg-green-100 border border-green-700' : (c.status === 'Corrigido' ? 'text-yellow-700 bg-yellow-100 border border-yellow-700' : 'text-red-700 bg-red-100 border border-red-700');
-                let pDisp = c.status === 'Corrigido' ? `<span class="line-through text-gray-400 text-[10px] block">${c.originalPhone}</span>${c.phone}` : c.phone;
-                return `<tr class="hover:bg-gray-100"><td class="py-3 px-4 font-bold text-dark">${c.name}</td><td class="py-3 px-4 font-mono text-gray-500">${c.code}</td><td class="py-3 px-4 font-mono font-bold">${pDisp}</td><td class="py-3 px-4"><span class="px-2 py-1 rounded text-[10px] font-bold uppercase ${badge}">${c.status}</span></td></tr>`;
-            }).join('');
-
-            document.getElementById('modal-preview').classList.remove('hidden');
-            document.getElementById('modal-preview').classList.add('flex');
-        }
-
-        function fecharModalPreview() {
-            document.getElementById('modal-preview').classList.add('hidden');
-            document.getElementById('modal-preview').classList.remove('flex');
-        }
-
-        function confirmarImportacao() {
-            const validos = tempContatos.filter(c => c.status !== 'Inválido').map(c => ({
-                ...c, statusChamada: 'Pendente'
-            }));
-            
-            contatosBase = contatosBase.concat(validos);
-            salvarDadosLocais();
-            atualizarInterfaceBase();
-            document.getElementById('paste-area').value = '';
-            fecharModalPreview();
-            showToast(`${validos.length} contatos adicionados à fila.`, 'success');
-        }
-
-        function atualizarInterfaceBase() {
-            const pendentes = contatosBase.length - currentIndex;
-            
-            document.getElementById('stat-total').innerText = contatosBase.length;
-            document.getElementById('rep-processados').innerText = historico.length;
-            document.getElementById('rep-vendas').innerText = historico.filter(h => h.resultado === 'Venda Realizada').length;
-            document.getElementById('rep-retornos').innerText = historico.filter(h => h.resultado.includes('Retorno Agendado')).length;
-            document.getElementById('rep-pendentes').innerText = Math.max(0, pendentes);
-
-            const filaDiv = document.getElementById('queue-list');
-            if(pendentes <= 0) {
-                filaDiv.innerHTML = `<p class="text-xs text-gray-500 font-bold text-center py-4 border-2 border-dashed border-gray-300 rounded-xl">Fila concluída ou vazia.</p>`;
-            } else {
-                const proximos = contatosBase.slice(currentIndex, currentIndex + 20);
-                filaDiv.innerHTML = proximos.map((c, idx) => `
-                    <div class="bg-white p-3 rounded-xl border-2 border-dark flex justify-between items-center shadow-[2px_2px_0px_#191A23]">
-                        <div>
-                            <p class="text-[11px] font-bold text-dark">${c.name} <span class="text-gray-500 bg-gray-100 px-1 rounded ml-1 border border-gray-300">${c.code}</span></p>
-                            <p class="text-[10px] font-mono font-bold text-gray-600 mt-1">${c.phone}</p>
-                        </div>
-                        ${idx === 0 && estadoOperacao !== 'PARADO' ? '<span class="w-3 h-3 rounded-full bg-positivus animate-pulse border-2 border-dark"></span>' : ''}
-                    </div>
-                `).join('');
-            }
-            
-            const histDiv = document.getElementById('history-list');
-            if (historico.length > 0) {
-                histDiv.innerHTML = [...historico].reverse().slice(0, 15).map(h => {
-                    let bg = h.resultado === 'Venda Realizada' ? 'bg-positivus' : (h.resultado.includes('Retorno') ? 'bg-yellow-300' : (h.resultado === 'Queda de Ligação' ? 'bg-red-400' : 'bg-gray-200'));
-                    return `<div class="p-3 rounded-xl border-2 border-dark flex justify-between items-center mb-2 ${bg} shadow-[2px_2px_0px_#191A23]">
-                        <div><p class="text-[10px] font-bold text-dark">${h.nome}</p><p class="text-[9px] font-bold uppercase mt-1 text-dark/80">${h.resultado}</p></div>
-                        <p class="text-[9px] font-bold bg-white/50 px-2 py-1 rounded border border-dark/20">${h.data.split(' ')[1]}</p>
-                    </div>`;
-                }).join('');
-            }
-        }
-
-        function toggleSmsBox() {
-            document.getElementById('box-sms').style.display = document.getElementById('cfg-sms-ativo').checked ? 'block' : 'none';
-        }
-
-        async function iniciarCampanha() {
-            if (!isAdbReady) return showToast("Lembrou de iniciar no botão do canto superior direito?", "warning");
-            if (currentIndex >= contatosBase.length) return showToast("A fila acabou. Importe mais contatos.", "warning");
-
-            estadoOperacao = 'RODANDO';
-            document.getElementById('btn-iniciar').classList.add('hidden');
-            document.getElementById('active-controls').classList.remove('hidden');
-            document.getElementById('stage-container').classList.add('border-positivus');
-            
-            processarChamada();
-        }
-
-        function pausarCampanha(forcaStatus = false) {
-            estadoOperacao = 'PAUSADO';
-            const btnPausar = document.getElementById('btn-pausar');
-            btnPausar.innerHTML = `<i class="fa-solid fa-play text-xl"></i> Retomar Operação`;
-            btnPausar.classList.add('bg-positivus');
-            btnPausar.onclick = retomarCampanha;
-            
-            if(!forcaStatus) showToast("Operação em Pausa. A próxima não será puxada.", "warning");
-        }
-
-        function retomarCampanha() {
-            if (!isAdbReady) return showToast("Lembrou de iniciar no botão do canto superior direito?", "warning");
-            estadoOperacao = 'RODANDO';
-            const btnPausar = document.getElementById('btn-pausar');
-            btnPausar.innerHTML = `<i class="fa-solid fa-pause text-xl"></i> Pausar Operação`;
-            btnPausar.classList.remove('bg-positivus');
-            btnPausar.onclick = pausarCampanha;
-            
-            if (callState === 'IDLE') processarChamada();
-        }
-
-        async function refazerLigacao() {
-            if (callState !== 'IDLE') await desligarLigacaoFisica();
-            processarChamada(); 
-        }
-
-        async function processarChamada() {
-            if (estadoOperacao !== 'RODANDO' || currentIndex >= contatosBase.length) {
-                if(currentIndex >= contatosBase.length) finalizaMesaBaseVazia();
-                return;
-            }
-
-            let contato = contatosBase[currentIndex];
-            callState = 'CALLING';
-            atualizarInterfaceBase();
-
-            document.getElementById('stage-badge').innerText = `RODANDO • FILA: ${currentIndex + 1}/${contatosBase.length}`;
-            document.getElementById('stage-name').innerText = contato.name;
-            document.getElementById('stage-code').innerText = `CÓD: ${contato.code}`;
-            document.getElementById('stage-phone').innerText = contato.phone.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
-            
-            document.getElementById('timer-container').classList.remove('hidden');
-            document.getElementById('timer-container').classList.add('flex');
-            document.getElementById('btn-atendeu').classList.remove('hidden');
-            document.getElementById('btn-atendeu').classList.add('flex');
-            document.getElementById('tela-tabulacao').classList.add('hidden');
-            document.getElementById('stage-container').classList.add('animate-calling');
-            
-            await runAdbShell("input keyevent 224"); // Acorda a tela
-            const res = await runAdbShell(`am start -a android.intent.action.CALL -d tel:${contato.phone}`);
-            
-            if (!res) return lidarComQuedaUSB();
-
-            const maxTime = parseInt(document.getElementById('cfg-time').value) || 25;
-            timeLeft = maxTime;
-            const timerEl = document.getElementById('stage-timer');
-            const barEl = document.getElementById('timer-bar');
-            document.getElementById('timer-label').innerText = "Chamando (Aguardando)";
-            
-            timerEl.innerText = timeLeft;
-            barEl.style.width = '100%';
-
-            clearInterval(timerInterval);
-            timerInterval = setInterval(async () => {
-                if (callState !== 'CALLING') return;
-                timeLeft--;
-                timerEl.innerText = timeLeft;
-                barEl.style.width = `${(timeLeft / maxTime) * 100}%`;
-
-                if (timeLeft <= 0) {
-                    clearInterval(timerInterval);
-                    await desligarEPular(); 
-                }
-            }, 1000);
-        }
-
-        function marcarAtendido() {
-            if (callState !== 'CALLING') return;
-            clearInterval(timerInterval);
-            callState = 'TALKING';
-            
-            document.getElementById('timer-label').innerText = "Em Atendimento";
-            document.getElementById('stage-timer').innerText = "NO AR";
-            document.getElementById('btn-atendeu').classList.add('hidden');
-            document.getElementById('btn-atendeu').classList.remove('flex');
-            
-            document.getElementById('stage-container').classList.remove('animate-calling');
-            document.getElementById('tela-tabulacao').classList.remove('hidden');
-        }
-
-        async function desligarLigacaoFisica() {
-            await runAdbShell("input keyevent 6"); // Desliga
-            await sleep(600);
-        }
-
-        async function desligarEPular() {
-            if (callState === 'IDLE') return;
-            clearInterval(timerInterval);
-            await desligarLigacaoFisica();
-            
-            await registrarEAvancar('Não Atendeu / Pular', true, false, false);
-        }
-
-        async function tabulaChamada(resultado) {
-            let manterLigacao = (resultado === 'Venda Realizada' || resultado.startsWith('Retorno Agendado'));
-            
-            if (!manterLigacao) {
-                await desligarLigacaoFisica(); 
-            }
-            
-            if (resultado === 'Queda de Ligação') {
-                await registrarEAvancar(resultado, false, true, false);
-            } else {
-                await registrarEAvancar(resultado, false, false, manterLigacao);
-            }
-        }
-
-        function abrirModalCalendario() {
-            document.getElementById('cal-erro').classList.add('hidden');
-            let amanha = new Date();
-            amanha.setDate(amanha.getDate() + 1);
-            document.getElementById('cal-data').min = amanha.toISOString().split('T')[0];
-            
-            document.getElementById('modal-calendario').classList.remove('hidden');
-            document.getElementById('modal-calendario').classList.add('flex');
-        }
-
-        function fecharModalCalendario() {
-            document.getElementById('modal-calendario').classList.add('hidden');
-            document.getElementById('modal-calendario').classList.remove('flex');
-        }
-
-        function validarDataCalendario(input) {
-            let dataSelec = new Date(input.value + "T12:00:00"); 
-            let erroEl = document.getElementById('cal-erro');
-            erroEl.classList.add('hidden');
-
-            if (isNaN(dataSelec.getTime())) return;
-
-            let diaSemana = dataSelec.getDay();
-            if (diaSemana === 0 || diaSemana === 6) {
-                erroEl.innerText = "Fins de semana não são permitidos.";
-                erroEl.classList.remove('hidden');
-                input.value = "";
-                return;
-            }
-
-            let diaMes = ("0" + dataSelec.getDate()).slice(-2) + "-" + ("0" + (dataSelec.getMonth() + 1)).slice(-2);
-            if (feriadosNacionais.includes(diaMes)) {
-                erroEl.innerText = "Feriado Nacional. Escolha outro dia.";
-                erroEl.classList.remove('hidden');
-                input.value = "";
-                return;
-            }
-        }
-
-        async function confirmarAgendamento() {
-            let dataStr = document.getElementById('cal-data').value;
-            let hora = document.getElementById('cal-hora').value;
-            let erroEl = document.getElementById('cal-erro');
-            
-            if (!dataStr) {
-                erroEl.innerText = "Escolha uma data válida.";
-                erroEl.classList.remove('hidden');
-                return;
-            }
-            
-            let [h, m] = hora.split(':').map(Number);
-            if (h < 9 || h > 18 || (h === 18 && m > 0)) {
-                erroEl.innerText = "Horário inválido. Escolha um horário entre 09:00 e 18:00.";
-                erroEl.classList.remove('hidden');
-                return;
-            }
-            
-            let dataFormatada = dataStr.split('-').reverse().join('/') + " às " + hora;
-            fecharModalCalendario();
-            
-            await registrarEAvancar(`Retorno Agendado: ${dataFormatada}`, false, false, true);
-        }
-
-        async function registrarEAvancar(resultado, foiPulo = false, repeteAgora = false, manterLigacao = false) {
-            if (!manterLigacao) callState = 'IDLE';
-            let contato = contatosBase[currentIndex];
-            
-            historico.push({
-                codigo: contato.code,
-                nome: contato.name,
-                telefone: contato.phone,
-                resultado: resultado,
-                data: new Date().toLocaleString('pt-BR')
-            });
-
-            const sendSms = document.getElementById('cfg-sms-ativo').checked;
-
-            if (sendSms && !repeteAgora) {
-                let textToSend = "";
-                let customSms = document.getElementById('cfg-sms-texto').value.trim();
-                let primeiroNome = contato.name.trim().split(' ')[0];
-                const tagRegex = /:re:?/ig; 
-
-                if (resultado === 'Venda Realizada') {
-                    textToSend = `${primeiroNome}, parabéns! Seu pedido foi efetuado por ligação com sucesso. Para acompanhar mais sobre o seu pedido, acesse o app Revendedores Grupo Boticário.`;
-                } else if (resultado.startsWith('Retorno Agendado:')) {
-                    let partes = resultado.replace('Retorno Agendado: ', '').split(' às ');
-                    if (partes.length === 2) {
-                        textToSend = `${primeiroNome}, passando aqui para te deixar esse lembrete: iremos retomar nossa conversa dia ${partes[0]} às ${partes[1]}. Não se esqueça viu, qualquer coisa me chame no WhatsApp ou pelo chat dentro do aplicativo Revendedor Grupo Boticário.`;
-                    }
-                } else if (resultado === 'Desconhece Titular') {
-                    textToSend = ""; 
-                } else if (foiPulo) {
-                    if (customSms) textToSend = customSms.replace(tagRegex, primeiroNome);
-                }
-
-                if (textToSend) {
-                    showToast(`Disparando SMS para ${primeiroNome}...`, 'warning');
-                    await dispararSMS_ADB(contato.phone, textToSend);
-                }
-            }
-
-            if (manterLigacao) {
-                document.getElementById('grid-tabulacao').classList.add('hidden');
-                document.getElementById('aguardo-desligamento').classList.remove('hidden');
-                showToast("Registro Salvo e SMS enviado. A ligação continua ativa!", "success");
-            } else {
-                concluirAvancoFila(repeteAgora);
-            }
-        }
-
-        function concluirAvancoFila(repeteAgora) {
-            callState = 'IDLE';
-            if (!repeteAgora) currentIndex++; 
-            
-            salvarDadosLocais();
-            atualizarInterfaceBase();
-            resetarInterfaceCall();
-
-            if (estadoOperacao === 'RODANDO') {
-                setTimeout(processarChamada, 1500); 
-            }
-        }
-
-        async function finalizarLigacaoPosTabulacao() {
-            await desligarLigacaoFisica();
-            concluirAvancoFila(false);
-        }
-
-        function resetarInterfaceCall() {
-            document.getElementById('timer-container').classList.add('hidden');
-            document.getElementById('timer-container').classList.remove('flex');
-            document.getElementById('btn-atendeu').classList.add('hidden');
-            document.getElementById('btn-atendeu').classList.remove('flex');
-            document.getElementById('tela-tabulacao').classList.add('hidden');
-            document.getElementById('stage-container').classList.remove('animate-calling');
-            
-            const gridTab = document.getElementById('grid-tabulacao');
-            if(gridTab) gridTab.classList.remove('hidden');
-            const aguardo = document.getElementById('aguardo-desligamento');
-            if(aguardo) aguardo.classList.add('hidden');
-        }
-
-        function finalizaMesaBaseVazia() {
-            estadoOperacao = 'PARADO';
-            document.getElementById('stage-badge').innerText = "OPERAÇÃO CONCLUÍDA / FILA VAZIA";
-            document.getElementById('stage-name').innerText = "Fim da Base";
-            document.getElementById('stage-code').innerText = "---";
-            document.getElementById('stage-phone').innerText = "---";
-            
-            document.getElementById('btn-iniciar').classList.remove('hidden');
-            document.getElementById('active-controls').classList.add('hidden');
-            resetarInterfaceCall();
-        }
-
-        async function dispararSMS_ADB(phone, text) {
-            try {
-                // Acorda e Desbloqueia a tela
+                await runAdbShell("settings put system screen_off_timeout 2147483647"); 
                 await runAdbShell("input keyevent 224");
-                await sleep(400);
-
-                let cleanText = text.replace(/\r?\n|\r/g, ' ').replace(/"/g, '\\"').replace(/'/g, "");
+                showToast("Smartphone conectado com Sucesso.", "success");
                 
-                // INJEÇÃO DO +55 PARA A OPERADORA NÃO BLOQUEAR
-                let smsPhone = phone;
-                if (!phone.startsWith('55') && !phone.startsWith('+55')) {
-                    smsPhone = '+55' + phone;
-                }
-
-                // Abre o app já direcionado pro número e com o texto pronto
-                await runAdbShell(`am start -a android.intent.action.SENDTO -d smsto:${smsPhone} --es sms_body "${cleanText}"`);
-                
-                // Aguarda 3 segundos pro Android carregar o app pesado
-                await sleep(3000); 
-                
-                // ARRUMA O FOCO: Desce a mira 3 vezes (tira ela do botão Voltar e joga lá pra baixo)
-                await runAdbShell("input keyevent 20"); 
-                await sleep(200);
-                await runAdbShell("input keyevent 20"); 
-                await sleep(200);
-                await runAdbShell("input keyevent 20"); 
-                await sleep(300);
-                
-                // Joga pro lado direito (foca no botão Enviar)
-                await runAdbShell("input keyevent 22"); 
-                await sleep(300);
-                
-                // Aperta Enter (Clica em Enviar)
-                await runAdbShell("input keyevent 66"); 
-                await sleep(1500); // Aguarda a mensagem subir
-                
-                // Aperta HOME para fechar o app de SMS e limpar a tela
-                await runAdbShell("input keyevent 3"); 
-                showToast("SMS Disparado com Sucesso.", "success");
-            } catch (e) {
-                console.error(e);
+                if (estadoOperacao === 'PAUSADO' && currentIndex < contatosBase.length) showToast("Conexão restabelecida. Pode retomar o atendimento.", "success");
             }
+        } catch (e) { 
+            showToast("Verifique se seu aparelho está conectado no USB. Lembre-se: a Depuração USB deve estar ativada.", "warning"); 
         }
+    }
 
-        function salvarDadosLocais() {
-            // Desativado propositalmente: Não queremos que grave lixo antigo ao fechar o navegador.
-        }
+    if (navigator.usb) {
+        navigator.usb.addEventListener('disconnect', (event) => {
+            if (usbDevice && event.device === usbDevice) lidarComQuedaUSB();
+        });
+    }
+
+    function lidarComQuedaUSB() {
+        showToast("Cabo USB Desconectado! Operação Pausada.", "error");
+        isAdbReady = false; usbDevice = null;
         
-        function carregarDadosLocais() {
-            // Toda vez que a página inicia, ela limpa tudo e nasce zerada.
-            localStorage.removeItem('discaAI_positivus');
-            contatosBase = []; 
-            currentIndex = 0; 
-            historico = [];
-        }
+        // Bloqueia o botão de Iniciar Atendimento
+        const btnInic = document.getElementById('btn-iniciar');
+        btnInic.disabled = true;
+        btnInic.classList.add('opacity-50', 'cursor-not-allowed');
 
-        function exportarRelatorio() {
-            if(historico.length === 0) return showToast("Histórico vazio", "warning");
-            
-            let csvContent = "\uFEFFCÓDIGO;NOME;TELEFONE;OCORRIDO;DATA;HORÁRIO\n";
-            
-            historico.forEach(h => {
-                let cod = h.codigo || "S/C";
-                let partes = h.data.replace(',', '').split(' ');
-                let dataStr = partes[0] || "";
-                let horaStr = partes[1] || "";
-                csvContent += `"${cod}";"${h.nome}";"${h.telefone}";"${h.resultado}";"${dataStr}";"${horaStr}"\n`;
-            });
-
-            let agora = new Date();
-            let dia = String(agora.getDate()).padStart(2, '0');
-            let mes = String(agora.getMonth() + 1).padStart(2, '0');
-            let ano = agora.getFullYear();
-            let hora = String(agora.getHours()).padStart(2, '0');
-            let min = String(agora.getMinutes()).padStart(2, '0');
-            let seg = String(agora.getSeconds()).padStart(2, '0');
-            
-            let nomeArquivo = `DiscaAI_Relatorio_${dia}-${mes}-${ano}_${hora}-${min}-${seg}.csv`;
-
-            let blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            let link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = nomeArquivo;
-            link.style.display = 'none';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            showToast("Relatório baixado e formatado com sucesso!", "success");
-        }
-
-        async function getAdbKeyPair() { 
-            return await crypto.subtle.generateKey({ name: "RSASSA-PKCS1-v1_5", modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: "SHA-256" }, true, ["sign", "verify"]); 
-        }
-        async function signAdbToken(keyPair, token) { 
-            const signature = await crypto.subtle.sign("RSASSA-PKCS1-v1_5", keyPair.privateKey, token); 
-            return new Uint8Array(signature); 
-        }
-        async function getAdbPublicKeyPayload(keyPair) {
-            const exp = await crypto.subtle.exportKey("jwk", keyPair.publicKey);
-            const str = atob(exp.n.replace(/-/g, '+').replace(/_/g, '/'));
-            const mod = new Uint8Array(str.length);
-            for (let i = 0; i < str.length; i++) mod[i] = str.charCodeAt(i);
-            
-            let n = 0n; for (let i = 0; i < mod.length; i++) n = (n << 8n) | BigInt(mod[i]);
-            const r32 = 1n << 32n, n0 = n % r32;
-            let inv = 1n; for (let i = 0; i < 32; i++) inv = (inv * (2n - n0 * inv)) % r32;
-            
-            const buf = new ArrayBuffer(524), view = new DataView(buf), bytes = new Uint8Array(buf);
-            view.setUint32(0, 64, true); view.setUint32(4, Number((r32 - inv) % r32), true);
-            let tN = n; for (let i = 0; i < 256; i++) { bytes[8 + i] = Number(tN & 0xffn); tN >>= 8n; }
-            let tRR = ((1n << 2048n) * (1n << 2048n)) % n; for (let i = 0; i < 256; i++) { bytes[264 + i] = Number(tRR & 0xffn); tRR >>= 8n; }
-            view.setUint32(520, 65537, true);
-            
-            const nm = new TextEncoder().encode("DiscaAI_Host\0");
-            const full = new Uint8Array(buf.byteLength + nm.length);
-            full.set(bytes, 0); full.set(nm, buf.byteLength); 
-            return full;
-        }
-        async function sendPkt(cmd, arg0, arg1, data = new Uint8Array(0)) {
-            if (!usbDevice || !epOut) return;
-            const hdr = new ArrayBuffer(24), vw = new DataView(hdr);
-            let ck = 0; for (let i = 0; i < data.length; i++) ck = (ck + data[i]) & 0xffffffff;
-            vw.setUint32(0, cmd, true); vw.setUint32(4, arg0, true); vw.setUint32(8, arg1, true);
-            vw.setUint32(12, data.length, true); vw.setUint32(16, ck, true); vw.setUint32(20, (cmd ^ 0xffffffff) >>> 0, true);
-            const b = new Uint8Array(24 + data.length); b.set(new Uint8Array(hdr), 0); b.set(data, 24);
-            await usbDevice.transferOut(epOut, b);
-        }
-        async function readPkt() {
-            if (!usbDevice || !epIn) return null;
-            try {
-                const res = await usbDevice.transferIn(epIn, 24);
-                if (!res.data || res.data.byteLength < 24) return null;
-                const vw = new DataView(res.data.buffer);
-                const cmd = vw.getUint32(0, true), arg0 = vw.getUint32(4, true), arg1 = vw.getUint32(8, true), len = vw.getUint32(12, true);
-                let pay = new Uint8Array(0);
-                if (len > 0) { const dRes = await usbDevice.transferIn(epIn, len); if (dRes.data) pay = new Uint8Array(dRes.data.buffer); }
-                return { cmd, arg0, arg1, data: pay };
-            } catch (e) { return { error: true, msg: e.message }; }
-        }
-
-        async function conectarUSB() {
-            try {
-                usbDevice = await navigator.usb.requestDevice({ filters: [{ classCode: 255, subclassCode: 66, protocolCode: 1 }] });
-                await usbDevice.open();
-                if (usbDevice.configuration === null) await usbDevice.selectConfiguration(1);
-                
-                let intfNum = -1;
-                for (const c of usbDevice.configurations) for (const i of c.interfaces) for (const a of i.alternates)
-                    if (a.interfaceClass === 255 && a.interfaceSubclass === 66 && a.interfaceProtocol === 1) { intfNum = i.interfaceNumber; epIn = a.endpoints.find(e => e.direction === 'in').endpointNumber; epOut = a.endpoints.find(e => e.direction === 'out').endpointNumber; break; }
-                
-                await usbDevice.claimInterface(intfNum);
-                await sendPkt(0x4E584E43, 0x01000000, 4096, new TextEncoder().encode("host::DiscaAI\0"));
-                
-                let kp = await getAdbKeyPair();
-                let r = await readPkt();
-                
-                if (r && r.cmd === 0x4E584E43) isAdbReady = true;
-                else if (r && r.cmd === 0x48545541 && r.arg0 === 1) {
-                    await sendPkt(0x48545541, 2, 0, await signAdbToken(kp, r.data));
-                    let r2 = await readPkt();
-                    if (r2 && r2.cmd === 0x4E584E43) isAdbReady = true;
-                    else {
-                        await sendPkt(0x48545541, 3, 0, await getAdbPublicKeyPayload(kp));
-                        showToast("OLHE O CELULAR e Permita a Depuração!", "warning");
-                        while(!isAdbReady) { let wr = await readPkt(); if(wr && wr.cmd === 0x4E584E43) isAdbReady = true; if(wr && wr.error) throw new Error("Cabo solto"); }
-                    }
-                }
-                
-                if (isAdbReady) {
-                    document.getElementById('btn-conectar').style.display = 'none';
-                    document.getElementById('usb-disconnected-warning').classList.add('hidden');
-                    document.getElementById('usb-status').classList.remove('hidden'); 
-                    document.getElementById('usb-status').classList.add('flex');
-                    
-                    await runAdbShell("settings put system screen_off_timeout 2147483647"); // Tela infinita (24 dias)
-                    await runAdbShell("settings put global stay_on_while_plugged_in 3");
-                    await runAdbShell("input keyevent 224");
-                    
-                    showToast("Samsung Autorizado. Operação Pronta.", "success");
-                    
-                    if (estadoOperacao === 'PAUSADO' && currentIndex < contatosBase.length) {
-                        showToast("Conexão restabelecida. Retome a operação.", "success");
-                    }
-                }
-            } catch (e) { 
-                showToast("Verifique se seu aparelho está conectado no USB. A depuração precisa estar ativada.", "warning"); 
+        document.getElementById('btnConnectUSB').style.display = 'flex';
+        document.getElementById('usbStatusBadge').classList.add('hidden'); document.getElementById('usbStatusBadge').classList.remove('flex');
+        document.getElementById('usb-disconnected-warning').classList.remove('hidden'); document.getElementById('usb-disconnected-warning').classList.add('flex');
+        if(estadoOperacao === 'RODANDO') pausarCampanha(true); 
+    }
+    
+    async function runAdbShell(cmd) {
+        if (!isAdbReady) return false;
+        try {
+            const id = localIdCounter++; await sendPkt(0x4E45504F, id, 0, new TextEncoder().encode("shell:" + cmd + "\0"));
+            let ok = false;
+            for(let i=0; i<4; i++) {
+                let r = await readPkt(); if(r && r.error) return false;
+                if(r && r.cmd === 0x59414B4F && r.arg1 === id) ok = true;
+                if(r && r.cmd === 0x45534C43) { await sendPkt(0x45534C43, id, r.arg0); break; }
             }
-        }
-        
-        async function runAdbShell(cmd) {
-            if (!isAdbReady) return false;
-            try {
-                const id = localIdCounter++;
-                await sendPkt(0x4E45504F, id, 0, new TextEncoder().encode("shell:" + cmd + "\0"));
-                let ok = false;
-                for(let i=0; i<4; i++) {
-                    let r = await readPkt(); if(r && r.error) return false;
-                    if(r && r.cmd === 0x59414B4F && r.arg1 === id) ok = true;
-                    if(r && r.cmd === 0x45534C43) { await sendPkt(0x45534C43, id, r.arg0); break; }
-                }
-                return true;
-            } catch(e) { return false; }
-        }
-    </script>
+            return true;
+        } catch(e) { return false; }
+    }
+  </script>
 </body>
 </html>
