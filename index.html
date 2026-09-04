@@ -57,7 +57,6 @@
 
 <body class="h-full flex flex-col font-sans antialiased overflow-x-hidden selection:bg-vdi-blue selection:text-white">
   
-  <!-- CABEÇALHO -->
   <header class="bg-white border-b border-vdi-border sticky top-0 z-40 px-6 py-4 shadow-sm">
     <div class="max-w-7xl mx-auto flex items-center justify-between">
       <div class="flex items-center gap-4">
@@ -85,7 +84,6 @@
   </header>
 
   <main class="flex-1 max-w-7xl w-full mx-auto p-6 flex flex-col gap-6">
-    <!-- NAVEGAÇÃO DE ABAS -->
     <div class="flex items-center gap-3 border-b border-gray-200 pb-4">
       <button onclick="switchTab('dashboard')" id="tabBtn-dashboard" class="tab-btn bg-vdi-blue text-white border border-vdi-blue px-5 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 transition-colors shadow-sm">
         <i class="fa-solid fa-desktop"></i> Mesa de Operação
@@ -98,10 +96,8 @@
       </button>
     </div>
 
-    <!-- ABA DASHBOARD (MESA DE OPERAÇÃO) -->
     <div id="tab-dashboard" class="tab-content flex flex-col gap-6">
       
-      <!-- INDICADORES -->
       <div class="grid grid-cols-5 gap-4">
         <div class="col-span-1 vdi-panel p-4 flex flex-col justify-center bg-gray-50 border-blue-200">
           <span class="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Pular se não atender em:</span>
@@ -130,7 +126,6 @@
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        <!-- MESA CENTRAL -->
         <div class="lg:col-span-2 vdi-panel p-8 flex flex-col relative">
           
           <div class="flex-1 flex flex-col items-center justify-center text-center py-6 mb-4 bg-gray-50 rounded-xl border border-gray-200 relative">
@@ -144,7 +139,6 @@
                 <p id="stage-phone" class="text-2xl font-mono text-gray-600 tracking-wider">--</p>
             </div>
 
-            <!-- CRONÔMETRO -->
             <div id="timer-container" class="w-full max-w-sm mx-auto hidden flex-col items-center">
               <p class="text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide">Desligando e pulando em:</p>
               <div class="text-5xl font-light text-gray-800 mb-3 tabular-nums" id="stage-timer">00</div>
@@ -153,12 +147,10 @@
               </div>
             </div>
             
-            <!-- BOTÃO CLIENTE ATENDEU (Parado) -->
             <button id="btn-atendeu" onclick="marcarAtendido()" class="hidden mt-6 btn-action bg-green-600 hover:bg-green-700 text-white font-bold text-lg uppercase tracking-wide px-10 py-4 rounded-xl shadow-md flex items-center justify-center gap-3 w-full max-w-sm">
               <i class="fa-solid fa-headset text-2xl"></i> Cliente Atendeu
             </button>
             
-            <!-- TABULAÇÃO E ENCERRAMENTO -->
             <div id="tela-tabulacao" class="hidden w-full max-w-lg mt-4 border-t border-gray-200 pt-6">
                 <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4 flex items-center justify-center gap-2">
                     <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> Em Atendimento: Registre o resultado
@@ -186,7 +178,6 @@
                     </button>
                 </div>
 
-                <!-- SUCESSO (MANTENDO A LINHA VIVA) -->
                 <div id="aguardo-desligamento" class="hidden flex-col items-center py-6 bg-green-50 border border-green-200 rounded-xl">
                     <i class="fa-solid fa-circle-check text-3xl text-green-500 mb-2"></i>
                     <p class="text-sm font-bold text-gray-800 mb-1">Registro Salvo! SMS despachado.</p>
@@ -199,9 +190,8 @@
             </div>
           </div>
 
-          <!-- CONTROLES MESTRES -->
           <div class="flex items-center gap-3 mt-4">
-            <button id="btn-iniciar" onclick="iniciarCampanha()" disabled class="btn-action flex-1 bg-vdi-blue text-white font-bold text-sm uppercase tracking-wider py-4 rounded-xl shadow-sm flex items-center justify-center gap-2">
+            <button id="btn-iniciar" onclick="iniciarCampanha()" disabled class="btn-action flex-1 bg-vdi-blue text-white opacity-50 cursor-not-allowed font-bold text-sm uppercase tracking-wider py-4 rounded-xl shadow-sm flex items-center justify-center gap-2">
               <i class="fa-solid fa-play"></i> Iniciar Atendimento
             </button>
             <div id="active-controls" class="hidden flex-1 grid grid-cols-2 gap-3">
@@ -215,7 +205,6 @@
           </div>
         </div>
 
-        <!-- FILA DE ESPERA -->
         <div class="vdi-panel p-6 flex flex-col h-[650px]">
           <h3 class="font-bold text-sm text-gray-800 border-b border-gray-100 pb-4 mb-4 flex justify-between items-center">
             <span><i class="fa-solid fa-list-ol text-gray-400 mr-2"></i> Próximos na Fila</span>
@@ -227,7 +216,6 @@
       </div>
     </div>
 
-    <!-- ABA COLAR DADOS -->
     <div id="tab-contacts" class="tab-content hidden flex-col gap-6">
       <div class="vdi-panel p-8">
         <h2 class="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2"><i class="fa-solid fa-file-import text-vdi-blue"></i> Colar Dados</h2>
@@ -250,7 +238,7 @@
                 </div>
                 <div>
                     <span class="text-sm font-bold text-gray-800 block">Envio de SMS</span>
-                    <span class="text-[11px] text-gray-500">Quando um revendedor não atender (tempo esgotado), será enviado um SMS automatico caso este botão esteja ativado.</span>
+                    <span class="text-[11px] text-gray-500">Quando um revendedor não atender, será enviado um SMS automatico caso este botão esteja ativado.</span>
                 </div>
             </label>
             
@@ -268,7 +256,6 @@
       </div>
     </div>
 
-    <!-- ABA RELATÓRIO -->
     <div id="tab-history" class="tab-content hidden flex-col gap-6">
       <div class="vdi-panel p-8 flex flex-col h-[700px]">
         <div class="flex justify-between items-center border-b border-gray-200 pb-5 mb-5">
@@ -301,7 +288,6 @@
     <div class="max-w-7xl mx-auto px-6 flex justify-between items-center text-xs text-gray-500 font-medium"></div>
   </footer>
 
-  <!-- MODAL CALENDÁRIO -->
   <div id="modal-calendario" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] hidden items-center justify-center p-4">
     <div class="bg-white w-full max-w-sm flex flex-col rounded-xl shadow-xl border border-gray-200">
         <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50 rounded-t-xl">
@@ -316,7 +302,7 @@
                 <p id="cal-erro" class="text-[10px] text-red-600 font-medium mt-1 hidden"></p>
             </div>
             <div>
-                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Horário Exato (09:00 às 18:00)</label>
+                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-1.5">Horário (09:00 às 18:00)</label>
                 <input type="time" id="cal-hora" class="w-full border border-gray-300 rounded-md p-2 text-sm outline-none focus:border-vdi-blue" value="09:00" required>
             </div>
         </div>
@@ -342,7 +328,6 @@
     let timerInterval = null;
     let wakeLock = null;
 
-    // ADB Nativo
     let usbDevice = null;
     let epIn = null;
     let epOut = null;
@@ -353,7 +338,7 @@
     const feriadosNacionais = ['01-01', '21-04', '01-05', '07-09', '12-10', '02-11', '15-11', '25-12'];
 
     window.onload = () => {
-        // ZERADO sempre que atualiza (Sem Cache)
+        // Cache desativado, inicia sempre zerado.
         contatosBase = []; currentIndex = 0; historico = [];
         atualizarInterfaceBase();
         requestWakeLock();
@@ -376,7 +361,6 @@
         document.getElementById('box-sms').style.display = document.getElementById('cfg-sms-ativo').checked ? 'block' : 'none';
     }
 
-    // WakeLock Silencioso
     document.addEventListener('visibilitychange', async () => { if (document.visibilityState === 'visible') requestWakeLock(); });
     async function requestWakeLock() {
         try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } 
@@ -434,7 +418,6 @@
             let tokensToRemove = 0;
             let tempDigits = "";
             
-            // 1. Busca Telefone de trás pra frente
             for (let i = tokens.length - 1; i >= 0; i--) {
                 let tokenDigits = tokens[i].replace(/\D/g, '');
                 tempDigits = tokenDigits + tempDigits; 
@@ -453,7 +436,6 @@
             }
             if (!phone) continue; 
 
-            // 2. Extrai Código e Nome do resto
             let remainingTokens = tokens.slice(0, tokens.length - tokensToRemove);
             let code = "S/C"; 
             let name = "";
@@ -470,7 +452,6 @@
             }
             if(!name) name = "Contato Não Identificado";
 
-            // 3. Validação final do telefone
             if (phone.length === 10) phone = phone.substring(0, 2) + '9' + phone.substring(2);
             if (phone.length === 11) {
                 contatosBase.push({ name, code, phone });
@@ -619,7 +600,7 @@
             if (timeLeft <= 0) {
                 clearInterval(timerInterval);
                 await desligarLigacaoFisica();
-                // TIMEOUT: Dispara SMS genérico SE ativado
+                // Timeout: Envia SMS automático SE ativo.
                 await registrarEAvancar('Não Atendeu', false, false, false, true); 
             }
         }, 1000);
@@ -646,7 +627,7 @@
         if (callState === 'IDLE') return;
         clearInterval(timerInterval);
         await desligarLigacaoFisica();
-        // PULO MANUAL: False no final para NÃO disparar SMS de timeout
+        // Pulo Manual: O último False proíbe o envio do SMS de timeout
         await registrarEAvancar('Pulo Manual', true, false, false, false);
     }
 
@@ -715,7 +696,7 @@
         if (primeiroNome === "Contato") primeiroNome = "Cliente";
         const tagRegex = /:re:?/ig; 
 
-        // Vendas e Agendamento SÃO ENVIADOS INDEPENDENTES DA CHAVE DE SMS
+        // Vendas e Agendamento ignoram o botão SMS (sempre mandam)
         if (resultado === 'Venda Realizada') {
             textToSend = `${primeiroNome}, parabéns! Seu pedido foi efetuado por ligação com sucesso. Para acompanhar mais sobre o seu pedido, acesse o app Revendedor Grupo Boticário.`;
         } else if (resultado.startsWith('Retorno Agendado:')) {
@@ -724,7 +705,7 @@
                 textToSend = `${primeiroNome}, passando aqui para te deixar esse lembrete: iremos retornar nossa conversa dia ${partes[0]} às ${partes[1]}. Não se esqueça viu, qualquer coisa me chame no WhatsApp ou pelo chat dentro do aplicativo Revendedor Grupo Boticário.`;
             }
         } 
-        // Timeout manda o SMS personalizado APENAS se a chave estiver ligada
+        // Timeout só manda se a chave estiver ligada
         else if (isTimeout && !repeteAgora) {
             const isSmsToggleAtivo = document.getElementById('cfg-sms-ativo').checked;
             if (isSmsToggleAtivo) {
@@ -734,7 +715,7 @@
         }
 
         if (textToSend && !repeteAgora) {
-            showToast(`Despachando SMS oculto para ${primeiroNome}...`, 'info');
+            showToast(`Despachando SMS em segundo plano...`, 'info');
             await dispararSMS_ADB(contato.phone, textToSend);
         }
 
@@ -756,23 +737,23 @@
             await runAdbShell(`am start -a android.intent.action.SENDTO -d smsto:${smsPhone} --es sms_body "${cleanText}"`);
             await sleep(3500); 
 
-            // Combo de Ouro (Ajustado para Samsung / Google Messages com RCS)
-            await runAdbShell("input keyevent 111"); // Fecha o teclado p/ limpar a tela
-            await sleep(1000);
+            // NOVO COMBO INFALÍVEL PARA SAMSUNG MESSAGES (CHAT RCS / SMS)
+            await runAdbShell("input keyevent 111"); // Fecha o teclado (Garante que botões não estão cobertos)
+            await sleep(800);
 
-            // Bateria 1: TAB + ENTER (Cobre a maioria dos apps que foca o botão de envio no Tab order)
-            await runAdbShell("input keyevent 61"); await sleep(200);
-            await runAdbShell("input keyevent 66"); await sleep(200);
+            // Bateria 1: Tab e Enter
             await runAdbShell("input keyevent 61"); await sleep(200);
             await runAdbShell("input keyevent 66"); await sleep(200);
             
-            // Bateria 2: Seta Direita + ENTER (Cobre o RCS que coloca Emoji e Enviar à direita do Input)
-            await runAdbShell("input keyevent 22"); await sleep(200);
-            await runAdbShell("input keyevent 66"); await sleep(200);
+            // Bateria 2: Direita e Enter (Foca no botão azul ao lado do campo de texto)
             await runAdbShell("input keyevent 22"); await sleep(200);
             await runAdbShell("input keyevent 66"); await sleep(200);
 
-            // Volta pra Home
+            // Bateria 3: Tab e Enter (Garantia para seletores de Chip Dual-SIM)
+            await runAdbShell("input keyevent 61"); await sleep(200);
+            await runAdbShell("input keyevent 66"); await sleep(200);
+
+            // Volta pra Home silenciosamente
             await runAdbShell("input keyevent 3"); 
         } catch (e) { console.error(e); }
     }
@@ -915,20 +896,26 @@
                     await sendPkt(0x48545541, 3, 0, await getAdbPublicKeyPayload(kp));
                     showToast("ATENÇÃO: Olhe a tela do celular e Permita a Depuração USB!", "warning");
                     
-                    // NOVA LÓGICA DE ESPERA (POLLING): Bate na porta do celular até ele aceitar.
                     let tentativas = 0;
                     while(!isAdbReady && tentativas < 20) {
                         await sleep(1000);
-                        await sendPkt(0x4E584E43, 0x01000000, 4096, new TextEncoder().encode("host::DiscaAI\0"));
-                        let wr = await readPkt();
-                        if(wr && wr.cmd === 0x4E584E43) isAdbReady = true;
+                        try {
+                            await sendPkt(0x4E584E43, 0x01000000, 4096, new TextEncoder().encode("host::DiscaAI\0"));
+                            let wr = await readPkt();
+                            if(wr && wr.cmd === 0x4E584E43) isAdbReady = true;
+                            if(wr && wr.error) break; // Dispositivo reiniciou a porta USB
+                        } catch(err) { break; }
                         tentativas++;
                     }
-                    if(!isAdbReady) throw new Error("Não aceito ou timeout");
+                    if(!isAdbReady) throw new Error("Aguardando permissão");
                 }
             }
             
             if (isAdbReady) {
+                // Previne a race condition caso o Samsung reinicie a porta USB logo após autorizar
+                await sleep(500); 
+                if (!isAdbReady || !usbDevice) return; 
+
                 document.getElementById('btnConnectUSB').style.display = 'none';
                 document.getElementById('usbStatusBadge').classList.remove('hidden'); document.getElementById('usbStatusBadge').classList.add('flex');
                 
@@ -943,7 +930,11 @@
                 if (estadoOperacao === 'PAUSADO' && currentIndex < contatosBase.length) showToast("Conexão restabelecida. Pode retomar o atendimento.", "success");
             }
         } catch (e) { 
-            showToast("Verifique se seu aparelho está conectado e se você PERMITIU na tela do celular.", "warning"); 
+            if (e.message.includes("Aguardando permissão")) {
+                // Erro silencioso já tratado pelo Disconnect
+            } else {
+                showToast("Verifique se o cabo está conectado e a Depuração USB ativada.", "error"); 
+            }
         }
     }
 
@@ -954,7 +945,8 @@
     }
 
     function lidarComQuedaUSB() {
-        showToast("Cabo USB Desconectado! Operação Pausada.", "error");
+        if (!isAdbReady && !usbDevice) return; // Previne duplicidade
+        
         isAdbReady = false; usbDevice = null;
         
         const btnInic = document.getElementById('btn-iniciar');
@@ -963,7 +955,10 @@
 
         document.getElementById('btnConnectUSB').style.display = 'flex';
         document.getElementById('usbStatusBadge').classList.add('hidden'); document.getElementById('usbStatusBadge').classList.remove('flex');
+        
         if(estadoOperacao === 'RODANDO') pausarCampanha(true); 
+        
+        showToast("Conexão USB interrompida. Se você acabou de 'Permitir', clique em Conectar novamente.", "error");
     }
     
     async function runAdbShell(cmd) {
