@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Disca AI</title>
+  <title>Disca AI - VDI Integrado</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
@@ -272,11 +272,12 @@
                 <th class="py-3 px-4">Nome</th>
                 <th class="py-3 px-4">Telefone</th>
                 <th class="py-3 px-4">Ocorrido</th>
-                <th class="py-3 px-4">Data / Hora</th>
+                <th class="py-3 px-4">Data</th>
+                <th class="py-3 px-4">Horário</th>
               </tr>
             </thead>
             <tbody id="history-list" class="divide-y divide-gray-100 font-medium text-xs text-gray-700">
-                <tr><td colspan="5" class="text-center py-8 text-gray-400">Nenhum registro encontrado.</td></tr>
+                <tr><td colspan="6" class="text-center py-8 text-gray-400">Nenhum registro encontrado.</td></tr>
             </tbody>
           </table>
         </div>
@@ -512,13 +513,16 @@
             histDiv.innerHTML = [...historico].reverse().slice(0, 100).map(h => {
                 let txt = h.resultado === 'Venda Realizada' ? 'text-green-600' : (h.resultado.includes('Retorno') ? 'text-blue-600' : 'text-gray-600');
                 let pts = h.data.split(' ');
-                return `<tr><td class="py-3 px-4 font-mono text-gray-500">${h.codigo}</td><td class="py-3 px-4 font-semibold text-gray-700">${h.nome}</td><td class="py-3 px-4 font-mono">${h.telefone}</td><td class="py-3 px-4 font-bold ${txt}">${h.resultado}</td><td class="py-3 px-4 text-gray-400">${pts[0]}<br>${pts[1]}</td></tr>`;
+                return `<tr><td class="py-3 px-4 font-mono text-gray-500">${h.codigo}</td><td class="py-3 px-4 font-semibold text-gray-700">${h.nome}</td><td class="py-3 px-4 font-mono">${h.telefone}</td><td class="py-3 px-4 font-bold ${txt}">${h.resultado}</td><td class="py-3 px-4 text-gray-400">${pts[0]}</td><td class="py-3 px-4 text-gray-400">${pts[1]}</td></tr>`;
             }).join('');
         }
     }
 
     async function iniciarCampanha() {
-        if (!isAdbReady) return showToast("Lembrou de iniciar no botão Conectar no canto superior direito?", "warning");
+        if (!isAdbReady) {
+            showToast("Lembrou de iniciar no botão Conectar no canto superior direito?", "warning");
+            return;
+        }
         if (currentIndex >= contatosBase.length) return showToast("A fila acabou. Importe mais contatos.", "warning");
 
         estadoOperacao = 'RODANDO';
@@ -572,16 +576,13 @@
         document.getElementById('stage-code').innerText = `CÓD: ${contato.code}`;
         document.getElementById('stage-phone').innerText = contato.phone.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
         
+        // Ativação Imediata do Layout e Cronômetro (Garante que a UI não trave)
         document.getElementById('timer-container').classList.remove('hidden');
         document.getElementById('timer-container').classList.add('flex');
         document.getElementById('btn-atendeu').classList.remove('hidden');
         document.getElementById('btn-atendeu').classList.add('flex');
         document.getElementById('tela-tabulacao').classList.add('hidden');
         
-        await runAdbShell("input keyevent 224"); 
-        const res = await runAdbShell(`am start -a android.intent.action.CALL -d tel:${contato.phone}`);
-        if (!res) return lidarComQuedaUSB();
-
         const maxTime = parseInt(document.getElementById('cfg-time').value) || 25;
         timeLeft = maxTime;
         const timerEl = document.getElementById('stage-timer');
@@ -604,6 +605,15 @@
                 await registrarEAvancar('Não Atendeu', false, false, false, true); 
             }
         }, 1000);
+
+        // Envios de comando ADB
+        await runAdbShell("input keyevent 224"); 
+        const res = await runAdbShell(`am start -a android.intent.action.CALL -d tel:${contato.phone}`);
+        if (!res) {
+            // Falha física. Cabo desconectado no ato.
+            clearInterval(timerInterval);
+            return lidarComQuedaUSB();
+        }
     }
 
     function marcarAtendido() {
@@ -696,7 +706,6 @@
         if (primeiroNome === "Contato") primeiroNome = "Cliente";
         const tagRegex = /:re:?/ig; 
 
-        // Vendas e Agendamento ignoram o botão SMS (sempre mandam)
         if (resultado === 'Venda Realizada') {
             textToSend = `${primeiroNome}, parabéns! Seu pedido foi efetuado por ligação com sucesso. Para acompanhar mais sobre o seu pedido, acesse o app Revendedor Grupo Boticário.`;
         } else if (resultado.startsWith('Retorno Agendado:')) {
@@ -705,7 +714,6 @@
                 textToSend = `${primeiroNome}, passando aqui para te deixar esse lembrete: iremos retornar nossa conversa dia ${partes[0]} às ${partes[1]}. Não se esqueça viu, qualquer coisa me chame no WhatsApp ou pelo chat dentro do aplicativo Revendedor Grupo Boticário.`;
             }
         } 
-        // Timeout só manda se a chave estiver ligada
         else if (isTimeout && !repeteAgora) {
             const isSmsToggleAtivo = document.getElementById('cfg-sms-ativo').checked;
             if (isSmsToggleAtivo) {
@@ -738,20 +746,25 @@
             await sleep(3500); 
 
             // NOVO COMBO INFALÍVEL PARA SAMSUNG MESSAGES (CHAT RCS / SMS)
-            await runAdbShell("input keyevent 111"); // Fecha o teclado (Garante que botões não estão cobertos)
+            
+            // 1. Fecha qualquer teclado ou janela popup nativa que tenha subido (Back Button)
+            await runAdbShell("input keyevent 4"); 
             await sleep(800);
 
-            // Bateria 1: Tab e Enter
+            // Bateria 1: Tab e Enter (O Clássico)
             await runAdbShell("input keyevent 61"); await sleep(200);
             await runAdbShell("input keyevent 66"); await sleep(200);
             
-            // Bateria 2: Direita e Enter (Foca no botão azul ao lado do campo de texto)
-            await runAdbShell("input keyevent 22"); await sleep(200);
+            // Bateria 2: Varredura de Setas (Pula o botão de Emoji do Chat RCS e foca a seta azul)
+            await runAdbShell("input keyevent 20"); // Baixo (tenta ir para a barra se estiver fora)
+            await runAdbShell("input keyevent 22"); // Direita (pula o ícone à esquerda do enter)
             await runAdbShell("input keyevent 66"); await sleep(200);
 
-            // Bateria 3: Tab e Enter (Garantia para seletores de Chip Dual-SIM)
+            // Bateria 3: Duplo Tab para varrer os seletores de Chip Dual-SIM
             await runAdbShell("input keyevent 61"); await sleep(200);
             await runAdbShell("input keyevent 66"); await sleep(200);
+            await runAdbShell("input keyevent 61"); await sleep(200);
+            await runAdbShell("input keyevent 66"); await sleep(500);
 
             // Volta pra Home silenciosamente
             await runAdbShell("input keyevent 3"); 
@@ -872,6 +885,8 @@
 
     async function conectarUSB() {
         try {
+            if (usbDevice) { try { await usbDevice.close(); } catch(e){} }
+
             usbDevice = await navigator.usb.requestDevice({ filters: [{ classCode: 255, subclassCode: 66, protocolCode: 1 }] });
             await usbDevice.open(); if (usbDevice.configuration === null) await usbDevice.selectConfiguration(1);
             
@@ -894,27 +909,23 @@
                     isAdbReady = true;
                 } else {
                     await sendPkt(0x48545541, 3, 0, await getAdbPublicKeyPayload(kp));
-                    showToast("ATENÇÃO: Olhe a tela do celular e Permita a Depuração USB!", "warning");
+                    showToast("ATENÇÃO: Olhe a tela do celular e clique em 'Permitir'!", "warning");
                     
-                    let tentativas = 0;
-                    while(!isAdbReady && tentativas < 20) {
-                        await sleep(1000);
-                        try {
-                            await sendPkt(0x4E584E43, 0x01000000, 4096, new TextEncoder().encode("host::DiscaAI\0"));
-                            let wr = await readPkt();
-                            if(wr && wr.cmd === 0x4E584E43) isAdbReady = true;
-                            if(wr && wr.error) break; // Dispositivo reiniciou a porta USB
-                        } catch(err) { break; }
-                        tentativas++;
+                    try {
+                        let r3 = await readPkt(); // Fica aguardando a resposta.
+                        if(r3 && r3.cmd === 0x4E584E43) isAdbReady = true;
+                    } catch(err) {
+                        // Se cair aqui, é porque o Samsung "reiniciou" a porta para aplicar segurança.
+                        isAdbReady = false; usbDevice = null;
+                        showToast("Aparelho aplicou a segurança. Por favor, clique em CONECTAR novamente!", "warning");
+                        return; // Sai silenciosamente para não dar erro vermelho!
                     }
-                    if(!isAdbReady) throw new Error("Aguardando permissão");
                 }
             }
             
             if (isAdbReady) {
-                // Previne a race condition caso o Samsung reinicie a porta USB logo após autorizar
-                await sleep(500); 
-                if (!isAdbReady || !usbDevice) return; 
+                await sleep(500); // Dá um tempo para o barramento USB estabilizar
+                if (!usbDevice) return; 
 
                 document.getElementById('btnConnectUSB').style.display = 'none';
                 document.getElementById('usbStatusBadge').classList.remove('hidden'); document.getElementById('usbStatusBadge').classList.add('flex');
@@ -930,11 +941,9 @@
                 if (estadoOperacao === 'PAUSADO' && currentIndex < contatosBase.length) showToast("Conexão restabelecida. Pode retomar o atendimento.", "success");
             }
         } catch (e) { 
-            if (e.message.includes("Aguardando permissão")) {
-                // Erro silencioso já tratado pelo Disconnect
-            } else {
-                showToast("Verifique se o cabo está conectado e a Depuração USB ativada.", "error"); 
-            }
+            isAdbReady = false; usbDevice = null;
+            if (e.message.includes("No device selected")) return;
+            showToast("Falha na conexão. Verifique o cabo e a depuração USB.", "error"); 
         }
     }
 
@@ -945,7 +954,10 @@
     }
 
     function lidarComQuedaUSB() {
-        if (!isAdbReady && !usbDevice) return; // Previne duplicidade
+        if (!isAdbReady) {
+            // Se ele nunca ficou pronto de verdade, era só a reinicialização de segurança do Samsung. Ignora.
+            usbDevice = null; return;
+        } 
         
         isAdbReady = false; usbDevice = null;
         
@@ -958,7 +970,7 @@
         
         if(estadoOperacao === 'RODANDO') pausarCampanha(true); 
         
-        showToast("Conexão USB interrompida. Se você acabou de 'Permitir', clique em Conectar novamente.", "error");
+        showToast("Cabo USB Desconectado! Operação Pausada.", "error");
     }
     
     async function runAdbShell(cmd) {
